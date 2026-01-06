@@ -1,0 +1,50 @@
+{
+  "rules": {
+    "color-contrast": {
+      "enabled": true
+    },
+    "valid-lang": {
+      "enabled": true
+    },
+    "html-has-lang": {
+      "enabled": true
+    },
+    "landmark-one-main": {
+      "enabled": true
+    },
+    "page-has-heading-one": {
+      "enabled": true
+    },
+    "button-name": {
+      "enabled": true
+    },
+    "link-name": {
+      "enabled": true
+    },
+    "image-alt": {
+      "enabled": true
+    },
+    "label": {
+      "enabled": true
+    },
+    "aria-valid-attr": {
+      "enabled": true
+    },
+    "aria-valid-attr-value": {
+      "enabled": true
+    },
+    "aria-required-attr": {
+      "enabled": true
+    },
+    "aria-roles": {
+      "enabled": true
+    },
+    "tabindex": {
+      "enabled": true
+    },
+    "focus-order-semantics": {
+      "enabled": true
+    }
+  },
+  "locale": "zh-CN"
+}
