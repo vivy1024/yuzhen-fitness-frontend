@@ -14,6 +14,32 @@
 
 ---
 
+## [1.69.0] - 2026-01-07
+
+### 新增
+- 📱 **Android App打包成功**
+  - 使用Capacitor将PWA打包成Android原生App
+  - 配置Java 21 + Gradle 8.11.1 + AGP 8.9.1
+  - 生成Debug APK（约10.7MB）
+  - APK位置：`android/app/build/outputs/apk/debug/app-debug.apk`
+
+### 配置
+- ⚙️ **Android构建环境**
+  - 安装Capacitor核心包和9个插件
+  - 配置capacitor.config.ts（启动屏、状态栏）
+  - 配置gradle.properties（Java 21路径）
+  - 配置gradle-wrapper.properties（腾讯镜像加速）
+  - 修复.gz文件重复资源问题
+
+### 技术细节
+- Java版本：21.0.8 LTS
+- Gradle版本：8.11.1
+- Android Gradle Plugin：8.9.1
+- compileSdk/targetSdk：36
+- minSdk：24
+
+---
+
 ## [1.68.0] - 2026-01-07
 
 ### 新增
