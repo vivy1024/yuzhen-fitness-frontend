@@ -1,9 +1,38 @@
 /**
  * 会员管理API
  * 提供会员等级、权限检查、支付、账单历史等接口
+ * 
+ * @updated 2026-01-09 添加会员系统配置开关支持
  */
 
 import api from './auth'
+
+/**
+ * 会员系统配置（前端UI控制）
+ */
+export interface MembershipConfig {
+  membership_enabled: boolean
+  show_membership_center: boolean
+  show_purchase_button: boolean
+  show_pricing_table: boolean
+  show_donation_section: boolean
+  unified_limits: {
+    ai_queries_per_day: number
+    max_training_plans: number
+    dag_templates: string[]
+    dag_template_count: number
+    complexity_limits: {
+      simple: number
+      medium: number
+      complex: number
+    }
+    unlock_all_exercises: boolean
+    ai_recommendation: boolean
+    data_analysis: boolean
+    coach_service: boolean
+  } | null
+  message: string | null
+}
 
 export interface MembershipTier {
   id: number
@@ -67,6 +96,16 @@ export interface ApiResponse<T = any> {
   code: number
   msg: string
   data: T
+}
+
+/**
+ * 获取会员系统配置
+ * GET /api/membership/config
+ * 
+ * 无需认证，用于前端控制UI显示
+ */
+export const getMembershipConfig = (): Promise<ApiResponse<MembershipConfig>> => {
+  return api.get('/membership/config')
 }
 
 /**
@@ -205,6 +244,7 @@ export const uploadPaymentProof = (
 }
 
 export default {
+  getMembershipConfig,
   getMembershipTiers,
   getCurrentMembership,
   checkPermission,
