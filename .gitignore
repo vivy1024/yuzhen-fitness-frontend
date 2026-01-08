@@ -10,7 +10,14 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# 本地覆盖配置（不提交）
 *.local
+
+# 注意：.env 和 .env.production 需要提交
+# .env - 本地开发配置
+# .env.production - 生产环境配置
+# .env.local - 本地覆盖（不提交）
 
 # Editor directories and files
 .vscode/*
