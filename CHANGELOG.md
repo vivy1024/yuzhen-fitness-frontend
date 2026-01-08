@@ -14,6 +14,27 @@
 
 ---
 
+## [1.67.0] - 2026-01-09
+
+### 新增
+- 🔧 **会员系统配置开关支持**
+  - `src/api/membership.ts` - 新增 `getMembershipConfig()` API和 `MembershipConfig` 类型
+  - `src/stores/membership.ts` - 新增配置状态和相关计算属性
+    - `isSystemEnabled` - 会员系统是否启用
+    - `showMembershipCenter` - 是否显示会员中心
+    - `showPurchaseButton` - 是否显示购买按钮
+    - `showDonationSection` - 是否显示打赏区域
+    - `unifiedLimits` - 统一用户限制
+    - `maxTrainingPlans` - 最大训练计划数
+  - 初始化时自动获取后端配置，控制UI显示
+
+### 说明
+- 个人开发者合规要求，会员系统暂时禁用
+- 所有用户享受统一限制：AI对话10次/天，训练计划5个
+- 获得企业资质后，后端设置 `MEMBERSHIP_SYSTEM_ENABLED=true` 即可启用
+
+---
+
 ## [1.66.0] - 2026-01-07
 
 ### 新增

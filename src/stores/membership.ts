@@ -4,12 +4,13 @@
  * 
  * @author 玉珍健身 v3.0
  * @created 2026-01-02
- * @updated 2026-01-06
+ * @updated 2026-01-09 添加会员系统配置开关支持
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { 
+  getMembershipConfig,
   getCurrentMembership, 
   getMembershipTiers, 
   checkPermission,
@@ -20,7 +21,7 @@ import {
   cancelAutoRenew,
   enableAutoRenew
 } from '@/api/membership'
-import type { UserMembership, MembershipTier, PaymentOrder, BillingRecord } from '@/api/membership'
+import type { UserMembership, MembershipTier, PaymentOrder, BillingRecord, MembershipConfig } from '@/api/membership'
 
 export const useMembershipStore = defineStore('membership', () => {
   // State
@@ -29,6 +30,10 @@ export const useMembershipStore = defineStore('membership', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const initialized = ref(false)
+  
+  // 会员系统配置状态
+  const systemConfig = ref<MembershipConfig | null>(null)
+  const configLoaded = ref(false)
   
   // 支付相关状态
   const currentOrder = ref<PaymentOrder | null>(null)
@@ -44,9 +49,53 @@ export const useMembershipStore = defineStore('membership', () => {
   // Getters
   
   /**
+   * 会员系统是否启用
+   */
+  const isSystemEnabled = computed(() => {
+    return systemConfig.value?.membership_enabled ?? false
+  })
+
+  /**
+   * 是否显示会员中心
+   */
+  const showMembershipCenter = computed(() => {
+    return systemConfig.value?.show_membership_center ?? false
+  })
+
+  /**
+   * 是否显示购买按钮
+   */
+  const showPurchaseButton = computed(() => {
+    return systemConfig.value?.show_purchase_button ?? false
+  })
+
+  /**
+   * 是否显示打赏区域
+   */
+  const showDonationSection = computed(() => {
+    return systemConfig.value?.show_donation_section ?? true
+  })
+
+  /**
+   * 统一限制（会员系统禁用时使用）
+   */
+  const unifiedLimits = computed(() => {
+    return systemConfig.value?.unified_limits ?? null
+  })
+
+  /**
+   * 系统提示消息
+   */
+  const systemMessage = computed(() => {
+    return systemConfig.value?.message ?? null
+  })
+  
+  /**
    * 是否是VIP会员
    */
   const isVip = computed(() => {
+    // 会员系统禁用时，所有用户都不是VIP
+    if (!isSystemEnabled.value) return false
     if (!membership.value) return false
     return membership.value.is_active && membership.value.remaining_days > 0
   })
@@ -77,10 +126,28 @@ export const useMembershipStore = defineStore('membership', () => {
    * 每日AI查询限制
    */
   const dailyAiQueryLimit = computed(() => {
+    // 会员系统禁用时，使用统一限制
+    if (!isSystemEnabled.value && unifiedLimits.value) {
+      return unifiedLimits.value.ai_queries_per_day
+    }
     if (!membership.value?.membership?.limits) {
       return 5 // 免费用户默认5次
     }
     return membership.value.membership.limits.daily_ai_queries || 5
+  })
+
+  /**
+   * 最大训练计划数
+   */
+  const maxTrainingPlans = computed(() => {
+    // 会员系统禁用时，使用统一限制
+    if (!isSystemEnabled.value && unifiedLimits.value) {
+      return unifiedLimits.value.max_training_plans
+    }
+    if (!membership.value?.membership?.limits) {
+      return 3 // 免费用户默认3个
+    }
+    return membership.value.membership.limits.max_training_plans || 3
   })
 
   /**
@@ -108,10 +175,53 @@ export const useMembershipStore = defineStore('membership', () => {
   // Actions
 
   /**
+   * 获取会员系统配置
+   */
+  async function fetchConfig() {
+    try {
+      const response = await getMembershipConfig()
+      if (response.code === 200) {
+        systemConfig.value = response.data
+        configLoaded.value = true
+      }
+      return { success: true }
+    } catch (err: any) {
+      console.error('获取会员配置失败:', err)
+      // 配置获取失败时，默认禁用会员系统
+      systemConfig.value = {
+        membership_enabled: false,
+        show_membership_center: false,
+        show_purchase_button: false,
+        show_pricing_table: false,
+        show_donation_section: true,
+        unified_limits: {
+          ai_queries_per_day: 10,
+          max_training_plans: 5,
+          dag_templates: [],
+          dag_template_count: 13,
+          complexity_limits: { simple: 10, medium: 5, complex: 3 },
+          unlock_all_exercises: true,
+          ai_recommendation: true,
+          data_analysis: false,
+          coach_service: false,
+        },
+        message: '当前为免费体验模式'
+      }
+      configLoaded.value = true
+      return { success: false, message: err.message }
+    }
+  }
+
+  /**
    * 初始化会员信息
    */
   async function init() {
     if (initialized.value) return
+    
+    // 首先获取系统配置（无需认证）
+    if (!configLoaded.value) {
+      await fetchConfig()
+    }
     
     const token = localStorage.getItem('access_token')
     if (!token) {
@@ -119,10 +229,13 @@ export const useMembershipStore = defineStore('membership', () => {
       return
     }
     
-    await Promise.all([
-      fetchMembership(),
-      fetchTiers()
-    ])
+    // 只有会员系统启用时才获取会员等级
+    const promises = [fetchMembership()]
+    if (isSystemEnabled.value) {
+      promises.push(fetchTiers())
+    }
+    
+    await Promise.all(promises)
     
     initialized.value = true
   }
@@ -458,6 +571,7 @@ export const useMembershipStore = defineStore('membership', () => {
     billingRecords.value = []
     stopPollingPaymentStatus()
     initialized.value = false
+    // 保留配置，不清除 systemConfig
   }
 
   /**
@@ -481,18 +595,28 @@ export const useMembershipStore = defineStore('membership', () => {
     billingTotal,
     billingPage,
     billingLoading,
+    systemConfig,
+    configLoaded,
     
     // Getters
+    isSystemEnabled,
+    showMembershipCenter,
+    showPurchaseButton,
+    showDonationSection,
+    unifiedLimits,
+    systemMessage,
     isVip,
     membershipName,
     remainingDays,
     isExpiringSoon,
     dailyAiQueryLimit,
+    maxTrainingPlans,
     hasAdvancedFeatures,
     autoRenewEnabled,
     expiresAtFormatted,
     
     // Actions
+    fetchConfig,
     init,
     fetchMembership,
     fetchTiers,
