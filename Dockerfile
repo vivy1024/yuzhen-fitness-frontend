@@ -26,10 +26,10 @@ RUN npm run build
 # ============================================
 FROM zeabur/caddy-static:latest
 
-# 从构建阶段复制dist目录
-COPY --from=build /app/dist /var/www/html
+# 从构建阶段复制dist目录到Caddy的默认静态文件目录
+COPY --from=build /app/dist /usr/share/caddy
 
-# 暴露端口
-EXPOSE 80
+# 暴露端口（zeabur/caddy-static默认监听8080）
+EXPOSE 8080
 
-# Caddy会自动服务/var/www/html目录
+# Caddy会自动服务/usr/share/caddy目录

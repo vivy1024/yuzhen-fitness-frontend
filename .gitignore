@@ -22,18 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# 内部文档（包含敏感信息，不公开）
-docs/08-产品文档/
-docs/09-官网内容/
-docs/06-部署指南/deployment-implementation-plan.md
-docs/06-部署指南/production-deployment-guide.md
-docs/06-部署指南/zeabur-deployment-guide.md
-docs/06-部署指南/chrome-devtools-deployment-guide.md
-
-# 部署相关临时文件
-README_DEPLOYMENT.md
-DEPLOYMENT_STATUS.md
-ZEABUR_DEPLOYMENT_STEPS.md
-deploy-to-server.ps1
-DEPLOYMENT_CHECKLIST.md
