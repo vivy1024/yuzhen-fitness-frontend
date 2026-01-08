@@ -28,9 +28,9 @@ name: yuzhen-fitness-frontend
 #   - yuzhen-fitness.online
 #   - www.yuzhen-fitness.online
 
-# 健康检查
+# 健康检查（静态网站使用根路径）
 healthCheck:
-  path: /health
+  path: /
   interval: 30
   timeout: 10
   retries: 3
