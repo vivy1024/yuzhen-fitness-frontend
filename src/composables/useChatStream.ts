@@ -58,6 +58,7 @@ export interface SendMessageParams {
   sessionId?: string
   topicId?: string  // 话题ID，用于多轮对话
   domain?: string
+  strategy?: 'dag' | 'agent'  // 执行策略：dag=预定义工作流，agent=智能代理
 }
 
 export type StateSubscriber = (state: StreamState) => void
@@ -387,7 +388,8 @@ export function useChatStream() {
               query: params.query,
               session_id: sessionId,
               topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
-              domain: params.domain || 'fitness'
+              domain: params.domain || 'fitness',
+              strategy: params.strategy || 'dag'  // 执行策略，默认DAG模式
             },
             sessionId,
             token: localStorage.getItem('access_token') || undefined
@@ -404,7 +406,8 @@ export function useChatStream() {
           query: params.query,
           session_id: sessionId,
           topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
-          domain: params.domain || 'fitness'
+          domain: params.domain || 'fitness',
+          strategy: params.strategy || 'dag'  // 执行策略，默认DAG模式
         })
       }
     } catch (err: any) {

@@ -29,6 +29,7 @@ import { useTopicStore } from '@/stores/topic'
 export interface SendMessageData {
   content: string
   topicId?: string
+  strategy?: 'dag' | 'agent'  // 执行策略
 }
 
 /**
@@ -236,7 +237,8 @@ export const useChatStore = defineStore('chat', () => {
         query: data.content,
         sessionId: chatStream.currentSessionId.value || undefined,
         topicId: actualTopicId,  // 传递话题ID用于多轮对话上下文
-        domain: 'fitness'
+        domain: 'fitness',
+        strategy: data.strategy || 'dag'  // 传递执行策略
       })
       
       // 等待流式完成
