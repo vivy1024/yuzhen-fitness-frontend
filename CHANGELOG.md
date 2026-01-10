@@ -14,6 +14,31 @@
 
 ---
 
+## [1.68.0] - 2026-01-11
+
+### 新增
+- 💬 **历史对话UI组件** (P0-三端历史对话打通)
+  - `src/api/topic.ts` - 新增历史对话API接口
+    - `getChatHistory()` - 获取用户对话历史
+    - `getChatSessions()` - 获取用户会话列表
+    - `getSessionDetail()` - 获取单个会话详情
+    - `deleteSession()` - 删除会话
+    - 新增TypeScript类型：`ChatHistoryItem`, `ChatSessionInfo`, `SessionMessage`等
+  - `src/components/chat/ChatHistorySidebar.vue` - 新增对话历史侧边栏组件
+    - 支持"会话"和"话题"双标签切换
+    - 会话列表分页加载
+    - 会话删除功能
+    - 日期智能格式化（刚刚/分钟前/小时前/天前）
+  - `src/views/ai/chat.vue` - 集成历史对话功能
+    - 替换TopicSidebar为ChatHistorySidebar
+    - 新增会话切换、删除、新建对话功能
+
+### 说明
+- 实现DAML-RAG开源规范中的P0任务：三端历史对话打通
+- 前端现在可以从PHP后端获取和管理对话历史
+
+---
+
 ## [1.67.0] - 2026-01-09
 
 ### 新增
