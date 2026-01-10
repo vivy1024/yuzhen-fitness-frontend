@@ -14,6 +14,26 @@
 
 ---
 
+## [1.69.0] - 2026-01-11
+
+### 新增
+- 🤖 **AI策略切换功能** (DAG/Agent模式)
+  - `src/components/chat/StrategySwitch.vue` - 新增策略切换组件
+    - 支持DAG模式（预定义工作流，快速稳定）
+    - 支持Agent模式（智能代理自主决策）
+    - 开发测试阶段：会员系统禁用时所有用户可切换
+    - 能量会员专属功能（正式上线后）
+  - `src/views/ai/chat.vue` - 集成策略切换组件到导航栏
+  - `src/stores/chat.ts` - 新增 `strategy` 参数支持
+  - `src/composables/useChatStream.ts` - 传递 `strategy` 参数到后端
+
+### 说明
+- 实现DAML-RAG开源规范中的Skills架构前端集成
+- 用户可在聊天界面切换DAG/Agent执行模式
+- 开发测试阶段所有用户可体验Agent模式
+
+---
+
 ## [1.68.0] - 2026-01-11
 
 ### 新增

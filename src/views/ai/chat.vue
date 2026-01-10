@@ -13,6 +13,7 @@ import MessageItem from '@/components/chat/MessageItem.vue'
 import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
 import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
 import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
+import StrategySwitch from '@/components/chat/StrategySwitch.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
@@ -35,6 +36,7 @@ const showTemplateSelector = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const dismissedProfileAlert = ref(false)
 const currentSessionId = ref<string | null>(null)
+const currentStrategy = ref<'dag' | 'agent'>('dag')  // 当前执行策略
 
 // 检查用户档案是否完整（基础必填字段）
 const profileIncomplete = computed(() => {
@@ -200,7 +202,8 @@ async function sendMessage() {
   // 发送消息
   const result = await chatStore.sendMessage({
     content,
-    topicId: topicStore.currentTopicId!
+    topicId: topicStore.currentTopicId!,
+    strategy: currentStrategy.value  // 传递当前策略
   })
   
   if (result.success) {
@@ -440,6 +443,11 @@ onUnmounted(() => {
         </h1>
       </div>
       <div class="flex items-center gap-2">
+        <!-- 策略切换（能量会员可见） -->
+        <StrategySwitch 
+          v-model="currentStrategy"
+          :disabled="chatStore.loading || isStreaming"
+        />
         <!-- 工具调用历史按钮 -->
         <Button
           v-if="toolCallHistory.length > 0"
