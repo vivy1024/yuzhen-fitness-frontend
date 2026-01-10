@@ -1,6 +1,10 @@
 /**
  * 话题管理API
  * 提供话题的增删查改接口
+ * 
+ * @version 2.0.0
+ * @date 2026-01-11
+ * @requirements 1.1-1.6 对话历史与上下文管理
  */
 
 import api from './auth'
@@ -23,6 +27,8 @@ export interface ApiResponse<T = any> {
   msg: string
   data: T
 }
+
+// ============ 话题管理 ============
 
 /**
  * 获取话题列表
@@ -63,6 +69,8 @@ export const getTopicDetail = (topicId: string): Promise<ApiResponse<Topic>> => 
 export const updateTopic = (topicId: string, data: Partial<CreateTopicData>): Promise<ApiResponse<Topic>> => {
   return api.put(`/chat/topics/${topicId}`, data)
 }
+
+// ============ 话题消息 ============
 
 /**
  * 获取话题消息列表
@@ -118,4 +126,130 @@ export interface SyncResult {
 
 export const syncTopicMessages = (topicId: string, messages: SyncMessageData[]): Promise<ApiResponse<SyncResult>> => {
   return api.post(`/chat/topics/${topicId}/messages/sync`, { messages })
+}
+
+// ============ 对话历史 (Requirements 1.2) ============
+
+/**
+ * 对话历史记录
+ */
+export interface ChatHistoryItem {
+  id: number
+  sessionId: string
+  topicId: string | null
+  userQuery: string
+  llmResponse: string
+  modelUsed: string
+  toolsUsed: string[] | null
+  userRating: number | null
+  userFeedback: string | null
+  metadata: Record<string, any> | null
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * 获取用户对话历史
+ * GET /api/chat/history
+ * 
+ * @requirements 1.2 检索用户最近的对话历史
+ */
+export interface GetHistoryParams {
+  topic_id?: string
+  session_id?: string
+  limit?: number
+  offset?: number
+}
+
+export interface HistoryResponse {
+  total: number
+  limit: number
+  offset: number
+  history: ChatHistoryItem[]
+}
+
+export const getChatHistory = (params?: GetHistoryParams): Promise<ApiResponse<HistoryResponse>> => {
+  return api.get('/chat/history', { params })
+}
+
+// ============ 会话管理 (Requirements 1.5) ============
+
+/**
+ * 会话信息
+ */
+export interface ChatSessionInfo {
+  sessionId: string
+  title: string
+  topicId: string | null
+  messageCount: number
+  lastQuery: string
+  lastResponse: string
+  modelUsed: string
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * 获取用户会话列表
+ * GET /api/chat/sessions
+ * 
+ * @requirements 1.5 创建新会话ID并初始化
+ */
+export interface GetSessionsParams {
+  limit?: number
+  offset?: number
+}
+
+export interface SessionsResponse {
+  total: number
+  limit: number
+  offset: number
+  sessions: ChatSessionInfo[]
+}
+
+export const getChatSessions = (params?: GetSessionsParams): Promise<ApiResponse<SessionsResponse>> => {
+  return api.get('/chat/sessions', { params })
+}
+
+/**
+ * 会话详情消息
+ */
+export interface SessionMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: number
+  modelUsed?: string
+  toolsUsed?: string[] | null
+  metadata?: Record<string, any> | null
+}
+
+/**
+ * 获取单个会话详情
+ * GET /api/chat/sessions/:sessionId
+ */
+export interface SessionDetailResponse {
+  sessionId: string
+  topicId: string | null
+  messageCount: number
+  messages: SessionMessage[]
+  createdAt: string
+  updatedAt: string
+}
+
+export const getSessionDetail = (sessionId: string): Promise<ApiResponse<SessionDetailResponse>> => {
+  return api.get(`/chat/sessions/${sessionId}`)
+}
+
+/**
+ * 删除会话
+ * DELETE /api/chat/sessions/:sessionId
+ */
+export interface DeleteSessionResponse {
+  sessionId: string
+  deletedCount: number
+}
+
+export const deleteSession = (sessionId: string): Promise<ApiResponse<DeleteSessionResponse>> => {
+  return api.delete(`/chat/sessions/${sessionId}`)
 }

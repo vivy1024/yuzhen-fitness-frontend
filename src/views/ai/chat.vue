@@ -10,14 +10,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import MessageItem from '@/components/chat/MessageItem.vue'
-import TopicSidebar from '@/components/chat/TopicSidebar.vue'
+import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
 import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
 import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
 import { showInfo } from '@/components/ui/toast'
-import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles } from 'lucide-vue-next'
+import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles, History } from 'lucide-vue-next'
+import * as topicApi from '@/api/topic'
 
 const router = useRouter()
 const chatStore = useChatStore()
@@ -28,11 +29,12 @@ const membershipStore = useMembershipStore()
 
 // State
 const messageInput = ref('')
-const showTopicSidebar = ref(false)
+const showHistorySidebar = ref(false)
 const showToolCallDialog = ref(false)
 const showTemplateSelector = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const dismissedProfileAlert = ref(false)
+const currentSessionId = ref<string | null>(null)
 
 // 检查用户档案是否完整（基础必填字段）
 const profileIncomplete = computed(() => {
@@ -222,11 +224,72 @@ function scrollToBottom() {
  */
 async function handleTopicChange(topicId: string) {
   topicStore.setCurrentTopic(topicId)
+  currentSessionId.value = null
   await chatStore.loadMessages(topicId)
-  showTopicSidebar.value = false
+  showHistorySidebar.value = false
   
   await nextTick()
   scrollToBottom()
+}
+
+/**
+ * 处理会话切换
+ * @requirements 1.2 检索用户最近的对话历史
+ */
+async function handleSessionChange(sessionId: string) {
+  try {
+    currentSessionId.value = sessionId
+    
+    // 从后端获取会话详情
+    const response = await topicApi.getSessionDetail(sessionId)
+    if (response.code === 200 && response.data) {
+      // 将会话消息转换为聊天消息格式
+      const sessionMessages = response.data.messages.map(msg => ({
+        id: msg.id,
+        topicId: response.data.topicId || 'session-' + sessionId,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: msg.timestamp,
+        streaming: false,
+        metadata: msg.metadata
+      }))
+      
+      // 更新消息列表
+      chatStore.messages.splice(0, chatStore.messages.length, ...sessionMessages)
+      
+      // 如果有关联的话题，设置当前话题
+      if (response.data.topicId) {
+        topicStore.setCurrentTopic(response.data.topicId)
+      }
+    }
+    
+    showHistorySidebar.value = false
+    await nextTick()
+    scrollToBottom()
+  } catch (err) {
+    console.error('加载会话详情失败:', err)
+  }
+}
+
+/**
+ * 处理删除会话
+ */
+function handleDeleteSession(sessionId: string) {
+  // 如果删除的是当前会话，清空消息
+  if (sessionId === currentSessionId.value) {
+    currentSessionId.value = null
+    chatStore.clearMessages()
+  }
+}
+
+/**
+ * 处理开始新对话
+ */
+async function handleNewChat() {
+  currentSessionId.value = null
+  topicStore.setCurrentTopic(null)
+  chatStore.clearMessages()
+  showHistorySidebar.value = false
 }
 
 /**
@@ -238,7 +301,7 @@ async function handleNewTopic() {
   })
   
   if (result.success) {
-    showTopicSidebar.value = false
+    showHistorySidebar.value = false
   }
 }
 
@@ -368,7 +431,7 @@ onUnmounted(() => {
         <Button
           variant="ghost"
           size="icon"
-          @click="showTopicSidebar = true"
+          @click="showHistorySidebar = true"
         >
           <Menu class="h-5 w-5" />
         </Button>
@@ -540,14 +603,18 @@ onUnmounted(() => {
       </p>
     </div>
 
-    <!-- 话题侧边栏 -->
-    <TopicSidebar
-      v-model:visible="showTopicSidebar"
+    <!-- 对话历史侧边栏 -->
+    <ChatHistorySidebar
+      v-model:visible="showHistorySidebar"
       :topics="topicStore.sortedTopics"
       :current-topic-id="topicStore.currentTopicId"
+      :current-session-id="currentSessionId"
       @select-topic="handleTopicChange"
+      @select-session="handleSessionChange"
       @create-topic="handleNewTopic"
       @delete-topic="handleDeleteTopic"
+      @delete-session="handleDeleteSession"
+      @new-chat="handleNewChat"
     />
 
     <!-- 工具调用历史弹窗 -->
