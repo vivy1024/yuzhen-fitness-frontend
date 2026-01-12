@@ -1,6 +1,6 @@
 # AI聊天组件
 
-本目录包含AI聊天功能的所有组件，实现了工具调用可视化、消息展示等功能。
+本目录包含AI聊天功能的所有组件，实现了工具调用可视化、消息展示、用量统计等功能。
 
 ## 组件列表
 
@@ -30,7 +30,33 @@
 />
 ```
 
-### 2. ToolCallTimeline.vue
+### 2. UsageDisplay.vue
+用量展示组件，显示用户今日AI查询用量和剩余次数。
+
+**功能特性**：
+- 显示DAG和Agent查询的今日用量
+- 显示剩余次数和每日限制
+- 显示额外额度余额
+- 低于2次时显示警告
+- 达到上限时显示升级提示
+- 支持紧凑模式和详细模式
+
+**使用示例**：
+```vue
+<!-- 紧凑模式（用于顶部导航栏） -->
+<UsageDisplay compact />
+
+<!-- 详细模式（用于侧边栏） -->
+<UsageDisplay :show-detail="true" />
+```
+
+**Props**：
+- `compact`: boolean - 是否紧凑模式，默认false
+- `showDetail`: boolean - 是否显示详细信息，默认false
+
+**Requirements**: 6.1-6.5
+
+### 3. ToolCallTimeline.vue
 工具调用时间线组件，展示DAG模板执行过程中调用的MCP工具。
 
 **功能特性**：
@@ -230,4 +256,4 @@ topicStore.setCurrentTopic('topic_1')
 ---
 
 **维护者**: 薛小川  
-**最后更新**: 2025-01-02
+**最后更新**: 2026-01-11
