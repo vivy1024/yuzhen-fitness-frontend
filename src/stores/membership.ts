@@ -109,6 +109,36 @@ export const useMembershipStore = defineStore('membership', () => {
   })
 
   /**
+   * 当前会员等级
+   * 返回会员等级标识：'free' | 'warmheart' | 'energy'
+   * @requirements 5.6, 6.6
+   */
+  const currentTier = computed((): 'free' | 'warmheart' | 'energy' => {
+    // 会员系统禁用时，所有用户视为能量会员（最高权限）
+    if (!isSystemEnabled.value) return 'energy'
+    
+    // 未登录或无会员信息，返回免费
+    if (!membership.value) return 'free'
+    
+    // 会员已过期，返回免费
+    if (!membership.value.is_active || membership.value.remaining_days <= 0) {
+      return 'free'
+    }
+    
+    // 根据会员类型返回等级
+    const tierSlug = membership.value.membership?.slug || membership.value.membership_type || ''
+    
+    if (tierSlug.includes('energy') || tierSlug === 'energy') {
+      return 'energy'
+    }
+    if (tierSlug.includes('warmheart') || tierSlug === 'warmheart') {
+      return 'warmheart'
+    }
+    
+    return 'free'
+  })
+
+  /**
    * 剩余天数
    */
   const remainingDays = computed(() => {
@@ -607,6 +637,7 @@ export const useMembershipStore = defineStore('membership', () => {
     systemMessage,
     isVip,
     membershipName,
+    currentTier,
     remainingDays,
     isExpiringSoon,
     dailyAiQueryLimit,
