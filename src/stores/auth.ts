@@ -119,18 +119,21 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * 初始化关联的stores（用户档案、会员、话题）
+   * 初始化关联的stores（用户档案、会员、话题、用量）
    */
   async function initRelatedStores() {
     const userStore = useUserStore()
     const membershipStore = useMembershipStore()
     const topicStore = useTopicStore()
+    const { useUsageStore } = await import('@/stores/usage')
+    const usageStore = useUsageStore()
     
     // 并行初始化
     await Promise.all([
       userStore.init(),
       membershipStore.init(),
-      topicStore.init()
+      topicStore.init(),
+      usageStore.init()
     ])
   }
 
@@ -281,10 +284,13 @@ export const useAuthStore = defineStore('auth', () => {
       const userStore = useUserStore()
       const membershipStore = useMembershipStore()
       const topicStore = useTopicStore()
+      const { useUsageStore } = await import('@/stores/usage')
+      const usageStore = useUsageStore()
       
       userStore.resetProfile()
       membershipStore.clearMembership()
       topicStore.clearTopics()
+      usageStore.clearUsage()
       
       loading.value = false
     }
