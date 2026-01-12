@@ -6,6 +6,7 @@ import { useTopicStore } from '@/stores/topic'
 import { useStreamingStore } from '@/stores/streaming'
 import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
+import { useUsageStore } from '@/stores/usage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -14,10 +15,11 @@ import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
 import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
 import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
 import StrategySwitch from '@/components/chat/StrategySwitch.vue'
+import UsageDisplay from '@/components/chat/UsageDisplay.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
-import { showInfo } from '@/components/ui/toast'
+import { showInfo, showWarning } from '@/components/ui/toast'
 import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles, History } from 'lucide-vue-next'
 import * as topicApi from '@/api/topic'
 
@@ -27,6 +29,7 @@ const topicStore = useTopicStore()
 const streamingStore = useStreamingStore()
 const userStore = useUserStore()
 const membershipStore = useMembershipStore()
+const usageStore = useUsageStore()
 
 // State
 const messageInput = ref('')
@@ -178,11 +181,23 @@ const isStreaming = computed(() => chatStore.streaming)
 /**
  * 发送消息
  * 参考V2实现，直接调用DAML-RAG流式API
+ * @requirements 6.1, 6.4 发送消息前检查用量
  */
 async function sendMessage() {
   if (!canSend.value) return
 
   const content = messageInput.value.trim()
+  
+  // 发送消息前检查用量
+  const mode = currentStrategy.value === 'agent' ? 'agent' : 'dag'
+  const checkResult = await usageStore.checkCanExecute(mode)
+  
+  if (!checkResult.allowed) {
+    // 用量不足，显示警告
+    showWarning(checkResult.message || `${mode === 'dag' ? 'DAG' : 'Agent'}查询已达上限，请升级会员或明日再试`)
+    return
+  }
+  
   messageInput.value = ''
   
   // 如果没有当前话题，创建一个新话题
@@ -210,6 +225,9 @@ async function sendMessage() {
     // 滚动到底部
     await nextTick()
     scrollToBottom()
+    
+    // 刷新用量数据（消息发送成功后）
+    await usageStore.refresh()
   }
 }
 
@@ -398,6 +416,9 @@ onMounted(async () => {
   // 初始化会员store
   await membershipStore.init()
   
+  // 初始化用量store
+  await usageStore.init()
+  
   // 初始化话题store
   topicStore.init()
   
@@ -443,6 +464,8 @@ onUnmounted(() => {
         </h1>
       </div>
       <div class="flex items-center gap-2">
+        <!-- 用量展示组件 -->
+        <UsageDisplay compact />
         <!-- 策略切换（能量会员可见） -->
         <StrategySwitch 
           v-model="currentStrategy"
