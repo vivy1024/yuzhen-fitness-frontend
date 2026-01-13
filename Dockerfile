@@ -18,8 +18,8 @@ RUN npm ci --only=production=false
 # 复制源代码
 COPY . .
 
-# 构建应用
-RUN npm run build
+# 构建应用（显式指定production模式以加载.env.production）
+RUN npm run build -- --mode production
 
 # ============================================
 # 阶段2：运行阶段

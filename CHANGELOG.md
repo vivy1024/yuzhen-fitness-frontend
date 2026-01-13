@@ -14,6 +14,20 @@
 
 ---
 
+## [1.71.0] - 2026-01-13
+
+### 修复
+- 🐛 **Dockerfile构建模式修复**
+  - `Dockerfile` - 显式指定 `--mode production` 确保加载 `.env.production`
+  - 原命令: `RUN npm run build`
+  - 新命令: `RUN npm run build -- --mode production`
+
+### 说明
+- 解决Zeabur构建时未正确加载 `.env.production` 的问题
+- 确保 `VITE_DAML_RAG_API_URL` 正确设置为 `/api/ai` 路径
+
+---
+
 ## [1.70.0] - 2026-01-13
 
 ### 修复
