@@ -14,6 +14,21 @@
 
 ---
 
+## [1.70.0] - 2026-01-13
+
+### 修复
+- 🐛 **AI聊天流式响应修复**
+  - `.env.production` - 更新 `VITE_DAML_RAG_API_URL` 为 `/api/ai` 路径
+  - `src/composables/useChatStream.ts` - 修复流式请求URL构建
+    - 修复 Worker 模式 URL: `${baseUrl}/v1/chat/stream`
+    - 修复降级 Fetch 模式 URL: `${baseUrl}/v1/chat/stream`
+
+### 说明
+- 配合PHP后端AI代理路由迁移（从web.php到api.php）
+- 解决生产环境AI聊天 `net::ERR_FAILED` 错误
+
+---
+
 ## [1.69.0] - 2026-01-11
 
 ### 新增
