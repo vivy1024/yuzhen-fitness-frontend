@@ -17,14 +17,14 @@
 ## [1.71.0] - 2026-01-13
 
 ### 修复
-- 🐛 **Dockerfile构建模式修复**
-  - `Dockerfile` - 显式指定 `--mode production` 确保加载 `.env.production`
-  - 原命令: `RUN npm run build`
-  - 新命令: `RUN npm run build -- --mode production`
+- 🐛 **Dockerfile环境变量修复**
+  - `Dockerfile` - 直接在构建阶段设置 `VITE_DAML_RAG_API_URL` 环境变量
+  - 确保Vite构建时使用正确的API地址 `/api/ai`
+  - 解决 `.env.production` 文件在Docker构建时未被正确加载的问题
 
 ### 说明
-- 解决Zeabur构建时未正确加载 `.env.production` 的问题
-- 确保 `VITE_DAML_RAG_API_URL` 正确设置为 `/api/ai` 路径
+- 根本原因：Vite构建时依赖环境变量，但Docker构建上下文中 `.env.production` 可能未被正确读取
+- 解决方案：在Dockerfile中使用 `ENV` 指令显式设置环境变量，确保构建时一定使用正确配置
 
 ---
 
