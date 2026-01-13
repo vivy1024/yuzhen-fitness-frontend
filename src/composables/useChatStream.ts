@@ -378,7 +378,8 @@ export function useChatStream() {
         workerMessageHandler = handleWorkerMessage
         worker.addEventListener('message', workerMessageHandler)
         
-        const url = `${baseUrl}/api/v1/chat/stream`
+        // 构建URL：baseUrl已包含/api/ai，只需添加/v1/chat/stream
+        const url = `${baseUrl}/v1/chat/stream`
         const message: WorkerMessage = {
           type: 'START',
           payload: {
@@ -401,7 +402,7 @@ export function useChatStream() {
       } else {
         // 降级到直接Fetch模式
         console.warn('[useChatStream] Worker不可用，使用直接Fetch模式')
-        await connectWithFetch(`${baseUrl}/api/v1/chat/stream`, {
+        await connectWithFetch(`${baseUrl}/v1/chat/stream`, {
           user_id: params.userId,
           query: params.query,
           session_id: sessionId,
