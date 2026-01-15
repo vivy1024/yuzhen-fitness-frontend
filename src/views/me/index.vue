@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import BottomNav from '@/components/layout/BottomNav.vue'
+import Footer from '@/components/layout/Footer.vue'
 import { 
   User, 
   Crown, 
@@ -213,6 +214,9 @@ onMounted(() => {
         <p>玉珍健身 v3.0.0</p>
       </div>
     </main>
+
+    <!-- 页脚备案信息 -->
+    <Footer />
 
     <!-- 底部导航 -->
     <BottomNav />

@@ -145,10 +145,6 @@
               </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2">
-              <div class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">目标肌群</span>
-                <span class="font-medium">{{ exercise.primary_muscle_zh || exercise.primary_muscle }}</span>
-              </div>
               <div v-if="musclesPrimary.length" class="flex justify-between py-1.5 border-b text-sm">
                 <span class="text-gray-500">主要肌肉</span>
                 <span class="font-medium text-right max-w-[60%]">{{ musclesPrimary.join('、') }}</span>

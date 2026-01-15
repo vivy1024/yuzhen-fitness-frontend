@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import BottomNav from '@/components/layout/BottomNav.vue'
+import Footer from '@/components/layout/Footer.vue'
 import { 
   MessageSquare, 
   Dumbbell, 
@@ -276,6 +277,9 @@ onMounted(() => {
         </CardContent>
       </Card>
     </main>
+
+    <!-- 页脚备案信息 -->
+    <Footer />
 
     <!-- 底部导航 -->
     <BottomNav />
