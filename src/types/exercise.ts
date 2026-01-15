@@ -32,9 +32,9 @@ export interface ExerciseBasic {
   name: string
   name_zh: string
   primary_muscle: string
-  primary_muscle_zh: string
-  secondary_muscles?: string[]
-  secondary_muscles_zh?: string[]
+  // 标准字段（数组格式）
+  muscles_primary?: string[]
+  muscles_secondary?: string[]
   equipment: string
   equipment_zh?: string
   // 难度可能是字符串或对象格式

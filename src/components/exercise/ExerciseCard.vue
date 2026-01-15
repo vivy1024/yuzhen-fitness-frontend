@@ -163,9 +163,13 @@ const difficultyBadgeClass = computed(() => {
   }
 })
 
-// 目标肌群
+// 目标肌群（使用标准数组字段）
 const targetMuscles = computed(() => {
-  return props.exercise.primary_muscle_zh || props.exercise.primary_muscle || '未知肌群'
+  // 使用标准数组字段 muscles_primary
+  if (props.exercise.muscles_primary && props.exercise.muscles_primary.length > 0) {
+    return props.exercise.muscles_primary.join('、')
+  }
+  return '未知肌群'
 })
 
 function handleCardClick() {

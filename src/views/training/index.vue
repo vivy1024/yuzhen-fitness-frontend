@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BottomNav from '@/components/layout/BottomNav.vue'
+import Footer from '@/components/layout/Footer.vue'
 import { 
   Target, 
   History, 
@@ -199,6 +200,9 @@ onMounted(() => {
         </CardContent>
       </Card>
     </main>
+
+    <!-- 页脚备案信息 -->
+    <Footer />
 
     <!-- 底部导航 -->
     <BottomNav />
