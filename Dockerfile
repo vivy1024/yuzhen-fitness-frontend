@@ -20,7 +20,7 @@ COPY . .
 
 # 设置生产环境变量（使用子域名架构）
 ENV VITE_API_BASE_URL=https://api.yuzhen-fitness.cn/api
-ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
+ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn/api
 ENV VITE_APP_ENV=production
 
 # 构建应用

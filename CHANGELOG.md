@@ -14,6 +14,18 @@
 
 ---
 
+## [1.75.0] - 2026-01-16
+
+### 修复
+- 🐛 **Dockerfile环境变量修复**（真正的根本原因）
+  - `Dockerfile` - 修正 `VITE_DAML_RAG_API_URL` 环境变量，添加 `/api` 后缀
+  - 问题：Dockerfile中硬编码的ENV会覆盖 `.env.production` 配置
+  - 修复前：`ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn`
+  - 修复后：`ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn/api`
+  - 这是AI对话404错误的真正根本原因
+
+---
+
 ## [1.74.0] - 2026-01-16
 
 ### 修复
