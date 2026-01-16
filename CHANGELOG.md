@@ -14,6 +14,20 @@
 
 ---
 
+## [1.74.0] - 2026-01-16
+
+### 修复
+- 🐛 **AI服务路由修复**
+  - `.env.production` - 修正DAML-RAG API地址，添加 `/api` 前缀
+  - 修复AI对话功能404错误（从 `https://ai.yuzhen-fitness.cn/v1/chat/stream` 改为 `https://ai.yuzhen-fitness.cn/api/v1/chat/stream`）
+  - 确保AI顾问功能在生产环境正常工作
+
+### 说明
+- 后端路由结构：`/api/v1/chat/stream`
+- 前端需要配置完整的API基础路径（包含 `/api` 前缀）
+
+---
+
 ## [1.73.0] - 2026-01-15
 
 ### 新增
