@@ -18,9 +18,9 @@ RUN npm ci --only=production=false
 # 复制源代码
 COPY . .
 
-# 设置生产环境变量（确保Vite构建时使用正确的API地址）
-ENV VITE_API_BASE_URL=https://yuzhenapi.preview.aliyun-zeabur.cn/api
-ENV VITE_DAML_RAG_API_URL=https://yuzhenapi.preview.aliyun-zeabur.cn/api/ai
+# 设置生产环境变量（使用子域名架构）
+ENV VITE_API_BASE_URL=https://api.yuzhen-fitness.cn/api
+ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
 ENV VITE_APP_ENV=production
 
 # 构建应用
