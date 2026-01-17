@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { getToken, getRefreshToken } from '@/utils/token'
+import { clearToken } from '@/utils/token'
+import { showError } from '@/components/ui/toast'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 
@@ -42,24 +44,81 @@ api.interceptors.response.use(
     if (error.response) {
       // 服务器返回错误
       const status = error.response.status
-      const message = error.response.data?.message || error.response.data?.msg || '请求失败'
+      const data = error.response.data
+      const message = data?.msg || data?.message || '请求失败'
       
-      // 特殊状态码处理
-      if (status === 413) {
-        return Promise.reject(new Error('文件太大，请选择小于5MB的图片'))
-      } else if (status === 422) {
-        return Promise.reject(new Error(message))
-      } else if (status === 500) {
-        return Promise.reject(new Error('服务器错误，请稍后重试'))
+      // 根据状态码统一处理
+      switch (status) {
+        case 401:
+          // 未授权 - 清除认证信息并跳转登录
+          showError(message || '登录已过期，请重新登录')
+          clearToken()
+          localStorage.removeItem('user_info')
+          localStorage.removeItem('current_user_id')
+          
+          // 跳转到登录页（如果不在登录页）
+          const currentPath = window.location.pathname
+          if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+            setTimeout(() => {
+              window.location.href = '/login?expired=1'
+            }, 1000)
+          }
+          return Promise.reject(new Error(message || '未授权，请先登录'))
+        
+        case 403:
+          // 权限不足
+          showError(message || '权限不足，无法执行此操作')
+          return Promise.reject(new Error(message || '权限不足'))
+        
+        case 404:
+          // 资源不存在
+          showError(message || '请求的资源不存在')
+          return Promise.reject(new Error(message || '资源不存在'))
+        
+        case 413:
+          // 文件太大
+          showError('文件太大，请选择小于5MB的图片')
+          return Promise.reject(new Error('文件太大'))
+        
+        case 422:
+          // 验证错误 - 提取字段级错误
+          const errors = data?.data?.errors || data?.errors
+          if (errors && typeof errors === 'object') {
+            // 显示第一个字段的错误
+            const firstError = Object.values(errors)[0]
+            const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
+            showError(errorMessage || message || '数据验证失败')
+          } else {
+            showError(message || '数据验证失败')
+          }
+          return Promise.reject(new Error(message || '数据验证失败'))
+        
+        case 429:
+          // 限流
+          showError(message || '请求过于频繁，请稍后再试')
+          return Promise.reject(new Error(message || '请求过于频繁'))
+        
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          // 服务器错误
+          showError(message || '服务器错误，请稍后重试')
+          return Promise.reject(new Error(message || '服务器错误'))
+        
+        default:
+          // 其他错误
+          showError(message || '操作失败')
+          return Promise.reject(new Error(message || '操作失败'))
       }
-      
-      return Promise.reject(new Error(message))
     } else if (error.request) {
-      // 请求发出但没有响应
+      // 请求发出但没有响应（网络错误）
       console.error('[Network Error] 请求超时或无响应', error.request)
-      return Promise.reject(new Error('网络连接失败，请检查网络或稍后重试'))
+      showError('网络连接失败，请检查网络')
+      return Promise.reject(new Error('网络连接失败，请检查网络'))
     } else {
-      // 其他错误
+      // 其他错误（请求配置错误等）
+      showError('请求配置错误')
       return Promise.reject(new Error(error.message || '未知错误'))
     }
   }

@@ -12,6 +12,7 @@ import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
 import { useTopicStore } from '@/stores/topic'
 import { warmupUser } from '@/api/warmup'
+import { showSuccess, showError } from '@/components/ui/toast'
 
 export interface UserInfo {
   id: number
@@ -198,11 +199,18 @@ export const useAuthStore = defineStore('auth', () => {
           warmupDamlRag(response.data.user.id)
         }
         
+        // ✅ 显示成功Toast
+        showSuccess(response.msg || '登录成功')
+        
         return { success: true, message: response.msg || '登录成功' }
       } else {
+        // ✅ 显示失败Toast
+        showError(response.msg || '登录失败')
         return { success: false, message: response.msg || '登录失败' }
       }
     } catch (error: any) {
+      // ✅ 显示错误Toast（拦截器已处理，这里不重复显示）
+      // showError(error.message || '登录失败，请稍后重试')
       return { success: false, message: error.message || '登录失败，请稍后重试' }
     } finally {
       loading.value = false
@@ -249,11 +257,18 @@ export const useAuthStore = defineStore('auth', () => {
         // 注意：注册时不预热DAML-RAG，因为新用户还没有档案
         // 预热会在用户首次创建档案后触发
         
+        // ✅ 显示成功Toast
+        showSuccess(response.msg || '注册成功')
+        
         return { success: true, message: response.msg || '注册成功' }
       } else {
+        // ✅ 显示失败Toast
+        showError(response.msg || '注册失败')
         return { success: false, message: response.msg || '注册失败' }
       }
     } catch (error: any) {
+      // ✅ 显示错误Toast（拦截器已处理，这里不重复显示）
+      // showError(error.message || '注册失败，请稍后重试')
       return { success: false, message: error.message || '注册失败，请稍后重试' }
     } finally {
       loading.value = false
@@ -267,8 +282,13 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true
       await logoutApi()
+      
+      // ✅ 显示成功Toast
+      showSuccess('已退出登录')
     } catch (error) {
       console.error('Logout error:', error)
+      // 登出失败也显示Toast
+      showError('登出失败，请重试')
     } finally {
       // 停止TokenManager自动刷新
       const tokenManager = getTokenManager()
