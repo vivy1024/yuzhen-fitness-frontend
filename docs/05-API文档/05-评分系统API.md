@@ -1,7 +1,7 @@
 # 评分系统API文档
 
-**版本**: v1.0.0  
-**更新日期**: 2025-01-02  
+**版本**: v2.0.0  
+**更新日期**: 2026-01-17  
 **状态**: ✅ 已完成
 
 ---
@@ -367,5 +367,376 @@ describe('Rating API', () => {
 
 ---
 
+### 4. 提交专家评审
+
+**端点**: `POST /api/v2/quality/rating/:sessionId/expert`  
+**认证**: 需要JWT Token（需要专家权限）  
+**说明**: 专家对AI回复进行专业评审
+
+#### 路径参数
+
+- `sessionId`: 会话ID
+
+#### 请求参数
+
+```typescript
+{
+  expert_review: {
+    professional_accuracy: number    // 专业准确性 (1-5)
+    scientific_rationality: number   // 科学合理性 (1-5)
+    safety: number                   // 安全性 (1-5)
+    completeness: number             // 完整性 (1-5)
+    practicality: number             // 实用性 (1-5)
+    personalization_fit: number      // 个性化适配度 (1-5)
+  }
+  expert_feedback?: string           // 专家反馈（可选）
+}
+```
+
+#### 参数说明
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| professional_accuracy | number | 是 | 专业准确性 (1-5) |
+| scientific_rationality | number | 是 | 科学合理性 (1-5) |
+| safety | number | 是 | 安全性 (1-5，一票否决) |
+| completeness | number | 是 | 完整性 (1-5) |
+| practicality | number | 是 | 实用性 (1-5) |
+| personalization_fit | number | 是 | 个性化适配度 (1-5) |
+| expert_feedback | string | 否 | 专家反馈文本 |
+
+#### 响应数据
+
+```typescript
+{
+  code: 200,
+  msg: "专家评审提交成功",
+  data: {
+    session_id: string
+    expert_review: {
+      professional_accuracy: number
+      scientific_rationality: number
+      safety: number
+      completeness: number
+      practicality: number
+      personalization_fit: number
+    }
+    expert_score: number             // 专家评分平均值 (1-5)
+    expert_feedback: string
+    reviewed_at: string
+    reviewer_id: number
+  }
+}
+```
+
+#### 示例
+
+**请求**:
+```bash
+curl -X POST http://localhost:8000/api/v2/quality/rating/sess_123456/expert \
+  -H "Authorization: Bearer EXPERT_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expert_review": {
+      "professional_accuracy": 5,
+      "scientific_rationality": 4,
+      "safety": 5,
+      "completeness": 4,
+      "practicality": 5,
+      "personalization_fit": 4
+    },
+    "expert_feedback": "训练计划科学合理，动作选择恰当，建议增加拉伸环节。"
+  }'
+```
+
+**响应**:
+```json
+{
+  "code": 200,
+  "msg": "专家评审提交成功",
+  "data": {
+    "session_id": "sess_123456",
+    "expert_review": {
+      "professional_accuracy": 5,
+      "scientific_rationality": 4,
+      "safety": 5,
+      "completeness": 4,
+      "practicality": 5,
+      "personalization_fit": 4
+    },
+    "expert_score": 4.5,
+    "expert_feedback": "训练计划科学合理，动作选择恰当，建议增加拉伸环节。",
+    "reviewed_at": "2026-01-17T10:00:00.000Z",
+    "reviewer_id": 10
+  }
+}
+```
+
+---
+
+### 5. 获取用户冷启动状态
+
+**端点**: `GET /api/v2/quality/cold-start-status`  
+**认证**: 需要JWT Token  
+**说明**: 获取用户的冷启动状态，判断是否处于冷启动保护期
+
+#### 响应数据
+
+```typescript
+{
+  code: 200,
+  msg: "获取成功",
+  data: {
+    user_id: number
+    total_conversations: number      // 总对话数
+    rated_conversations: number      // 已评分对话数
+    is_cold_start: boolean           // 是否处于冷启动期
+    cold_start_threshold: number     // 冷启动阈值（默认3）
+    remaining_cold_start: number     // 剩余冷启动对话数
+    fewshot_eligible_count: number   // 符合Few-Shot资格的对话数
+  }
+}
+```
+
+#### 冷启动规则
+
+1. **冷启动期定义**: 前3条对话
+2. **保护机制**: 冷启动期的对话不计入Few-Shot学习池
+3. **目的**: 避免初期低质量对话影响Few-Shot学习
+
+#### 示例
+
+**请求**:
+```bash
+curl -X GET http://localhost:8000/api/v2/quality/cold-start-status \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**响应（冷启动期）**:
+```json
+{
+  "code": 200,
+  "msg": "获取成功",
+  "data": {
+    "user_id": 1,
+    "total_conversations": 2,
+    "rated_conversations": 1,
+    "is_cold_start": true,
+    "cold_start_threshold": 3,
+    "remaining_cold_start": 1,
+    "fewshot_eligible_count": 0
+  }
+}
+```
+
+**响应（非冷启动期）**:
+```json
+{
+  "code": 200,
+  "msg": "获取成功",
+  "data": {
+    "user_id": 1,
+    "total_conversations": 10,
+    "rated_conversations": 8,
+    "is_cold_start": false,
+    "cold_start_threshold": 3,
+    "remaining_cold_start": 0,
+    "fewshot_eligible_count": 5
+  }
+}
+```
+
+---
+
+## 🎯 前端集成示例
+
+### 提交专家评审
+
+```typescript
+import api from '@/api/rating'
+
+async function submitExpertReview(sessionId: string, review: any) {
+  try {
+    const response = await api.post(
+      `/v2/quality/rating/${sessionId}/expert`,
+      {
+        expert_review: review,
+        expert_feedback: '训练计划科学合理，动作选择恰当。'
+      }
+    )
+    
+    if (response.code === 200) {
+      showSuccess('专家评审提交成功')
+      console.log('专家评分:', response.data.expert_score)
+    }
+  } catch (error) {
+    showError('提交失败')
+  }
+}
+```
+
+### 检查冷启动状态
+
+```typescript
+async function checkColdStartStatus() {
+  try {
+    const response = await api.get('/v2/quality/cold-start-status')
+    
+    if (response.code === 200) {
+      const status = response.data
+      
+      if (status.is_cold_start) {
+        showInfo(`您还有 ${status.remaining_cold_start} 次冷启动对话`)
+      } else {
+        console.log('已完成冷启动，符合Few-Shot资格的对话:', status.fewshot_eligible_count)
+      }
+    }
+  } catch (error) {
+    console.error('获取失败:', error)
+  }
+}
+```
+
+### 完整评分流程（含冷启动检查）
+
+```typescript
+async function handleRatingFlow(sessionId: string, rating: any) {
+  // 1. 检查冷启动状态
+  const coldStartStatus = await checkColdStartStatus()
+  
+  // 2. 提交用户评分
+  const response = await submitRating(sessionId, rating)
+  
+  // 3. 显示评分结果
+  if (response.code === 200) {
+    const data = response.data
+    
+    // 显示个性化等级
+    showPersonalizationGrade(data.personalization_grade)
+    
+    // 显示Few-Shot资格
+    if (data.fewshot_eligible) {
+      if (!coldStartStatus.is_cold_start) {
+        showSuccess('此对话已加入Few-Shot学习池')
+      } else {
+        showInfo('冷启动期对话不计入Few-Shot学习池')
+      }
+    }
+  }
+}
+```
+
+---
+
+## 📊 数据结构
+
+### ExpertReview（专家评审）
+
+```typescript
+interface ExpertReview {
+  professional_accuracy: number    // 专业准确性 (1-5)
+  scientific_rationality: number   // 科学合理性 (1-5)
+  safety: number                   // 安全性 (1-5)
+  completeness: number             // 完整性 (1-5)
+  practicality: number             // 实用性 (1-5)
+  personalization_fit: number      // 个性化适配度 (1-5)
+}
+```
+
+### ColdStartStatus（冷启动状态）
+
+```typescript
+interface ColdStartStatus {
+  user_id: number
+  total_conversations: number      // 总对话数
+  rated_conversations: number      // 已评分对话数
+  is_cold_start: boolean           // 是否处于冷启动期
+  cold_start_threshold: number     // 冷启动阈值
+  remaining_cold_start: number     // 剩余冷启动对话数
+  fewshot_eligible_count: number   // 符合Few-Shot资格的对话数
+}
+```
+
+---
+
+## 📝 相关服务
+
+### ExpertReviewService
+
+负责处理专家评审：
+
+```php
+class ExpertReviewService
+{
+    // 提交专家评审
+    public function submitReview(ChatSession $session, array $review): array
+    
+    // 计算专家评分
+    public function calculateExpertScore(array $review): float
+    
+    // 验证专家权限
+    public function validateExpertPermission(User $user): bool
+}
+```
+
+### ColdStartService
+
+负责管理冷启动状态：
+
+```php
+class ColdStartService
+{
+    // 检查是否处于冷启动期
+    public function isColdStart(User $user): bool
+    
+    // 获取冷启动状态
+    public function getStatus(User $user): array
+    
+    // 更新冷启动计数
+    public function updateCount(User $user): void
+}
+```
+
+---
+
+## 🔧 错误处理
+
+### 专家评审错误
+
+| 错误码 | 说明 | 处理方式 |
+|-------|------|---------|
+| 403 | 无专家权限 | 检查用户角色 |
+| 404 | 会话不存在 | 检查session_id |
+| 400 | 评分参数错误 | 检查评分范围(1-5) |
+
+### 冷启动状态错误
+
+| 错误码 | 说明 | 处理方式 |
+|-------|------|---------|
+| 401 | 未认证 | 重新登录 |
+| 500 | 服务器错误 | 稍后重试 |
+
+---
+
+## 📈 版本历史
+
+### v2.0.0 (2026-01-17) - 专家评审和冷启动
+
+**变更内容**:
+- ✅ 添加专家评审API
+- ✅ 添加冷启动状态API
+- ✅ 提供完整的前端集成示例
+- ✅ 说明冷启动保护机制
+
+### v1.0.0 (2025-01-02) - 初始版本
+
+**变更内容**:
+- ✅ 三轨评分系统
+- ✅ Few-Shot资格检查
+- ✅ 用户体验评分
+- ✅ 个性化感知评分
+
+---
+
 **维护者**: 薛小川  
-**最后更新**: 2025-01-02
+**最后更新**: 2026-01-17
