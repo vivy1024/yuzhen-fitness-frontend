@@ -1,0 +1,136 @@
+# 部署指南目录
+
+**版本**: v2.0.0  
+**更新日期**: 2026-01-17  
+**维护者**: 薛小川
+
+---
+
+## 📋 文档说明
+
+本目录包含玉珍健身前端PWA应用的部署相关文档。
+
+### 当前生产环境
+
+- **平台**: Zeabur托管
+- **应用域名**: https://app.yuzhen-fitness.cn
+- **后端API**: https://api.yuzhen-fitness.cn
+- **AI服务**: https://ai.yuzhen-fitness.cn
+
+---
+
+## 📚 核心文档
+
+### 1. Zeabur部署指南（主要文档）
+
+**文件**: `zeabur-deployment-guide.md`  
+**状态**: ✅ 已更新（v2.0.0）  
+**用途**: Zeabur平台部署的完整指南
+
+**包含内容**：
+- 快速部署步骤
+- 环境变量配置
+- 自动化部署流程
+- PWA配置验证
+- 故障排查
+
+**适用场景**：
+- 首次部署到Zeabur
+- 更新生产环境
+- 排查部署问题
+
+---
+
+## 📖 辅助文档
+
+### 2. 部署实施方案
+
+**文件**: `deployment-implementation-plan.md`  
+**状态**: 📋 规划阶段  
+**用途**: 详细的分阶段部署方案
+
+**包含内容**：
+- 6个部署阶段
+- 完整Nginx配置
+- 多域名配置
+- 详细检查清单
+
+**适用场景**：
+- 需要详细部署步骤
+- 多域名配置参考
+- Nginx配置参考
+
+### 3. 性能测试指南
+
+**文件**: `performance-testing.md`  
+**用途**: 性能测试和优化指南
+
+### 4. 移动端测试指南
+
+**文件**: `mobile-testing-guide.md`  
+**用途**: 移动端测试流程
+
+### 5. 可访问性指南
+
+**文件**: `accessibility-guide.md`  
+**用途**: 无障碍访问测试
+
+### 6. 移动应用打包指南
+
+**文件**: `mobile-app-packaging-guide.md`  
+**用途**: 打包为原生移动应用
+
+---
+
+## 🗂️ 已归档文档
+
+以下文档已整合到主要文档中，不再单独维护：
+
+### deployment.md（已整合）
+
+**原内容**：通用部署指南（Nginx/Apache/Docker）  
+**整合到**：`zeabur-deployment-guide.md`  
+**原因**：当前生产环境使用Zeabur，通用部署方案已不适用
+
+### production-deployment-guide.md（已整合）
+
+**原内容**：生产环境部署指南  
+**整合到**：`zeabur-deployment-guide.md`  
+**原因**：与Zeabur部署指南内容重复
+
+---
+
+## 🚀 快速开始
+
+### 首次部署
+
+1. 阅读 `zeabur-deployment-guide.md`
+2. 准备GitHub仓库：`vivy1024/yuzhen-fitness-frontend`
+3. 配置环境变量（`.env.production`）
+4. 推送代码到GitHub
+5. 在Zeabur创建项目并连接仓库
+6. 绑定域名：`app.yuzhen-fitness.cn`
+
+### 更新部署
+
+```bash
+# 修改代码
+git add .
+git commit -m "feat: 添加新功能"
+git push origin main
+
+# Zeabur自动部署
+```
+
+---
+
+## 📞 技术支持
+
+**维护者**: 薛小川  
+**邮箱**: 1336495069@qq.com  
+**应用域名**: https://app.yuzhen-fitness.cn
+
+---
+
+**最后更新**: 2026-01-17  
+**文档版本**: v2.0.0

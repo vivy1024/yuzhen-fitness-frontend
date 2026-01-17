@@ -1,12 +1,28 @@
-# 部署文档
+# 部署文档（已整合）
 
 **版本**: v1.0.0  
 **最后更新**: 2026-01-07  
-**维护者**: 薛小川
+**维护者**: 薛小川  
+**状态**: 🗂️ 已整合到 `zeabur-deployment-guide.md`
 
 ---
 
-## 📋 目录
+## ⚠️ 文档状态说明
+
+本文档的内容已整合到 `zeabur-deployment-guide.md` 中。
+
+**原因**：
+- 当前生产环境使用Zeabur平台
+- 通用部署方案（Nginx/Apache/Docker）已不适用
+- 避免文档重复和维护成本
+
+**请使用**：
+- 主要文档：`zeabur-deployment-guide.md`
+- 辅助文档：`deployment-implementation-plan.md`（详细步骤）
+
+---
+
+## 📋 原文档内容保留（仅供参考）
 
 - [环境要求](#环境要求)
 - [构建配置](#构建配置)

@@ -1,8 +1,8 @@
-# Zeabur部署指南 - 玉珍健身前端应用
+# Zeabur部署指南 - 玉珍健身前端PWA应用
 
-**版本**: v1.0.0  
-**更新日期**: 2026-01-07  
-**状态**: ✅ 实施中  
+**版本**: v2.0.0  
+**更新日期**: 2026-01-17  
+**状态**: ✅ 已部署  
 **平台**: Zeabur  
 **服务器**: 182.92.78.183（阿里云北京，4核16GB）
 
@@ -12,254 +12,160 @@
 
 本文档提供在Zeabur平台上部署玉珍健身前端PWA应用的完整指南。Zeabur是一个现代化的部署平台，支持自动化部署、域名绑定和SSL证书配置。
 
-### 服务器信息
+### 当前生产环境
 
-- **平台**: Zeabur
+- **平台**: Zeabur托管
 - **服务器IP**: 182.92.78.183
-- **区域**: 阿里云北京（华北2）
-- **配置**: 4核16GB内存 80GB SSD
-- **域名**: 
-  - yuzhen-fitness.cn（主域名，已备案）
-  - yuzhen-fitness.fun（国际用户）
-  - yuzhen-fitness.shop（会员商城）
-  - yuzhen-fitness.online（测试环境）
+- **区域**: 阿里云北京
+- **备案信息**: 陕ICP备2026000942号-1 ✅ 已完成
+- **SSL证书**: Zeabur自动管理（Let's Encrypt）
+
+### 域名配置（当前生产环境）
+
+| 域名 | 用途 | Zeabur服务 | 状态 |
+|------|------|-----------|------|
+| `yuzhen-fitness.cn` | 官网（主域名） | yuzhen-website | ✅ Running |
+| `www.yuzhen-fitness.cn` | 官网（www子域名） | yuzhen-website | ✅ Running |
+| `app.yuzhen-fitness.cn` | 应用PWA | yuzhen-fitness | ✅ Running |
+| `api.yuzhen-fitness.cn` | 后端API | fitness_php_v2 | ✅ Running |
+| `ai.yuzhen-fitness.cn` | AI服务 | fitness_daml_rag | ✅ Running |
+
+**设计理念**：
+- ✅ 主域名作为官网（符合用户习惯和SEO最佳实践）
+- ✅ 新用户先了解产品，再注册使用
+- ✅ 老用户直接访问 `app.yuzhen-fitness.cn`
 
 ---
 
-## 🚀 快速部署（3种方案）
+## 🚀 快速部署（Zeabur Git部署 - 推荐）
 
-### 方案1：Zeabur Git部署（推荐）
+### 前置要求
 
-**优势**：自动化部署、自动SSL、零配置
+1. **GitHub仓库**: `vivy1024/yuzhen-fitness-frontend`
+2. **Zeabur账号**: 已登录并创建项目
+3. **域名DNS配置**: CNAME记录指向Zeabur提供的域名
 
-#### 步骤1：准备Git仓库
+### 步骤1：准备Git仓库
 
 ```bash
-# 如果还没有Git仓库，初始化一个
+# 确保代码已推送到GitHub
 cd yuzhen_fitness
-git init
+git status
 git add .
-git commit -m "feat: 初始化玉珍健身前端项目"
-
-# 推送到GitHub/GitLab/Gitee
-git remote add origin <your-repo-url>
-git push -u origin main
+git commit -m "feat: 更新前端应用"
+git push origin main
 ```
 
-#### 步骤2：在Zeabur创建项目
+### 步骤2：在Zeabur创建项目
 
 1. 登录 [Zeabur控制台](https://zeabur.com)
 2. 点击"New Project"创建新项目
 3. 选择"Import from Git"
-4. 授权并选择你的仓库
+4. 授权并选择仓库：`vivy1024/yuzhen-fitness-frontend`
 5. Zeabur会自动检测为Vue项目
 
-#### 步骤3：配置构建设置
-
-Zeabur会自动检测`package.json`，但你可以自定义：
-
-```yaml
-# 在项目根目录创建 zeabur.yaml（可选）
-name: yuzhen-fitness-frontend
-build:
-  buildCommand: npm run build
-  outputDirectory: dist
-  installCommand: npm install
-```
-
-#### 步骤4：配置环境变量
+### 步骤3：配置环境变量
 
 在Zeabur控制台的"Environment Variables"中添加：
 
-```
-VITE_API_BASE_URL=https://yuzhen-fitness.cn/api
-VITE_DAML_RAG_API_URL=https://yuzhen-fitness.cn/ai
+```env
+# 后端API地址（生产环境）
+VITE_API_BASE_URL=https://api.yuzhen-fitness.cn
+
+# DAML-RAG AI服务地址（生产环境）
+VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
+
+# 应用配置
 VITE_APP_NAME=玉珍健身
-VITE_APP_VERSION=1.0.0
+VITE_APP_VERSION=1.52.0
 VITE_APP_ENV=production
+
+# 功能开关
 VITE_ENABLE_PWA=true
+VITE_DEBUG=false
 ```
 
-#### 步骤5：绑定域名
+### 步骤4：绑定域名
 
 1. 在Zeabur控制台点击"Domains"
 2. 点击"Add Domain"
-3. 输入域名：`yuzhen-fitness.cn`
+3. 输入域名：`app.yuzhen-fitness.cn`
 4. Zeabur会自动配置SSL证书（Let's Encrypt）
-5. 重复以上步骤添加其他域名
 
-#### 步骤6：配置DNS
+### 步骤5：配置DNS
 
-在你的域名DNS管理面板（阿里云DNS）添加记录：
+在阿里云DNS管理面板添加CNAME记录：
 
 ```
 类型: CNAME
-主机记录: @
-记录值: <zeabur提供的域名>.zeabur.app
-TTL: 10分钟
-
-类型: CNAME
-主机记录: www
+主机记录: app
 记录值: <zeabur提供的域名>.zeabur.app
 TTL: 10分钟
 ```
 
----
+### 步骤6：验证部署
 
-### 方案2：Zeabur Docker部署
-
-如果你想更多控制，可以使用Docker部署。
-
-#### 步骤1：创建Dockerfile
-
-```dockerfile
-# yuzhen_fitness/Dockerfile
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# 复制package文件
-COPY package*.json ./
-
-# 安装依赖
-RUN npm ci
-
-# 复制源代码
-COPY . .
-
-# 构建应用
-RUN npm run build
-
-# 生产环境镜像
-FROM nginx:alpine
-
-# 复制构建文件到Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# 复制Nginx配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# 暴露端口
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-#### 步骤2：创建Nginx配置
-
-```nginx
-# yuzhen_fitness/nginx.conf
-server {
-    listen 80;
-    server_name _;
-    
-    root /usr/share/nginx/html;
-    index index.html;
-    
-    # 启用gzip压缩
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-    
-    # 前端路由支持
-    location / {
-        try_files $uri $uri/ /index.html;
-        add_header Cache-Control "no-cache";
-    }
-    
-    # 静态资源缓存
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2|woff|ttf|svg)$ {
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-    
-    # manifest.json和Service Worker不缓存
-    location ~* \.(json|js)$ {
-        if ($uri ~* "manifest\.json|sw\.js") {
-            add_header Cache-Control "no-cache";
-        }
-    }
-    
-    # 健康检查
-    location /health {
-        access_log off;
-        return 200 "healthy\n";
-        add_header Content-Type text/plain;
-    }
-}
-```
-
-#### 步骤3：在Zeabur部署
-
-1. 推送代码到Git仓库
-2. 在Zeabur选择"Deploy from Dockerfile"
-3. Zeabur会自动构建并部署
+1. 等待DNS生效（通常5-10分钟）
+2. 访问 `https://app.yuzhen-fitness.cn`
+3. 验证PWA功能正常
+4. 验证API连接正常
 
 ---
 
-### 方案3：静态文件托管（最简单）
+## ⚙️ 环境配置
 
-如果只需要托管静态文件，可以使用Zeabur的静态托管功能。
+### 本地开发环境 (`.env`)
 
-#### 步骤1：构建应用
+```env
+# 后端API地址（本地Docker）
+VITE_API_BASE_URL=http://localhost:8000
 
-```bash
-cd yuzhen_fitness
-npm run build
+# DAML-RAG AI服务地址（本地Docker）
+VITE_DAML_RAG_API_URL=http://localhost:8001
+
+# 应用配置
+VITE_APP_NAME=玉珍健身（开发）
+VITE_APP_VERSION=1.52.0
+VITE_APP_ENV=development
+
+# 调试模式
+VITE_DEBUG=true
 ```
 
-#### 步骤2：上传到Zeabur
+### 生产环境 (`.env.production`)
 
-1. 在Zeabur创建新项目
-2. 选择"Static Site"
-3. 上传`dist`目录
-4. Zeabur会自动部署
+```env
+# 后端API地址（Zeabur生产）
+VITE_API_BASE_URL=https://api.yuzhen-fitness.cn
 
----
+# DAML-RAG AI服务地址（Zeabur生产）
+VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
 
-## 🔧 配置后端API代理
+# 应用配置
+VITE_APP_NAME=玉珍健身
+VITE_APP_VERSION=1.52.0
+VITE_APP_ENV=production
 
-由于前端和后端分离，需要配置API代理。
-
-### 选项1：在Zeabur配置反向代理
-
-在Zeabur控制台的"Networking"中配置：
-
-```
-路径: /api/*
-目标: http://fitness_php_v2:9000
-重写: /api -> /api
-
-路径: /ai/*
-目标: http://fitness_daml_rag:8001
-重写: /ai -> /ai
+# 功能开关
+VITE_ENABLE_PWA=true
+VITE_DEBUG=false
 ```
 
-### 选项2：使用Nginx配置文件
+### 环境变量说明
 
-如果使用Docker部署，在`nginx.conf`中添加：
+| 变量名 | 说明 | 本地开发 | Zeabur生产 |
+|--------|------|---------|-----------|
+| `VITE_API_BASE_URL` | Laravel后端API地址 | `http://localhost:8000` | `https://api.yuzhen-fitness.cn` |
+| `VITE_DAML_RAG_API_URL` | DAML-RAG AI服务地址 | `http://localhost:8001` | `https://ai.yuzhen-fitness.cn` |
+| `VITE_APP_NAME` | 应用标题 | `玉珍健身（开发）` | `玉珍健身` |
+| `VITE_APP_VERSION` | 应用版本号 | `1.52.0` | `1.52.0` |
+| `VITE_DEBUG` | 调试模式 | `true` | `false` |
 
-```nginx
-# 后端API代理
-location /api {
-    proxy_pass http://182.92.78.183:9000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-
-# AI服务代理
-location /ai {
-    proxy_pass http://182.92.78.183:8001;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_buffering off;
-}
-```
+**⚠️ 重要规则**：
+1. **禁止在 `.env` 中写生产配置** - `.env` 只用于本地开发
+2. **生产配置必须写入 `.env.production`** - 并提交到Git
+3. **敏感信息由Zeabur环境变量覆盖** - 不要硬编码密码
+4. **修改配置后必须测试两个环境** - 本地Docker + Zeabur
 
 ---
 
@@ -328,39 +234,6 @@ www.yuzhen-fitness.online CNAME   your-project.zeabur.app
 
 ---
 
-## ✅ 部署检查清单
-
-### 部署前检查
-
-- [ ] 代码已推送到Git仓库
-- [ ] 环境变量已配置
-- [ ] PWA图标已生成
-- [ ] 构建配置正确
-
-### Zeabur配置检查
-
-- [ ] 项目已创建
-- [ ] Git仓库已连接
-- [ ] 构建命令正确：`npm run build`
-- [ ] 输出目录正确：`dist`
-- [ ] 环境变量已添加
-
-### 域名配置检查
-
-- [ ] 域名已在Zeabur添加
-- [ ] DNS CNAME记录已配置
-- [ ] SSL证书已自动配置
-- [ ] 域名可以访问
-
-### 功能验证
-
-- [ ] 网站可以正常访问
-- [ ] PWA功能正常
-- [ ] API请求正常
-- [ ] 移动端显示正常
-
----
-
 ## 🔄 自动化部署
 
 Zeabur支持Git推送自动部署：
@@ -374,11 +247,62 @@ git push origin main
 # Zeabur会自动：
 # 1. 检测到推送
 # 2. 拉取最新代码
-# 3. 运行构建命令
+# 3. 运行构建命令（npm run build）
 # 4. 部署新版本
-# 5. 更新所有域名
+# 5. 更新域名
 ```
 
+### 部署前测试清单
+
+**在推送代码到生产环境前，必须在本地Docker环境完整测试以下功能**：
+
+#### 认证模块测试
+- [ ] 发送邮箱验证码
+- [ ] 用户注册
+- [ ] 用户登录
+- [ ] Token刷新
+- [ ] 密码重置
+
+#### 核心功能测试
+- [ ] 动作列表加载
+- [ ] AI对话功能
+- [ ] 用户档案保存
+- [ ] PWA安装功能
+
+---
+
+## ✅ 部署检查清单
+
+### 部署前检查
+
+- [ ] 代码已推送到GitHub仓库：`vivy1024/yuzhen-fitness-frontend`
+- [ ] 环境变量已配置（`.env.production`）
+- [ ] PWA图标已生成
+- [ ] 构建配置正确（`vite.config.ts`）
+- [ ] 本地Docker环境测试通过
+
+### Zeabur配置检查
+
+- [ ] 项目已创建
+- [ ] Git仓库已连接：`vivy1024/yuzhen-fitness-frontend`
+- [ ] 构建命令正确：`npm run build`
+- [ ] 输出目录正确：`dist`
+- [ ] 环境变量已添加
+
+### 域名配置检查
+
+- [ ] 域名已在Zeabur添加：`app.yuzhen-fitness.cn`
+- [ ] DNS CNAME记录已配置
+- [ ] SSL证书已自动配置
+- [ ] 域名可以访问
+
+### 功能验证
+
+- [ ] 网站可以正常访问：`https://app.yuzhen-fitness.cn`
+- [ ] PWA功能正常
+- [ ] API请求正常（后端：`api.yuzhen-fitness.cn`）
+- [ ] AI对话正常（AI服务：`ai.yuzhen-fitness.cn`）
+- [ ] 移动端显示正常
 ---
 
 ## 📊 监控和日志
@@ -419,8 +343,8 @@ git push origin main
 - SSL证书未配置
 
 **解决方案**：
-1. 检查DNS解析：`nslookup yuzhen-fitness.cn`
-2. 等待DNS生效（最多24小时）
+1. 检查DNS解析：`nslookup app.yuzhen-fitness.cn`
+2. 等待DNS生效（通常5-10分钟，最多24小时）
 3. 在Zeabur检查SSL证书状态
 
 ### 问题3：PWA无法安装
@@ -432,8 +356,20 @@ git push origin main
 
 **解决方案**：
 1. 检查浏览器控制台错误
-2. 确认manifest.json可访问
+2. 确认manifest.json可访问：`https://app.yuzhen-fitness.cn/manifest.json`
 3. 确认HTTPS已启用
+
+### 问题4：API请求失败
+
+**可能原因**：
+- 后端服务未启动
+- 环境变量配置错误
+- CORS配置问题
+
+**解决方案**：
+1. 检查后端服务状态（Zeabur控制台）
+2. 验证环境变量：`VITE_API_BASE_URL=https://api.yuzhen-fitness.cn`
+3. 检查后端CORS配置
 
 ---
 
@@ -448,56 +384,48 @@ git push origin main
 const apiUrl = import.meta.env.VITE_API_BASE_URL
 
 // ❌ 错误
-const apiUrl = 'https://yuzhen-fitness.cn/api'
+const apiUrl = 'https://api.yuzhen-fitness.cn'
 ```
 
-### 2. 启用缓存
+### 2. 本地测试后再部署
 
-配置合理的缓存策略：
+```bash
+# 本地构建测试
+npm run build
+npm run preview
 
-```nginx
-# 静态资源长期缓存
-location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff2)$ {
-    expires 30d;
-    add_header Cache-Control "public, immutable";
-}
-
-# HTML文件不缓存
-location ~* \.html$ {
-    add_header Cache-Control "no-cache";
-}
+# 确认无误后推送
+git push origin main
 ```
 
-### 3. 监控性能
+### 3. 监控部署状态
 
-使用Zeabur的监控功能：
-- CPU使用率
-- 内存使用率
-- 网络流量
-- 响应时间
+- 在Zeabur控制台查看部署日志
+- 确认构建成功后再验证功能
+- 如有问题及时回滚
 
 ---
 
 ## 📚 相关文档
 
 - [Zeabur官方文档](https://zeabur.com/docs)
-- [生产部署指南](./production-deployment-guide.md)
-- [部署检查清单](../../DEPLOYMENT_CHECKLIST.md)
-- [部署实施方案](./deployment-implementation-plan.md)
+- [Zeabur生产环境规则](../../../.kiro/steering/zeabur-production.md)
+- [完整部署指南](../../../docs/06-部署运维/06-Zeabur云端部署指南.md)
 
 ---
 
 ## 📞 技术支持
 
 **维护者**: 薛小川  
+**邮箱**: 1336495069@qq.com  
 **平台**: Zeabur  
 **服务器**: 182.92.78.183  
-**主域名**: https://yuzhen-fitness.cn
+**应用域名**: https://app.yuzhen-fitness.cn
 
 ---
 
-**最后更新**: 2026-01-07  
-**文档版本**: v1.0.0
+**最后更新**: 2026-01-17  
+**文档版本**: v2.0.0
 
 <div align="center">
 <strong>🚀 Zeabur部署 · 📱 PWA应用 · ⚡ 自动化CI/CD</strong>
