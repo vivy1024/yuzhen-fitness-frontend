@@ -45,7 +45,8 @@ export interface WarmupStatusResponse {
  * @param forceRefresh 是否强制刷新缓存（用户档案更新时设为true）
  */
 export async function warmupUser(userId: string | number, forceRefresh: boolean = false): Promise<WarmupResponse> {
-  const response = await damlRagApi.post<WarmupResponse>('/api/v1/user/warmup', {
+  // 注意：VITE_DAML_RAG_API_URL 已包含 /api 前缀，这里不需要再加
+  const response = await damlRagApi.post<WarmupResponse>('/v1/user/warmup', {
     user_id: String(userId),
     force_refresh: forceRefresh
   })
@@ -56,6 +57,7 @@ export async function warmupUser(userId: string | number, forceRefresh: boolean 
  * 获取用户预热状态
  */
 export async function getWarmupStatus(userId: string | number): Promise<WarmupStatusResponse> {
-  const response = await damlRagApi.get<WarmupStatusResponse>(`/api/v1/user/warmup/status/${userId}`)
+  // 注意：VITE_DAML_RAG_API_URL 已包含 /api 前缀，这里不需要再加
+  const response = await damlRagApi.get<WarmupStatusResponse>(`/v1/user/warmup/status/${userId}`)
   return response.data
 }
