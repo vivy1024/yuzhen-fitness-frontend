@@ -23,6 +23,12 @@
   - 修复：移除 `warmup.ts` 中API路径的 `/api` 前缀
   - 影响文件：`src/api/warmup.ts`
 
+- 🐛 **修复/ai-advisor路由空白页问题**
+  - 问题：访问 `/ai-advisor` 显示空白页
+  - 原因：路由配置中不存在该路径，正确路径是 `/ai/chat`
+  - 修复：添加 `/ai-advisor` 到 `/ai/chat` 的重定向路由
+  - 影响文件：`src/router/index.ts`
+
 ---
 
 ## [1.86.0] - 2026-01-17
