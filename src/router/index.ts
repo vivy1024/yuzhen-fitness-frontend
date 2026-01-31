@@ -125,6 +125,11 @@ const router = createRouter({
       redirect: '/training/progress',  // 重定向到新路径
     },
     {
+      path: '/ai-advisor',
+      name: 'ai-advisor',
+      redirect: '/ai/chat',  // 重定向到正确的AI聊天路径
+    },
+    {
       path: '/membership',
       name: 'membership-center',
       component: () => import('@/views/membership/center.vue'),
