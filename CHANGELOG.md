@@ -14,6 +14,22 @@
 
 ---
 
+## [1.90.0] - 2026-02-02
+
+### 修复
+- 🐛 **Agent/DAG模式切换问题修复**
+  - 修复 `StrategySwitch.vue` 中 `isEnergyMember` 计算属性的判断逻辑
+  - 问题：原代码检查 `membership?.system_enabled === false`，但该字段不存在于membership对象
+  - 修复：改为使用 `membershipStore.isSystemEnabled` 正确判断会员系统是否启用
+  - 效果：开发测试阶段（会员系统禁用时），所有用户都可以切换Agent/DAG模式
+
+### 说明
+- 后端配置 `MEMBERSHIP_SYSTEM_ENABLED=false` 时，前端现在能正确识别并开放Agent模式
+- DAG模板配置已全部设为 `membershipRequired: 'free'`，所有用户可使用全部13个模板
+- 历史对话功能依赖后端 `chat_sessions` 表数据，需确认数据正确存储
+
+---
+
 ## [1.89.0] - 2026-02-02
 
 ### 修复
