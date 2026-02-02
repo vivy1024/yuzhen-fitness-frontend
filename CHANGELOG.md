@@ -14,6 +14,42 @@
 
 ---
 
+## [1.88.0] - 2026-02-02
+
+### 新增
+- ✨ **前端代码审查问题修复（高/中优先级任务）**
+  - **404页面**：创建 `src/views/error/not-found.vue`，添加兜底路由
+  - **用户协议页面**：创建 `src/views/legal/terms.vue` 用户协议页面
+  - **隐私政策页面**：创建 `src/views/legal/privacy.vue` 隐私政策页面
+  - **路由过渡动画**：App.vue 添加 fade/slide-left/slide-right 过渡效果
+  - **网络状态检测**：创建 `useNetworkStatus` composable，断网/恢复自动提示
+  - **PWA安装提示**：创建 `usePWAInstall` composable 和 `InstallPrompt` 组件
+
+### 修复
+- 🐛 **手机号登录Token管理**：使用 `setToken()` 和 `TokenManager` 替代直接操作 localStorage
+- 🐛 **注册页协议链接**：从 `href="#"` 改为 `router-link` 跳转到实际页面
+
+### 优化
+- 🎨 **用户体验提升**
+  - 页面切换添加平滑过渡动画
+  - 网络断开/恢复时显示友好提示
+  - PWA安装提示（7天后重新提示）
+  - 404页面提供返回上页和回到首页选项
+
+### 影响文件
+- `src/App.vue` - 添加路由过渡、网络检测、PWA安装提示
+- `src/views/error/not-found.vue` - 新增404页面
+- `src/views/legal/terms.vue` - 新增用户协议页面
+- `src/views/legal/privacy.vue` - 新增隐私政策页面
+- `src/views/auth/register.vue` - 修复协议链接
+- `src/views/auth/login.vue` - 修复手机号登录Token管理
+- `src/composables/useNetworkStatus.ts` - 新增网络状态检测
+- `src/composables/usePWAInstall.ts` - 新增PWA安装提示
+- `src/components/pwa/InstallPrompt.vue` - 新增PWA安装提示组件
+- `src/router/index.ts` - 添加404兜底路由和法律页面路由
+
+---
+
 ## [1.87.0] - 2026-01-31
 
 ### 修复

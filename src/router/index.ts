@@ -243,6 +243,18 @@ const router = createRouter({
           meta: { requiresAuth: true, requiresAdmin: true }
         }
       ]
+    },
+    // 法律页面
+    {
+      path: '/legal/privacy',
+      name: 'legal-privacy',
+      component: () => import('@/views/legal/privacy.vue')
+    },
+    // 404 兜底路由（必须放在最后）
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/error/not-found.vue')
     }
   ]
 })

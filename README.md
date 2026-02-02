@@ -125,7 +125,7 @@ yuzhen_fitness/
 ├── docs/                 # 文档
 │   ├── 02-核心架构/      # 架构文档
 │   ├── 05-API文档/       # API 文档
-│   └── accessibility-guide.md  # 可访问性指南
+│   └── 06-部署运维/            # 部署与运维文档
 ├── public/               # 公共资源
 ├── .env.example          # 环境变量示例
 ├── vite.config.ts        # Vite 配置
@@ -294,8 +294,8 @@ type(scope): description
 
 - [系统架构](docs/02-核心架构/01-系统架构/)
 - [API 文档](docs/05-API文档/)
-- [可访问性指南](docs/accessibility-guide.md)
-- [性能测试指南](docs/performance-testing.md)
+ - [可访问性指南](docs/06-部署运维/可访问性指南.md)
+ - [性能测试指南](docs/06-部署运维/性能测试指南.md)
 
 ## 🤝 贡献指南
 
