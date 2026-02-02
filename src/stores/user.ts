@@ -46,7 +46,7 @@ export const useUserStore = defineStore('user', () => {
       profile.basic_info.height,
       profile.basic_info.weight,
       profile.basic_info.fitness_level,
-      profile.fitness_goals.primary_goals.length > 0,
+      profile.fitness_goals.primary_goal,
       profile.fitness_goals.training_split,
       profile.training_preferences.available_equipment.length > 0,
       profile.training_preferences.training_location,
@@ -70,7 +70,7 @@ export const useUserStore = defineStore('user', () => {
 
     // 健身目标（3个字段）
     total += 3
-    if (userProfile.value.fitness_goals.primary_goals.length > 0) filled++
+    if (userProfile.value.fitness_goals.primary_goal) filled++
     if (userProfile.value.fitness_goals.training_split) filled++
     if (userProfile.value.fitness_goals.target_weight) filled++
 
