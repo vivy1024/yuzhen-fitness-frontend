@@ -41,12 +41,17 @@
 - `src/views/error/not-found.vue` - 新增404页面
 - `src/views/legal/terms.vue` - 新增用户协议页面
 - `src/views/legal/privacy.vue` - 新增隐私政策页面
-- `src/views/auth/register.vue` - 修复协议链接
+- `src/views/auth/register.vue` - 修复协议链接、添加邮箱验证反馈
 - `src/views/auth/login.vue` - 修复手机号登录Token管理
 - `src/composables/useNetworkStatus.ts` - 新增网络状态检测
 - `src/composables/usePWAInstall.ts` - 新增PWA安装提示
 - `src/components/pwa/InstallPrompt.vue` - 新增PWA安装提示组件
 - `src/router/index.ts` - 添加404兜底路由和法律页面路由
+
+### 说明
+- 低优先级任务（Task 8-12）部分完成，其余为可选优化
+- ExerciseCard和FoodCard已使用LazyImage组件
+- 用户档案编辑页面已使用步骤分离模式，结构清晰
 
 ---
 
