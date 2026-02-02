@@ -40,6 +40,7 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const dismissedProfileAlert = ref(false)
 const currentSessionId = ref<string | null>(null)
 const currentStrategy = ref<'dag' | 'agent'>('dag')  // 当前执行策略
+const selectedTemplateId = ref<string | null>(null)  // 用户选择的DAG模板ID
 
 // 检查用户档案是否完整（基础必填字段）
 const profileIncomplete = computed(() => {
@@ -218,8 +219,12 @@ async function sendMessage() {
   const result = await chatStore.sendMessage({
     content,
     topicId: topicStore.currentTopicId!,
-    strategy: currentStrategy.value  // 传递当前策略
+    strategy: currentStrategy.value,  // 传递当前策略
+    templateId: selectedTemplateId.value || undefined  // 传递用户选择的模板ID
   })
+  
+  // 发送后清除选择的模板ID（下次发送需要重新选择）
+  selectedTemplateId.value = null
   
   if (result.success) {
     // 滚动到底部
@@ -383,10 +388,11 @@ async function handleDeleteTopic(topicId: string) {
 }
 
 /**
- * 处理DAG模板快捷提示选择
+ * 处理DAG模板选择（强制使用选择的模板）
  */
-function handleSelectPrompt(prompt: string) {
-  messageInput.value = prompt
+function handleSelectTemplate(data: { templateId: string; prompt: string }) {
+  selectedTemplateId.value = data.templateId
+  messageInput.value = data.prompt
   showTemplateSelector.value = false
 }
 
@@ -584,7 +590,7 @@ onUnmounted(() => {
       <!-- DAG模板选择器 -->
       <div v-if="showTemplateSelector" class="mb-4">
         <DAGTemplateSelector
-          @select-prompt="handleSelectPrompt"
+          @select-template="handleSelectTemplate"
           @upgrade-required="handleUpgradeRequired"
         />
       </div>

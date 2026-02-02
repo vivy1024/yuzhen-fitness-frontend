@@ -30,6 +30,7 @@ export interface SendMessageData {
   content: string
   topicId?: string
   strategy?: 'dag' | 'agent'  // 执行策略
+  templateId?: string  // DAG模板ID（用户选择时强制使用）
 }
 
 /**
@@ -238,7 +239,8 @@ export const useChatStore = defineStore('chat', () => {
         sessionId: chatStream.currentSessionId.value || undefined,
         topicId: actualTopicId,  // 传递话题ID用于多轮对话上下文
         domain: 'fitness',
-        strategy: data.strategy || 'dag'  // 传递执行策略
+        strategy: data.strategy || 'dag',  // 传递执行策略
+        templateId: data.templateId  // 传递用户选择的DAG模板ID
       })
       
       // 等待流式完成
