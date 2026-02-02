@@ -14,6 +14,26 @@
 
 ---
 
+## [1.91.0] - 2026-02-02
+
+### 新增
+- 🎯 **DAG模板强制选择功能**
+  - 前端选择AI场景时传递 `template_id` 参数到后端
+  - 后端接收 `template_id` 后直接使用该模板，跳过LLM选择步骤
+  - 符合DAG模式设计理念：LLM只是"翻译器"，用户选择即执行
+  - 修改文件：
+    - `DAGTemplateSelector.vue`: emit `select-template` 事件包含 `templateId` 和 `prompt`
+    - `chat.vue`: 处理模板选择，传递 `templateId` 到 `sendMessage`
+    - `chat.ts`: `SendMessageData` 接口添加 `templateId` 字段
+    - `useChatStream.ts`: `SendMessageParams` 添加 `templateId`，请求体添加 `template_id`
+
+### 说明
+- DAG模式：用户选择模板 → 直接执行（确定性高）
+- Agent模式：LLM自主决策工具和执行路径（灵活性高）
+- 用户不选择模板时，仍使用LLM关键词匹配选择模板
+
+---
+
 ## [1.90.0] - 2026-02-02
 
 ### 修复

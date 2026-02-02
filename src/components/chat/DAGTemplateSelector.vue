@@ -1,7 +1,11 @@
 <script setup lang="ts">
 /**
  * DAG模板选择器组件
- * 显示可用的AI场景，支持快捷选择
+ * 显示可用的AI场景，支持强制模板选择
+ * 
+ * DAG模式下，用户选择模板后直接执行该模板，LLM不参与模板选择决策
+ * 
+ * @updated 2026-02-02 - 添加template_id传递，实现强制模板选择
  */
 import { computed } from 'vue'
 import { useMembershipStore } from '@/stores/membership'
@@ -17,7 +21,7 @@ import {
 } from '@/config/dag-templates'
 
 const emit = defineEmits<{
-  (e: 'select-prompt', prompt: string): void
+  (e: 'select-template', data: { templateId: string; prompt: string }): void
   (e: 'upgrade-required', template: DAGTemplate): void
 }>()
 
@@ -63,10 +67,11 @@ function checkAvailable(template: DAGTemplate): boolean {
 // 处理模板点击
 function handleTemplateClick(template: DAGTemplate) {
   if (checkAvailable(template)) {
-    // 使用第一个快捷提示
-    if (template.quickPrompts.length > 0) {
-      emit('select-prompt', template.quickPrompts[0])
-    }
+    // 传递模板ID和快捷提示
+    emit('select-template', {
+      templateId: template.id,
+      prompt: template.quickPrompts.length > 0 ? template.quickPrompts[0] : ''
+    })
   } else {
     emit('upgrade-required', template)
   }
