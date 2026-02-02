@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { hasToken } from '@/utils/token'
+import { verifyAdmin } from '@/api/admin/verify'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -260,7 +261,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const isAuthenticated = hasToken()
   
   // 需要认证的页面
@@ -271,25 +272,21 @@ router.beforeEach((to, from, next) => {
   else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
     next('/')
   }
-  // 管理员权限检查
+  // 管理员权限检查 - 调用后端API验证
   else if (to.meta.requiresAdmin && isAuthenticated) {
-    const userInfo = localStorage.getItem('user_info')
-    if (userInfo) {
-      try {
-        const user = JSON.parse(userInfo)
-        if (user.role !== 'admin') {
-          next('/')  // 非管理员重定向到首页
-          return
-        }
-      } catch (e) {
-        next('/')
+    try {
+      // 调用后端API验证管理员身份
+      const isAdmin = await verifyAdmin()
+      if (!isAdmin) {
+        next('/')  // 非管理员重定向到首页
         return
       }
-    } else {
+      next()
+    } catch (e) {
+      console.error('[Router] 管理员验证失败:', e)
       next('/')
       return
     }
-    next()
   }
   // 首次使用检查（已登录用户访问需要认证的页面时）
   else if (to.meta.requiresAuth && isAuthenticated && to.name !== 'legal-terms') {

@@ -9,11 +9,13 @@ import type { UserProfile, FFMIAssessment, BasicInfo, FitnessGoals, TrainingPref
 import { userProfileApi, type FFMIHistory } from '@/api/user'
 import { calculateFFMI } from '@/utils/ffmi-calculator'
 import { warmupUser } from '@/api/warmup'
+import { encryptData, decryptData, isCryptoAvailable } from '@/utils/crypto'
 
 const STORAGE_KEYS = {
   USER_PROFILE: 'user_profile_v2',
   CURRENT_USER_ID: 'current_user_id',
   LAST_SYNC: 'last_sync_at',
+  HEALTH_DATA: 'user_health_encrypted', // 加密的健康数据
 } as const
 
 interface StoredProfile {
@@ -136,14 +138,37 @@ export const useUserStore = defineStore('user', () => {
       const userIdFromStorage = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID)
       if (!userIdFromStorage) throw new Error('用户ID不存在')
 
+      // 分离敏感健康数据进行加密存储
+      const healthData = userProfile.value.health_status
+      const profileWithoutHealth = {
+        ...userProfile.value,
+        health_status: {
+          chronic_diseases: [],
+          injury_history: [],
+          medications: [],
+          other_notes: null,
+        } as HealthStatus
+      }
+
       const storedData: StoredProfile = {
         userId: parseInt(userIdFromStorage),
-        profile: userProfile.value,
+        profile: profileWithoutHealth,
         savedAt: new Date().toISOString(),
         syncedToServer: syncedToServer.value,
       }
 
       localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(storedData))
+      
+      // 加密存储健康数据
+      if (isCryptoAvailable()) {
+        const encryptedHealth = await encryptData(healthData)
+        localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, encryptedHealth)
+      } else {
+        // 降级：不支持加密时仍存储（但会有警告）
+        console.warn('[UserStore] Web Crypto API 不可用，健康数据未加密')
+        localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, JSON.stringify(healthData))
+      }
+      
       lastSyncAt.value = storedData.savedAt
       return { success: true, message: '数据已安全保存到本地' }
     } catch (err: any) {
@@ -162,11 +187,20 @@ export const useUserStore = defineStore('user', () => {
       lastSyncAt.value = data.savedAt
       syncedToServer.value = data.syncedToServer || false
 
+      // 解密健康数据
+      const encryptedHealth = localStorage.getItem(STORAGE_KEYS.HEALTH_DATA)
+      if (encryptedHealth && userProfile.value) {
+        const healthData = await decryptData<HealthStatus>(encryptedHealth)
+        if (healthData) {
+          userProfile.value.health_status = healthData
+        }
+      }
+
       if (data.profile.ffmi_assessment) {
         ffmiData.value = data.profile.ffmi_assessment
       }
 
-      return data.profile
+      return userProfile.value
     } catch (err: any) {
       error.value = '从LocalStorage加载失败'
       return null
