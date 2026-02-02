@@ -164,10 +164,19 @@ async function handleRegister() {
                   v-model="form.email"
                   type="email"
                   placeholder="请输入邮箱地址"
-                  class="pl-10"
+                  class="pl-10 pr-10"
                   required
                 />
+                <!-- 邮箱格式验证图标 -->
+                <div v-if="form.email" class="absolute right-3 top-1/2 -translate-y-1/2">
+                  <CheckCircle2 v-if="isEmailValid" class="h-4 w-4 text-green-600" />
+                  <XCircle v-else class="h-4 w-4 text-red-600" />
+                </div>
               </div>
+              <!-- 邮箱格式提示 -->
+              <p v-if="form.email && !isEmailValid" class="text-xs text-red-600">
+                请输入有效的邮箱地址
+              </p>
             </div>
 
             <!-- 邮箱验证码 -->
