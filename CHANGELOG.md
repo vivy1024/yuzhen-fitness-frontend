@@ -16,6 +16,13 @@
 
 ## [1.89.0] - 2026-02-02
 
+### 修复
+- 🐛 **主要健身目标无法保存问题**
+  - 修复 `createEmptyProfile` 中 `primary_goals`（数组）改为 `primary_goal`（字符串）
+  - 修复 `loadFromServer` 兼容处理服务器返回的 `primary_goals` 数组转换为 `primary_goal` 字符串
+  - 修复 `uploadToServer` 将前端 `primary_goal` 字符串转换为后端 `primary_goals` 数组
+  - 统一前端使用 `primary_goal`（单数字符串），与类型定义 `FitnessGoals` 保持一致
+
 ### 新增
 - 🔐 **管理员权限验证增强**
   - 创建 `src/api/admin/verify.ts` 管理员验证API

@@ -259,7 +259,10 @@ export const useUserStore = defineStore('user', () => {
         fitness_level: userProfile.value.basic_info.fitness_level || null,
         region: userProfile.value.basic_info.region || null,
         sleep_hours: userProfile.value.basic_info.sleep_hours || null,
-        primary_goals: userProfile.value.fitness_goals.primary_goals || [],
+        // 上传时转换：前端 primary_goal（字符串）→ 后端 primary_goals（数组）
+        primary_goals: userProfile.value.fitness_goals.primary_goal 
+          ? [userProfile.value.fitness_goals.primary_goal] 
+          : [],
         secondary_goals: userProfile.value.fitness_goals.secondary_goals || [],
         target_weight: userProfile.value.fitness_goals.target_weight || null,
         training_split: userProfile.value.fitness_goals.training_split || null,
@@ -329,7 +332,11 @@ export const useUserStore = defineStore('user', () => {
             sleep_hours: phpData.basic_info?.sleep_hours || null,
           },
           fitness_goals: {
-            primary_goals: phpData.fitness_goals?.primary_goals || [],
+            // 兼容处理：服务器可能返回 primary_goals（数组）或 primary_goal（字符串）
+            primary_goal: phpData.fitness_goals?.primary_goal || 
+                          (Array.isArray(phpData.fitness_goals?.primary_goals) && phpData.fitness_goals.primary_goals.length > 0 
+                            ? phpData.fitness_goals.primary_goals[0] 
+                            : ''),
             secondary_goals: phpData.fitness_goals?.secondary_goals || [],
             goal_priority: phpData.fitness_goals?.goal_priority || {},
             training_split: phpData.fitness_goals?.training_split || null,
@@ -484,7 +491,8 @@ export const useUserStore = defineStore('user', () => {
         fitness_level: null as any,  // 新用户不预设健身水平
       },
       fitness_goals: {
-        primary_goals: [],
+        primary_goal: '',  // 主要目标（单选字符串）
+        secondary_goals: [],  // 次要目标（多选数组）
         goal_priority: {},
         training_split: null,
       },
