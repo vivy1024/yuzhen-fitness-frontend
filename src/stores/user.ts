@@ -405,67 +405,67 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function updateBasicInfo(info: BasicInfo): void {
+  async function updateBasicInfo(info: BasicInfo): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.basic_info = info
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
       // 注意：预热只在syncToServer时触发，本地编辑不触发
     }
   }
 
-  function updateFitnessGoals(goals: FitnessGoals): void {
+  async function updateFitnessGoals(goals: FitnessGoals): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.fitness_goals = goals
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 
-  function updateTrainingPreferences(preferences: TrainingPreferences): void {
+  async function updateTrainingPreferences(preferences: TrainingPreferences): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.training_preferences = preferences
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 
-  function updateStrengthData(data: StrengthData): void {
+  async function updateStrengthData(data: StrengthData): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.strength_data = data
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 
-  function updateHealthStatus(status: HealthStatus): void {
+  async function updateHealthStatus(status: HealthStatus): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.health_status = status
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 
-  function updateNutritionProfile(profile: NutritionProfile): void {
+  async function updateNutritionProfile(profile: NutritionProfile): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.nutrition_profile = profile
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 
-  function updateRestPattern(pattern: string | null): void {
+  async function updateRestPattern(pattern: string | null): Promise<void> {
     if (!userProfile.value) createEmptyProfile()
     if (userProfile.value) {
       userProfile.value.preferred_rest_pattern = pattern as any
       userProfile.value.updated_at = new Date().toISOString()
-      saveToLocal()
+      await saveToLocal()
     }
   }
 

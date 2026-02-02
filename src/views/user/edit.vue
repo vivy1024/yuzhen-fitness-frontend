@@ -576,10 +576,10 @@ function toggleNutrition(field: 'dietary_preferences' | 'allergies' | 'supplemen
 }
 
 // 保存表单数据到Store
-function saveFormToStore() {
+async function saveFormToStore() {
   if (!userStore.userProfile) return
   
-  userStore.updateBasicInfo({
+  await userStore.updateBasicInfo({
     nickname: formData.nickname,
     age: formData.age as number,
     gender: formData.gender,
@@ -589,7 +589,7 @@ function saveFormToStore() {
     fitness_level: formData.fitness_level,
   })
   
-  userStore.updateFitnessGoals({
+  await userStore.updateFitnessGoals({
     primary_goal: formData.primary_goal,
     secondary_goals: formData.secondary_goals,
     target_weight: formData.target_weight || undefined,
@@ -597,14 +597,14 @@ function saveFormToStore() {
     training_split: formData.training_split,
   })
   
-  userStore.updateTrainingPreferences({
+  await userStore.updateTrainingPreferences({
     training_split: formData.training_split,
     available_equipment: formData.available_equipment,
     training_location: formData.training_location,
     training_intensity: formData.training_intensity,
   })
   
-  userStore.updateHealthStatus({
+  await userStore.updateHealthStatus({
     chronic_diseases: formData.chronic_diseases,
     injury_history: formData.injury_history,
     medications: formData.medications,
@@ -612,13 +612,13 @@ function saveFormToStore() {
   })
   
   // 保存力量数据
-  userStore.updateStrengthData(formData.strength_data)
+  await userStore.updateStrengthData(formData.strength_data)
   
   // 保存休息模式
-  userStore.updateRestPattern(formData.rest_pattern)
+  await userStore.updateRestPattern(formData.rest_pattern)
   
   // 保存营养档案
-  userStore.updateNutritionProfile({
+  await userStore.updateNutritionProfile({
     user_settings: {
       population_type: formData.population_type || '',
       dietary_preferences: formData.dietary_preferences,
@@ -633,22 +633,22 @@ async function handleBack() {
   router.back()
 }
 
-function handlePrevStep() {
+async function handlePrevStep() {
   if (currentStep.value > 0) {
-    saveFormToStore()
+    await saveFormToStore()
     currentStep.value--
   }
 }
 
-function handleNextStep() {
-  saveFormToStore()
+async function handleNextStep() {
+  await saveFormToStore()
   if (currentStep.value < steps.length - 1) {
     currentStep.value++
   }
 }
 
 async function handleSave() {
-  saveFormToStore()
+  await saveFormToStore()
   const result = await userStore.saveToLocal()
   toast({
     title: result.success ? '保存成功' : '保存失败',
@@ -661,7 +661,7 @@ async function handleSave() {
 }
 
 async function handleUpload() {
-  saveFormToStore()
+  await saveFormToStore()
   const result = await userStore.uploadToServer()
   toast({
     title: result.success ? '上传成功' : '上传失败',
