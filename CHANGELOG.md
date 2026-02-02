@@ -18,9 +18,10 @@
 
 ### 修复
 - 🐛 **主要健身目标无法保存问题**
-  - 修复 `createEmptyProfile` 中 `primary_goals`（数组）改为 `primary_goal`（字符串）
-  - 修复 `loadFromServer` 兼容处理服务器返回的 `primary_goals` 数组转换为 `primary_goal` 字符串
-  - 修复 `uploadToServer` 将前端 `primary_goal` 字符串转换为后端 `primary_goals` 数组
+  - 修复 `user.ts` 中 `createEmptyProfile` 使用 `primary_goals`（数组）改为 `primary_goal`（字符串）
+  - 修复 `user.ts` 中 `loadFromServer` 兼容处理服务器返回的 `primary_goals` 数组转换为 `primary_goal` 字符串
+  - 修复 `user.ts` 中 `uploadToServer` 将前端 `primary_goal` 字符串转换为后端 `primary_goals` 数组
+  - 修复 `profile.vue` 中主要目标显示使用 `primary_goals` 改为 `primary_goal`
   - 统一前端使用 `primary_goal`（单数字符串），与类型定义 `FitnessGoals` 保持一致
 
 ### 新增
