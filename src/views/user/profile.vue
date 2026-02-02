@@ -87,10 +87,10 @@
           <div class="flex justify-between items-start">
             <span class="text-sm text-gray-600 dark:text-gray-400">主要目标</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
-              <Badge v-for="(goal, index) in userStore.userProfile.fitness_goals.primary_goals" :key="index" variant="default">
-                {{ goal }}
+              <Badge v-if="userStore.userProfile.fitness_goals.primary_goal" variant="default">
+                {{ userStore.userProfile.fitness_goals.primary_goal }}
               </Badge>
-              <Badge v-if="!userStore.userProfile.fitness_goals.primary_goals?.length" variant="secondary">未设置</Badge>
+              <Badge v-else variant="secondary">未设置</Badge>
             </div>
           </div>
           <div class="flex justify-between items-start">
