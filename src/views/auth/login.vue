@@ -75,14 +75,34 @@ async function handlePhoneLogin() {
     const response = await smsLogin(phoneForm.value.phone, phoneForm.value.code)
     
     if (response.code === 200 && response.data) {
+      // 使用统一的 Token 管理（与邮箱登录保持一致）
+      const { setToken } = await import('@/utils/token')
+      const { getTokenManager } = await import('@/utils/token-manager')
+      
+      // 保存 Token 到 localStorage
+      setToken(
+        response.data.access_token,
+        response.data.refresh_token,
+        response.data.expires_in
+      )
+      
+      // 同步 Token 到 TokenManager 并启动自动刷新
+      const tokenManager = getTokenManager()
+      tokenManager.setTokens(
+        response.data.access_token,
+        response.data.refresh_token,
+        response.data.expires_in
+      )
+      tokenManager.startAutoRefresh()
+      
+      // 更新 authStore 状态
       authStore.user = response.data.user
       authStore.isAuthenticated = true
-      
-      localStorage.setItem('access_token', response.data.access_token)
-      if (response.data.refresh_token) {
-        localStorage.setItem('refresh_token', response.data.refresh_token)
-      }
       localStorage.setItem('user_info', JSON.stringify(response.data.user))
+      
+      if (response.data.user.id) {
+        localStorage.setItem('current_user_id', response.data.user.id.toString())
+      }
       
       showSuccess('登录成功')
       setTimeout(() => {

@@ -279,9 +279,9 @@ async function handleRegister() {
               />
               <label for="agree" class="text-sm text-muted-foreground cursor-pointer leading-relaxed">
                 我已阅读并同意
-                <a href="#" class="text-primary hover:underline">用户协议</a>
+                <router-link to="/legal/terms" class="text-primary hover:underline">用户协议</router-link>
                 和
-                <a href="#" class="text-primary hover:underline">隐私政策</a>
+                <router-link to="/legal/privacy" class="text-primary hover:underline">隐私政策</router-link>
               </label>
             </div>
 

@@ -43,7 +43,7 @@
 
 1. **GitHub仓库**: `vivy1024/yuzhen-fitness-frontend`
 2. **Zeabur账号**: 已登录并创建项目
-3. **域名DNS配置**: CNAME记录指向Zeabur提供的域名
+3. **域名DNS配置**: 使用 A 记录绑定到服务器IP（182.92.78.183）
 
 ### 步骤1：准备Git仓库
 
@@ -94,12 +94,12 @@ VITE_DEBUG=false
 
 ### 步骤5：配置DNS
 
-在阿里云DNS管理面板添加CNAME记录：
+在阿里云DNS管理面板添加 A 记录：
 
 ```
-类型: CNAME
+类型: A
 主机记录: app
-记录值: <zeabur提供的域名>.zeabur.app
+记录值: 182.92.78.183
 TTL: 10分钟
 ```
 
@@ -198,7 +198,7 @@ VITE_DEBUG=false
 
 1. 主域名：yuzhen-fitness.cn
    - 在Zeabur添加域名
-   - 配置DNS CNAME记录
+   - 配置DNS A 记录（当前采用 A 绑定）
    - 等待SSL证书自动配置
 
 2. 备用域名：yuzhen-fitness.fun
@@ -212,24 +212,24 @@ VITE_DEBUG=false
 
 ### DNS配置示例
 
-在阿里云DNS控制台：
+在阿里云DNS控制台（A 绑定）：
 
 ```
 # 主域名
-yuzhen-fitness.cn        CNAME    your-project.zeabur.app
-www.yuzhen-fitness.cn    CNAME    your-project.zeabur.app
+yuzhen-fitness.cn         A    182.92.78.183
+www.yuzhen-fitness.cn     A    182.92.78.183
 
 # 国际域名
-yuzhen-fitness.fun       CNAME    your-project.zeabur.app
-www.yuzhen-fitness.fun   CNAME    your-project.zeabur.app
+yuzhen-fitness.fun        A    182.92.78.183
+www.yuzhen-fitness.fun    A    182.92.78.183
 
 # 商城域名
-yuzhen-fitness.shop      CNAME    your-project.zeabur.app
-www.yuzhen-fitness.shop  CNAME    your-project.zeabur.app
+yuzhen-fitness.shop       A    182.92.78.183
+www.yuzhen-fitness.shop   A    182.92.78.183
 
 # 测试域名
-yuzhen-fitness.online    CNAME    your-project.zeabur.app
-www.yuzhen-fitness.online CNAME   your-project.zeabur.app
+yuzhen-fitness.online     A    182.92.78.183
+www.yuzhen-fitness.online A    182.92.78.183
 ```
 
 ---
@@ -292,7 +292,7 @@ git push origin main
 ### 域名配置检查
 
 - [ ] 域名已在Zeabur添加：`app.yuzhen-fitness.cn`
-- [ ] DNS CNAME记录已配置
+- [ ] DNS A 记录已配置
 - [ ] SSL证书已自动配置
 - [ ] 域名可以访问
 
@@ -339,7 +339,7 @@ git push origin main
 
 **可能原因**：
 - DNS未生效
-- CNAME记录配置错误
+- A 记录配置错误
 - SSL证书未配置
 
 **解决方案**：
