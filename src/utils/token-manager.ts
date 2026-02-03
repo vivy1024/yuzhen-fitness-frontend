@@ -10,6 +10,7 @@
  */
 
 import { parseJWTPayload, isTokenExpired, isTokenExpiringSoon } from './auth'
+import logger from './logger'
 
 export interface TokenStorage {
   accessToken: string | null
@@ -92,10 +93,10 @@ export class TokenManager {
         this.tokenStorage.accessToken = accessToken
         this.tokenStorage.refreshToken = refreshToken
         this.tokenStorage.expiresAt = expiresAt
-        console.log('🔄 TokenManager: 从localStorage恢复Token')
+        logger.sensitive('🔄 TokenManager: 从localStorage恢复Token')
       }
     } catch (error) {
-      console.error('❌ TokenManager: 初始化失败', error)
+      logger.error('❌ TokenManager: 初始化失败', error)
     }
   }
 
@@ -139,7 +140,7 @@ export class TokenManager {
     // 同时存储到localStorage（兼容axios拦截器）
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
     
-    console.log('✅ TokenManager: Token已设置', {
+    logger.sensitive('✅ TokenManager: Token已设置', {
       hasAccessToken: !!accessToken,
       hasRefreshToken: !!refreshToken,
       expiresAt: this.tokenStorage.expiresAt 
@@ -163,7 +164,7 @@ export class TokenManager {
     localStorage.removeItem('user_info')
     localStorage.removeItem('current_user_id')
     
-    console.log('🗑️ TokenManager: Token已清除')
+    logger.sensitive('🗑️ TokenManager: Token已清除')
   }
 
   public hasToken(): boolean {
@@ -204,12 +205,12 @@ export class TokenManager {
     }
     
     if (!this.refreshTokenApi) {
-      console.error('❌ TokenManager: 未设置刷新Token的API函数')
+      logger.error('❌ TokenManager: 未设置刷新Token的API函数')
       return false
     }
     
     if (!this.tokenStorage.refreshToken) {
-      console.error('❌ TokenManager: 没有刷新令牌')
+      logger.error('❌ TokenManager: 没有刷新令牌')
       this.handleTokenExpired()
       return false
     }
@@ -218,19 +219,19 @@ export class TokenManager {
     
     this.refreshPromise = (async () => {
       try {
-        console.log('🔄 TokenManager: 开始刷新Token...')
+        logger.sensitive('🔄 TokenManager: 开始刷新Token...')
         
         const result = await this.refreshTokenApi!()
         
         if (result?.token) {
           this.setTokens(result.token, this.tokenStorage.refreshToken, result.expiresIn)
-          console.log('✅ TokenManager: Token刷新成功')
+          logger.sensitive('✅ TokenManager: Token刷新成功')
           return true
         } else {
           throw new Error('刷新Token返回空结果')
         }
       } catch (error) {
-        console.error('❌ TokenManager: Token刷新失败', error)
+        logger.error('❌ TokenManager: Token刷新失败', error)
         this.handleTokenExpired()
         return false
       } finally {
@@ -243,7 +244,7 @@ export class TokenManager {
   }
 
   private handleTokenExpired(): void {
-    console.log('⚠️ TokenManager: Token已过期，触发过期回调')
+    logger.sensitive('⚠️ TokenManager: Token已过期，触发过期回调')
     this.clearTokens()
     this.expiredCallbacks.forEach(callback => callback())
   }
@@ -271,14 +272,14 @@ export class TokenManager {
       this.checkAndRefresh()
     }, this.config.autoRefreshInterval)
     
-    console.log('🔄 TokenManager: 自动刷新已启动')
+    logger.sensitive('🔄 TokenManager: 自动刷新已启动')
   }
 
   public stopAutoRefresh(): void {
     if (this.autoRefreshTimer) {
       clearInterval(this.autoRefreshTimer)
       this.autoRefreshTimer = null
-      console.log('⏹️ TokenManager: 自动刷新已停止')
+      logger.sensitive('⏹️ TokenManager: 自动刷新已停止')
     }
   }
 
@@ -286,13 +287,13 @@ export class TokenManager {
     if (!this.hasToken()) return
     
     if (this.isTokenExpired()) {
-      console.log('⚠️ TokenManager: Token已过期')
+      logger.sensitive('⚠️ TokenManager: Token已过期')
       this.handleTokenExpired()
       return
     }
     
     if (this.isTokenExpiring()) {
-      console.log('⏰ TokenManager: Token即将过期，自动刷新...')
+      logger.sensitive('⏰ TokenManager: Token即将过期，自动刷新...')
       await this.refreshToken()
     }
   }

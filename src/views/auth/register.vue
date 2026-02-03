@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDebounceFn } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { sendEmailCode as sendEmailCodeApi } from '@/api/email'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ const authStore = useAuthStore()
 
 const loading = ref(false)
 const emailCountdown = ref(0)
+const sendingCode = ref(false) // 发送验证码加载状态
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
@@ -57,38 +59,36 @@ const isFormValid = computed(() => {
     form.value.agree
 })
 
-async function sendEmailCode() {
-  if (!isEmailValid.value) {
-    showError('请输入正确的邮箱地址')
-    return
-  }
+// 使用防抖包装发送验证码逻辑（300ms内多次点击只触发一次）
+const debouncedSendCode = useDebounceFn(async () => {
+  if (sendingCode.value || emailCountdown.value > 0) return
   
-  // 防止重复点击：立即开始倒计时
-  if (emailCountdown.value > 0) {
-    return
-  }
-  emailCountdown.value = 60
-  
+  sendingCode.value = true
   try {
     const response = await sendEmailCodeApi(form.value.email, 'register')
-    // 后端返回 { success: true, message: '...' } 格式
     if (response.success) {
       showSuccess('验证码已发送到您的邮箱')
-      // 启动倒计时
+      emailCountdown.value = 60
       const timer = setInterval(() => {
         emailCountdown.value--
         if (emailCountdown.value <= 0) clearInterval(timer)
       }, 1000)
     } else {
-      // 发送失败，重置倒计时
-      emailCountdown.value = 0
       showError(response.message || response.msg || '发送失败')
     }
   } catch (error: any) {
-    // 请求异常，重置倒计时
-    emailCountdown.value = 0
     showError(error.message || '发送失败')
+  } finally {
+    sendingCode.value = false
   }
+}, 300)
+
+async function sendEmailCode() {
+  if (!isEmailValid.value) {
+    showError('请输入正确的邮箱地址')
+    return
+  }
+  debouncedSendCode()
 }
 
 async function handleRegister() {
@@ -196,10 +196,11 @@ async function handleRegister() {
                   type="button"
                   variant="outline"
                   @click="sendEmailCode"
-                  :disabled="emailCountdown > 0 || !isEmailValid"
+                  :disabled="emailCountdown > 0 || !isEmailValid || sendingCode"
                   class="shrink-0"
                 >
-                  {{ emailCountdown > 0 ? `${emailCountdown}秒` : '获取验证码' }}
+                  <Loader2 v-if="sendingCode" class="mr-1 h-4 w-4 animate-spin" />
+                  {{ sendingCode ? '发送中' : emailCountdown > 0 ? `${emailCountdown}秒` : '获取验证码' }}
                 </Button>
               </div>
             </div>

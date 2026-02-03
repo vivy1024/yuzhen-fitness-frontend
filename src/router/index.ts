@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { hasToken } from '@/utils/token'
-import { verifyAdmin } from '@/api/admin/verify'
+import { verifyAdmin, isSensitiveRoute } from '@/api/admin/verify'
+import { getTokenManager } from '@/utils/token-manager'
+import { isTokenExpired, isTokenExpiringSoon } from '@/utils/auth'
+import logger from '@/utils/logger'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -261,45 +264,81 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const isAuthenticated = hasToken()
+  const tokenManager = getTokenManager()
+  const token = tokenManager.getAccessToken()
   
-  // 需要认证的页面
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/auth/login')
+  // 需要认证的页面 - 增强Token验证
+  if (to.meta.requiresAuth) {
+    // 检查Token是否存在
+    if (!isAuthenticated || !token) {
+      logger.sensitive('[Router] 无Token，重定向到登录页')
+      next('/auth/login')
+      return
+    }
+    
+    // 检查Token是否已过期
+    if (isTokenExpired(token)) {
+      logger.sensitive('[Router] Token已过期，清除并重定向到登录页')
+      tokenManager.clearTokens()
+      next('/auth/login')
+      return
+    }
+    
+    // 检查Token是否即将过期（5分钟内），尝试自动刷新
+    if (isTokenExpiringSoon(token, 300)) {
+      logger.sensitive('[Router] Token即将过期，尝试刷新...')
+      try {
+        const refreshed = await tokenManager.refreshToken()
+        if (!refreshed) {
+          logger.sensitive('[Router] Token刷新失败，重定向到登录页')
+          tokenManager.clearTokens()
+          next('/auth/login')
+          return
+        }
+      } catch {
+        logger.sensitive('[Router] Token刷新异常，重定向到登录页')
+        tokenManager.clearTokens()
+        next('/auth/login')
+        return
+      }
+    }
   }
+  
   // 已登录用户访问登录/注册页面，重定向到首页
-  else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+  if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
     next('/')
+    return
   }
+  
   // 管理员权限检查 - 调用后端API验证
-  else if (to.meta.requiresAdmin && isAuthenticated) {
+  if (to.meta.requiresAdmin && isAuthenticated) {
     try {
-      // 调用后端API验证管理员身份
-      const isAdmin = await verifyAdmin()
+      // 敏感路由强制刷新验证
+      const forceRefresh = isSensitiveRoute(to.name as string)
+      const isAdmin = await verifyAdmin(forceRefresh)
       if (!isAdmin) {
         next('/')  // 非管理员重定向到首页
         return
       }
-      next()
     } catch (e) {
-      console.error('[Router] 管理员验证失败:', e)
+      logger.error('[Router] 管理员验证失败:', e)
       next('/')
       return
     }
   }
+  
   // 首次使用检查（已登录用户访问需要认证的页面时）
-  else if (to.meta.requiresAuth && isAuthenticated && to.name !== 'legal-terms') {
+  if (to.meta.requiresAuth && isAuthenticated && to.name !== 'legal-terms') {
     const hasAgreedTerms = localStorage.getItem('yuzhen_terms_agreed') === 'true'
     if (!hasAgreedTerms) {
       next('/legal/terms')
-    } else {
-      next()
+      return
     }
   }
-  else {
-    next()
-  }
+  
+  next()
 })
 
 export default router

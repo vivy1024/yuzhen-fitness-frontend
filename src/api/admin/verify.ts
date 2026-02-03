@@ -17,7 +17,23 @@ interface AdminVerifyResponse {
 
 // 缓存验证结果，避免频繁请求
 let cachedResult: { isAdmin: boolean; timestamp: number } | null = null
-const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
+// 缓存时间从5分钟缩短到1分钟，提高安全性
+const CACHE_DURATION = 1 * 60 * 1000 // 1分钟缓存
+
+// 敏感路由列表，访问时强制刷新验证
+const SENSITIVE_ROUTES = [
+  'admin-users',
+  'admin-orders',
+  'admin-feedback'
+]
+
+/**
+ * 检查是否为敏感路由
+ * @param routeName 路由名称
+ */
+export function isSensitiveRoute(routeName: string): boolean {
+  return SENSITIVE_ROUTES.includes(routeName)
+}
 
 /**
  * 验证当前用户是否为管理员
