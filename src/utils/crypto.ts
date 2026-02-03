@@ -1,17 +1,66 @@
 /**
  * 敏感数据加密工具
  * 使用 AES-GCM 加密算法保护本地存储的敏感健康信息
+ * 
+ * @module utils/crypto
+ * @version 2.0.0 - 增强密钥生成，结合用户ID
  */
 
-// 加密密钥（实际项目中应从环境变量或服务端获取）
-// 这里使用设备指纹 + 固定盐值生成密钥
+import logger from './logger'
+
+// 加密密钥盐值
 const SALT = 'yuzhen-fitness-2026'
 
 /**
- * 生成设备相关的加密密钥
- * 结合用户代理和屏幕信息生成唯一密钥
+ * 获取当前用户ID（如果已登录）
+ */
+function getCurrentUserId(): string | null {
+  try {
+    const userInfo = localStorage.getItem('user_info')
+    if (userInfo) {
+      const user = JSON.parse(userInfo)
+      return user.id?.toString() || null
+    }
+  } catch {
+    // 忽略解析错误
+  }
+  return null
+}
+
+/**
+ * 生成增强的加密密钥
+ * 结合用户ID（如果已登录）和设备指纹
  */
 async function getEncryptionKey(): Promise<CryptoKey> {
+  const userId = getCurrentUserId()
+  
+  const deviceFingerprint = [
+    navigator.userAgent,
+    screen.width,
+    screen.height,
+    navigator.language,
+    userId || 'anonymous', // 结合用户ID增强唯一性
+    SALT
+  ].join('|')
+  
+  const encoder = new TextEncoder()
+  const data = encoder.encode(deviceFingerprint)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  
+  return crypto.subtle.importKey(
+    'raw',
+    hashBuffer,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+}
+
+
+/**
+ * 获取旧版加密密钥（不含用户ID，用于向后兼容）
+ */
+async function getLegacyEncryptionKey(): Promise<CryptoKey> {
   const deviceFingerprint = [
     navigator.userAgent,
     screen.width,
@@ -20,14 +69,10 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     SALT
   ].join('|')
   
-  // 将字符串转换为 ArrayBuffer
   const encoder = new TextEncoder()
   const data = encoder.encode(deviceFingerprint)
-  
-  // 使用 SHA-256 生成密钥材料
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   
-  // 导入为 AES-GCM 密钥
   return crypto.subtle.importKey(
     'raw',
     hashBuffer,
@@ -35,6 +80,25 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     false,
     ['encrypt', 'decrypt']
   )
+}
+
+/**
+ * 使用指定密钥解密数据
+ */
+async function decryptWithKey<T>(encryptedData: string, key: CryptoKey): Promise<T> {
+  const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0))
+  const iv = combined.slice(0, 12)
+  const ciphertext = combined.slice(12)
+  
+  const plaintext = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    ciphertext
+  )
+  
+  const decoder = new TextDecoder()
+  const jsonString = decoder.decode(plaintext)
+  return JSON.parse(jsonString) as T
 }
 
 /**
@@ -65,51 +129,39 @@ export async function encryptData<T>(data: T): Promise<string> {
     
     return btoa(String.fromCharCode(...combined))
   } catch (error) {
-    console.error('[Crypto] 加密失败:', error)
+    logger.error('[Crypto] 加密失败:', error)
     // 加密失败时返回原始 JSON（降级处理）
     return JSON.stringify(data)
   }
 }
 
 /**
- * 解密敏感数据
+ * 解密敏感数据（兼容旧格式）
+ * 先尝试用新密钥解密，失败后尝试旧密钥
  * @param encryptedData 加密后的 Base64 字符串
  * @returns 解密后的数据对象
  */
 export async function decryptData<T>(encryptedData: string): Promise<T | null> {
+  // 尝试直接解析 JSON（兼容未加密的旧数据）
   try {
-    // 尝试直接解析 JSON（兼容未加密的旧数据）
+    const parsed = JSON.parse(encryptedData)
+    return parsed as T
+  } catch {
+    // 不是 JSON，继续解密流程
+  }
+  
+  // 尝试用当前密钥（含用户ID）解密
+  try {
+    return await decryptWithKey<T>(encryptedData, await getEncryptionKey())
+  } catch {
+    // 尝试用旧密钥（不含用户ID）解密，实现向后兼容
     try {
-      const parsed = JSON.parse(encryptedData)
-      // 如果能直接解析，说明是未加密的数据
-      return parsed as T
-    } catch {
-      // 不是 JSON，继续解密流程
+      logger.debug('[Crypto] 尝试使用旧密钥解密...')
+      return await decryptWithKey<T>(encryptedData, await getLegacyEncryptionKey())
+    } catch (error) {
+      logger.error('[Crypto] 解密失败:', error)
+      return null
     }
-    
-    const key = await getEncryptionKey()
-    
-    // 从 Base64 解码
-    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0))
-    
-    // 分离 IV 和密文
-    const iv = combined.slice(0, 12)
-    const ciphertext = combined.slice(12)
-    
-    // 解密
-    const plaintext = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      ciphertext
-    )
-    
-    // 解码为字符串并解析 JSON
-    const decoder = new TextDecoder()
-    const jsonString = decoder.decode(plaintext)
-    return JSON.parse(jsonString) as T
-  } catch (error) {
-    console.error('[Crypto] 解密失败:', error)
-    return null
   }
 }
 

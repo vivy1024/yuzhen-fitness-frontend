@@ -14,6 +14,32 @@
 
 ---
 
+## [1.92.0] - 2026-02-04
+
+### 安全修复
+- 🔒 **前端安全漏洞修复（7项P0-P3级别）**
+  - **XSS漏洞防护 (P0)**：FAQ详情页添加DOMPurify消毒，配置允许标签白名单
+  - **生产环境日志安全 (P0)**：创建环境感知日志工具，生产环境禁用敏感日志输出
+  - **路由守卫Token验证增强 (P1)**：添加Token过期检查和自动刷新机制
+  - **管理员权限缓存优化 (P1)**：缓存时间从5分钟缩短至1分钟，敏感路由强制验证
+  - **密码强度验证统一 (P2)**：设置页面与注册页面使用相同验证规则和强度指示器
+  - **表单验证防抖 (P2)**：验证码发送添加300ms防抖，防止重复请求
+  - **加密密钥增强 (P3)**：结合用户ID生成加密密钥，支持旧数据向后兼容
+
+### 新增
+- 📦 `src/utils/logger.ts` - 环境感知日志工具（debug/info/sensitive仅开发环境输出）
+
+### 修改
+- 🔧 `src/views/help/detail.vue` - 添加DOMPurify消毒防止XSS攻击
+- 🔧 `src/utils/token-manager.ts` - 使用logger替换console.log
+- 🔧 `src/router/index.ts` - 增强Token验证和自动刷新逻辑
+- 🔧 `src/api/admin/verify.ts` - 优化缓存策略，添加敏感路由检测
+- 🔧 `src/views/settings/index.vue` - 统一密码验证规则，添加强度指示器
+- 🔧 `src/views/auth/register.vue` - 添加防抖机制和加载状态
+- 🔧 `src/utils/crypto.ts` - 增强密钥生成，支持向后兼容解密
+
+---
+
 ## [1.91.0] - 2026-02-02
 
 ### 新增

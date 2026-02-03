@@ -11,6 +11,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
+import { validatePasswordStrength } from '@/utils/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -93,6 +94,25 @@ const deleteLoading = ref(false)
 // 清除缓存对话框
 const showClearCacheDialog = ref(false)
 const clearCacheLoading = ref(false)
+
+// 密码强度计算（与register.vue保持一致）
+const passwordStrength = computed(() => {
+  const password = passwordForm.value.new
+  if (!password) return { score: 0, text: '', color: '' }
+  
+  let score = 0
+  if (password.length >= 6) score++
+  if (password.length >= 10) score++
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+  if (/\d/.test(password)) score++
+  if (/[^a-zA-Z0-9]/.test(password)) score++
+  
+  const level = Math.min(score, 3)
+  const texts = ['', '弱', '中', '强']
+  const colors = ['', 'bg-red-500', 'bg-yellow-500', 'bg-green-500']
+  
+  return { score: level, text: texts[level], color: colors[level] }
+})
 
 // 初始化
 onMounted(() => {
@@ -178,8 +198,10 @@ async function handleChangePassword() {
     return
   }
   
-  if (passwordForm.value.new.length < 6) {
-    showError('新密码至少6位')
+  // 使用统一的密码验证规则
+  const validation = validatePasswordStrength(passwordForm.value.new)
+  if (!validation.valid) {
+    showError(validation.message)
     return
   }
   
@@ -463,7 +485,25 @@ function goToAbout() {
           </div>
           <div class="space-y-2">
             <Label>新密码</Label>
-            <Input v-model="passwordForm.new" type="password" placeholder="请输入新密码（至少6位）" />
+            <Input v-model="passwordForm.new" type="password" placeholder="请输入新密码（至少8位，包含字母和数字）" />
+            <!-- 密码强度指示器 -->
+            <div v-if="passwordForm.new" class="space-y-1">
+              <div class="flex gap-1">
+                <div
+                  v-for="i in 3"
+                  :key="i"
+                  class="h-1 flex-1 rounded-full transition-colors"
+                  :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'"
+                />
+              </div>
+              <p class="text-xs" :class="{
+                'text-red-600': passwordStrength.score === 1,
+                'text-yellow-600': passwordStrength.score === 2,
+                'text-green-600': passwordStrength.score === 3,
+              }">
+                密码强度：{{ passwordStrength.text }}
+              </p>
+            </div>
           </div>
           <div class="space-y-2">
             <Label>确认新密码</Label>

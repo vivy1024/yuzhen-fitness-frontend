@@ -111,6 +111,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import DOMPurify from 'dompurify'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -118,6 +119,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronLeft, ChevronRight, HelpCircle, ThumbsUp, ThumbsDown } from 'lucide-vue-next'
 import { getFaqDetail, submitFaqFeedback, type FAQ } from '@/api/help'
 import { useToast } from '@/components/ui/toast'
+
+// DOMPurify配置 - 允许的标签和属性白名单
+const purifyConfig = {
+  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'span', 'b', 'i'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  FORBID_TAGS: ['script', 'style', 'iframe', 'form', 'input', 'object', 'embed'],
+  FORBID_ATTR: ['onclick', 'onerror', 'onload', 'onmouseover', 'onfocus', 'onblur']
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -153,12 +162,21 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// 格式化答案（支持换行和简单HTML）
+// 格式化答案（支持换行和简单HTML）- 使用DOMPurify消毒防止XSS
 const formattedAnswer = computed(() => {
   if (!faq.value) return ''
-  return faq.value.answer
+  
+  const rawHtml = faq.value.answer
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  
+  // 使用DOMPurify消毒，防止XSS攻击
+  try {
+    return DOMPurify.sanitize(rawHtml, purifyConfig)
+  } catch {
+    // DOMPurify加载失败时，回退到纯文本渲染
+    return faq.value.answer.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
 })
 
 // 加载FAQ详情
