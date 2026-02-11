@@ -14,6 +14,16 @@
 
 ---
 
+## [1.95.0] - 2026-02-12
+
+### 优化
+- ⚡ **Dockerfile构建缓存优化**
+  - 修复 `VITE_DAML_RAG_API_URL` 环境变量：从 `https://ai.yuzhen-fitness.cn/api` 改为 `https://api.yuzhen-fitness.cn/api/ai`（与.env.production一致）
+  - 添加 `.dockerignore` 排除node_modules/dist等无关文件，减小构建上下文
+  - 构建分层已是最优模式（package.json → npm ci → 源代码 → build）
+
+---
+
 ## [1.94.0] - 2026-02-12
 
 ### 修复

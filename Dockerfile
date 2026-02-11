@@ -6,24 +6,20 @@
 # ============================================
 FROM node:22-alpine AS build
 
-# 设置工作目录
 WORKDIR /app
 
-# 复制package文件
+# 第1层：依赖安装（仅package.json变化时重建）
 COPY package*.json ./
-
-# 安装依赖
 RUN npm ci --only=production=false
 
-# 复制源代码
+# 第2层：源代码复制+构建（代码变化时重建）
 COPY . .
 
-# 设置生产环境变量（使用子域名架构）
+# 设置生产环境变量（权限系统重构后，AI请求必须走PHP后端代理）
 ENV VITE_API_BASE_URL=https://api.yuzhen-fitness.cn/api
-ENV VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn/api
+ENV VITE_DAML_RAG_API_URL=https://api.yuzhen-fitness.cn/api/ai
 ENV VITE_APP_ENV=production
 
-# 构建应用
 RUN npm run build
 
 # ============================================
@@ -31,10 +27,6 @@ RUN npm run build
 # ============================================
 FROM zeabur/caddy-static:latest
 
-# 从构建阶段复制dist目录到Caddy的默认静态文件目录
 COPY --from=build /app/dist /usr/share/caddy
 
-# 暴露端口（zeabur/caddy-static默认监听8080）
 EXPOSE 8080
-
-# Caddy会自动服务/usr/share/caddy目录
