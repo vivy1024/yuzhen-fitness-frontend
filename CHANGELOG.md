@@ -14,6 +14,17 @@
 
 ---
 
+## [1.94.0] - 2026-02-12
+
+### 修复
+- 🐛 **修复CORS错误：生产环境AI请求改为通过PHP后端代理**
+  - `.env.production` - `VITE_DAML_RAG_API_URL` 从 `https://ai.yuzhen-fitness.cn/api` 改为 `https://api.yuzhen-fitness.cn/api/ai`
+  - `src/api/warmup.ts` - 添加JWT token请求拦截器，修复localStorage key从`auth_token`改为`access_token`
+  - 权限系统重构后，所有AI请求必须走PHP后端代理（由后端签发Internal JWT）
+  - 修复前端直接请求DAML-RAG导致的跨域错误
+
+---
+
 ## [1.93.0] - 2026-02-05
 
 ### 新增
