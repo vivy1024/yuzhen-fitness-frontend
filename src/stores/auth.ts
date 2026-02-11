@@ -6,8 +6,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { login as loginApi, register as registerApi, logout as logoutApi, refreshToken as refreshTokenApi, type LoginCredentials, type RegisterData, type AuthResponse } from '@/api/auth'
-import { setToken, clearToken, getRefreshToken } from '@/utils/token'
+import { setToken, clearToken, getRefreshToken, getToken } from '@/utils/token'
 import { getTokenManager } from '@/utils/token-manager'
+import { parseJWTPayload } from '@/utils/auth'
 import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
 import { useTopicStore } from '@/stores/topic'
@@ -51,6 +52,20 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = JSON.parse(userInfoStr)
         isAuthenticated.value = true
         
+        // 从当前JWT解析权限Claims
+        try {
+          const token = getToken()
+          if (token) {
+            const payload = parseJWTPayload(token)
+            if (payload?.tier || payload?.permissions) {
+              const membershipStore = useMembershipStore()
+              membershipStore.updatePermissionsFromJwt(payload)
+            }
+          }
+        } catch (parseError) {
+          // 解析失败不影响初始化
+        }
+        
         // 初始化关联的stores
         await initRelatedStores()
       } catch (error) {
@@ -88,6 +103,18 @@ export const useAuthStore = defineStore('auth', () => {
           )
           
           console.log('[TokenManager] Token刷新成功，新过期时间:', response.data.expires_in, '秒')
+          
+          // 解析新JWT中的权限Claims并更新membership store
+          try {
+            const payload = parseJWTPayload(response.data.access_token)
+            if (payload?.tier || payload?.permissions) {
+              const membershipStore = useMembershipStore()
+              membershipStore.updatePermissionsFromJwt(payload)
+              console.log('[TokenManager] 已从JWT更新权限Claims:', { tier: payload.tier })
+            }
+          } catch (parseError) {
+            console.warn('[TokenManager] 解析JWT权限Claims失败（不影响刷新）:', parseError)
+          }
           
           return {
             token: response.data.access_token,
@@ -193,6 +220,17 @@ export const useAuthStore = defineStore('auth', () => {
         
         // 登录成功后初始化关联stores
         await initRelatedStores()
+        
+        // 解析JWT中的权限Claims
+        try {
+          const payload = parseJWTPayload(response.data.access_token)
+          if (payload?.tier || payload?.permissions) {
+            const membershipStore = useMembershipStore()
+            membershipStore.updatePermissionsFromJwt(payload)
+          }
+        } catch (parseError) {
+          console.warn('[Auth] 解析JWT权限Claims失败:', parseError)
+        }
         
         // 异步预热DAML-RAG（不阻塞登录流程）
         if (response.data.user.id) {

@@ -35,6 +35,10 @@ export const useMembershipStore = defineStore('membership', () => {
   const systemConfig = ref<MembershipConfig | null>(null)
   const configLoaded = ref(false)
   
+  // JWT权限Claims状态（从External JWT解析，作为权限数据源）
+  const jwtTier = ref<string | null>(null)
+  const jwtPermissions = ref<string[]>([])
+  
   // 支付相关状态
   const currentOrder = ref<PaymentOrder | null>(null)
   const paymentLoading = ref(false)
@@ -92,10 +96,9 @@ export const useMembershipStore = defineStore('membership', () => {
   
   /**
    * 是否是VIP会员
+   * 直接从后端数据判断，不再依赖Feature Flag
    */
   const isVip = computed(() => {
-    // 会员系统禁用时，所有用户都不是VIP
-    if (!isSystemEnabled.value) return false
     if (!membership.value) return false
     return membership.value.is_active && membership.value.remaining_days > 0
   })
@@ -110,14 +113,20 @@ export const useMembershipStore = defineStore('membership', () => {
 
   /**
    * 当前会员等级
-   * 返回会员等级标识：'free' | 'warmheart' | 'energy'
-   * @requirements 5.6, 6.6
+   * 优先使用JWT中的tier（后端权限数据源），其次使用会员API数据
+   * 不再依赖Feature Flag覆盖
+   * @requirements 5.6, 6.6, 6.2
    */
   const currentTier = computed((): 'free' | 'warmheart' | 'energy' => {
-    // 会员系统禁用时，所有用户视为能量会员（最高权限）
-    if (!isSystemEnabled.value) return 'energy'
+    // 优先使用JWT中的tier（后端作为唯一数据源）
+    if (jwtTier.value) {
+      const tier = jwtTier.value
+      if (tier === 'energy' || tier === 'warmheart' || tier === 'free') {
+        return tier
+      }
+    }
     
-    // 未登录或无会员信息，返回免费
+    // 降级：从会员API数据获取
     if (!membership.value) return 'free'
     
     // 会员已过期，返回免费
@@ -154,12 +163,9 @@ export const useMembershipStore = defineStore('membership', () => {
 
   /**
    * 每日AI查询限制
+   * 直接从后端API获取，不再依赖Feature Flag
    */
   const dailyAiQueryLimit = computed(() => {
-    // 会员系统禁用时，使用统一限制
-    if (!isSystemEnabled.value && unifiedLimits.value) {
-      return unifiedLimits.value.ai_queries_per_day
-    }
     if (!membership.value?.membership?.limits) {
       return 5 // 免费用户默认5次
     }
@@ -168,12 +174,9 @@ export const useMembershipStore = defineStore('membership', () => {
 
   /**
    * 最大训练计划数
+   * 直接从后端API获取，不再依赖Feature Flag
    */
   const maxTrainingPlans = computed(() => {
-    // 会员系统禁用时，使用统一限制
-    if (!isSystemEnabled.value && unifiedLimits.value) {
-      return unifiedLimits.value.max_training_plans
-    }
     if (!membership.value?.membership?.limits) {
       return 3 // 免费用户默认3个
     }
@@ -599,9 +602,25 @@ export const useMembershipStore = defineStore('membership', () => {
     membership.value = null
     currentOrder.value = null
     billingRecords.value = []
+    jwtTier.value = null
+    jwtPermissions.value = []
     stopPollingPaymentStatus()
     initialized.value = false
     // 保留配置，不清除 systemConfig
+  }
+
+  /**
+   * 从JWT Claims更新权限状态
+   * 由auth store在Token刷新/登录时调用
+   * @requirements 6.1, 6.2
+   */
+  function updatePermissionsFromJwt(payload: { tier?: string; permissions?: string[]; [key: string]: any }) {
+    if (payload.tier) {
+      jwtTier.value = payload.tier
+    }
+    if (Array.isArray(payload.permissions)) {
+      jwtPermissions.value = payload.permissions
+    }
   }
 
   /**
@@ -627,6 +646,8 @@ export const useMembershipStore = defineStore('membership', () => {
     billingLoading,
     systemConfig,
     configLoaded,
+    jwtTier,
+    jwtPermissions,
     
     // Getters
     isSystemEnabled,
@@ -663,6 +684,7 @@ export const useMembershipStore = defineStore('membership', () => {
     deleteOrder,
     toggleAutoRenew,
     clearMembership,
+    updatePermissionsFromJwt,
     reinit,
   }
 })

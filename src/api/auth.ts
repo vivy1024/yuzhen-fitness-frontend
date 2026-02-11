@@ -1,9 +1,29 @@
 import axios from 'axios'
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { getToken, getRefreshToken } from '@/utils/token'
 import { clearToken } from '@/utils/token'
 import { showError } from '@/components/ui/toast'
+import { getTokenManager } from '@/utils/token-manager'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+
+// 401自动刷新状态
+let isRefreshing = false
+let failedQueue: Array<{
+  resolve: (token: string) => void
+  reject: (error: any) => void
+}> = []
+
+function processQueue(error: any, token: string | null = null) {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (token) {
+      resolve(token)
+    } else {
+      reject(error)
+    }
+  })
+  failedQueue = []
+}
 
 // 创建 axios 实例
 const api = axios.create({
@@ -29,10 +49,10 @@ api.interceptors.request.use(
   }
 )
 
-// 响应拦截器 - 处理错误
+// 响应拦截器 - 处理错误（401时自动尝试刷新Token）
 api.interceptors.response.use(
   (response) => response.data,
-  (error) => {
+  async (error: AxiosError) => {
     console.error('[API Error]', {
       url: error.config?.url,
       method: error.config?.method,
@@ -41,29 +61,92 @@ api.interceptors.response.use(
       message: error.message
     })
     
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    
     if (error.response) {
       // 服务器返回错误
       const status = error.response.status
-      const data = error.response.data
+      const data = error.response.data as any
       const message = data?.msg || data?.message || '请求失败'
       
       // 根据状态码统一处理
       switch (status) {
-        case 401:
-          // 未授权 - 清除认证信息并跳转登录
-          showError(message || '登录已过期，请重新登录')
-          clearToken()
-          localStorage.removeItem('user_info')
-          localStorage.removeItem('current_user_id')
-          
-          // 跳转到登录页（如果不在登录页）
-          const currentPath = window.location.pathname
-          if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-            setTimeout(() => {
-              window.location.href = '/login?expired=1'
-            }, 1000)
+        case 401: {
+          // 如果是刷新Token请求本身失败，或已重试过，直接登出
+          const isAuthEndpoint = originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/login')
+          if (isAuthEndpoint || originalRequest?._retry) {
+            showError(message || '登录已过期，请重新登录')
+            clearToken()
+            localStorage.removeItem('user_info')
+            localStorage.removeItem('current_user_id')
+            const currentPath = window.location.pathname
+            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+            }
+            return Promise.reject(new Error(message || '未授权，请先登录'))
           }
-          return Promise.reject(new Error(message || '未授权，请先登录'))
+          
+          // 尝试刷新Token
+          if (isRefreshing) {
+            // 已有刷新请求在进行中，排队等待
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject })
+            }).then((token) => {
+              if (originalRequest) {
+                originalRequest.headers.Authorization = `Bearer ${token}`
+                originalRequest._retry = true
+                return api(originalRequest)
+              }
+              return Promise.reject(new Error('无法重试请求'))
+            })
+          }
+          
+          isRefreshing = true
+          
+          try {
+            const tokenManager = getTokenManager()
+            const refreshed = await tokenManager.refreshToken()
+            
+            if (refreshed) {
+              const newToken = tokenManager.getAccessToken()
+              if (newToken) {
+                processQueue(null, newToken)
+                
+                // 重试原始请求
+                if (originalRequest) {
+                  originalRequest.headers.Authorization = `Bearer ${newToken}`
+                  originalRequest._retry = true
+                  return api(originalRequest)
+                }
+              }
+            }
+            
+            // 刷新失败
+            processQueue(new Error('Token刷新失败'), null)
+            showError(message || '登录已过期，请重新登录')
+            clearToken()
+            localStorage.removeItem('user_info')
+            localStorage.removeItem('current_user_id')
+            const currentPath = window.location.pathname
+            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+            }
+            return Promise.reject(new Error(message || '未授权，请先登录'))
+          } catch (refreshError) {
+            processQueue(refreshError, null)
+            showError('登录已过期，请重新登录')
+            clearToken()
+            localStorage.removeItem('user_info')
+            localStorage.removeItem('current_user_id')
+            const currentPath = window.location.pathname
+            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+            }
+            return Promise.reject(new Error('未授权，请先登录'))
+          } finally {
+            isRefreshing = false
+          }
+        }
         
         case 403:
           // 权限不足

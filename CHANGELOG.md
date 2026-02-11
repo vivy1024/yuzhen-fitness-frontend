@@ -14,6 +14,25 @@
 
 ---
 
+## [1.93.0] - 2026-02-05
+
+### 新增
+- 💰 **积分系统前端实现**
+  - **Credit Store** (`src/stores/credit.ts`)：积分状态管理，包含余额查询、流水历史、本地更新等功能
+  - **Credit API** (`src/api/credit.ts`)：积分相关API调用（getBalance/getHistory/getStats）
+  - **CreditDisplay组件** (`src/components/chat/CreditDisplay.vue`)：积分余额展示，支持紧凑和详细两种模式
+  - **CreditHistory组件** (`src/components/chat/CreditHistory.vue`)：积分流水历史列表，支持分页和筛选
+
+### 修改
+- 🔧 `src/views/ai/chat.vue` - 将UsageDisplay替换为CreditDisplay，更新积分检查逻辑
+
+### 废弃
+- ⚠️ `src/stores/usage.ts` - 已被credit.ts替代
+- ⚠️ `src/api/usage.ts` - 已被credit.ts替代
+- ⚠️ `src/components/chat/UsageDisplay.vue` - 已被CreditDisplay.vue替代
+
+---
+
 ## [1.92.0] - 2026-02-04
 
 ### 安全修复

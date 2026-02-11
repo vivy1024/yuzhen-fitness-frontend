@@ -1,11 +1,14 @@
 /**
- * 用量状态管理
- * 管理用户AI查询用量统计、额外额度、用量检查等
+ * 用量状态管理（已废弃）
  * 
- * @version v1.0.0
- * @date 2026-01-11
+ * @deprecated 此store已被credit.ts替代
+ * 积分体系改造后，使用useCreditStore管理积分状态
+ * 保留此文件仅供参考，请勿在新代码中使用
+ * 
+ * @see credit.ts
  * @author 薛小川
- * @requirements 6.1-6.6
+ * @created 2026-01-11
+ * @deprecated 2026-02-05
  */
 
 import { defineStore } from 'pinia'

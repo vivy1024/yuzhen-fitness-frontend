@@ -1,11 +1,14 @@
 /**
- * 用量管理API
- * 提供用户AI查询用量的查询、检查和增加接口
+ * 用量管理API（已废弃）
  * 
- * @version v1.0.0
- * @date 2026-01-11
+ * @deprecated 此API模块已被credit.ts替代
+ * 积分体系改造后，使用credit.ts中的API
+ * 保留此文件仅供参考，请勿在新代码中使用
+ * 
+ * @see credit.ts
  * @author 薛小川
- * @requirements 4.1-4.6, 6.1-6.6
+ * @created 2026-01-11
+ * @deprecated 2026-02-05
  */
 
 import api from './auth'
