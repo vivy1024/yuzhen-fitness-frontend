@@ -72,8 +72,8 @@ git push origin main
 # 后端API地址（生产环境）
 VITE_API_BASE_URL=https://api.yuzhen-fitness.cn
 
-# DAML-RAG AI服务地址（生产环境）
-VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
+# DAML-RAG AI服务地址（生产环境，通过PHP后端代理）
+VITE_DAML_RAG_API_URL=https://api.yuzhen-fitness.cn/api/ai
 
 # 应用配置
 VITE_APP_NAME=玉珍健身
@@ -138,8 +138,8 @@ VITE_DEBUG=true
 # 后端API地址（Zeabur生产）
 VITE_API_BASE_URL=https://api.yuzhen-fitness.cn
 
-# DAML-RAG AI服务地址（Zeabur生产）
-VITE_DAML_RAG_API_URL=https://ai.yuzhen-fitness.cn
+# DAML-RAG AI服务地址（Zeabur生产，通过PHP后端代理）
+VITE_DAML_RAG_API_URL=https://api.yuzhen-fitness.cn/api/ai
 
 # 应用配置
 VITE_APP_NAME=玉珍健身
@@ -156,7 +156,7 @@ VITE_DEBUG=false
 | 变量名 | 说明 | 本地开发 | Zeabur生产 |
 |--------|------|---------|-----------|
 | `VITE_API_BASE_URL` | Laravel后端API地址 | `http://localhost:8000` | `https://api.yuzhen-fitness.cn` |
-| `VITE_DAML_RAG_API_URL` | DAML-RAG AI服务地址 | `http://localhost:8001` | `https://ai.yuzhen-fitness.cn` |
+| `VITE_DAML_RAG_API_URL` | DAML-RAG AI服务地址 | `http://localhost:8001` | `https://api.yuzhen-fitness.cn/api/ai` |
 | `VITE_APP_NAME` | 应用标题 | `玉珍健身（开发）` | `玉珍健身` |
 | `VITE_APP_VERSION` | 应用版本号 | `1.52.0` | `1.52.0` |
 | `VITE_DEBUG` | 调试模式 | `true` | `false` |
