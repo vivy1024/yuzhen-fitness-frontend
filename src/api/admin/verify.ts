@@ -1,6 +1,8 @@
 /**
  * 管理员验证 API
  * 用于路由守卫中验证管理员身份
+ * 
+ * 安全修复：移除localStorage降级逻辑，API失败时拒绝访问
  */
 
 import api from '@/api/auth'
@@ -17,7 +19,7 @@ interface AdminVerifyResponse {
 
 // 缓存验证结果，避免频繁请求
 let cachedResult: { isAdmin: boolean; timestamp: number } | null = null
-// 缓存时间从5分钟缩短到1分钟，提高安全性
+// 缓存时间1分钟，提高安全性
 const CACHE_DURATION = 1 * 60 * 1000 // 1分钟缓存
 
 // 敏感路由列表，访问时强制刷新验证
@@ -37,6 +39,7 @@ export function isSensitiveRoute(routeName: string): boolean {
 
 /**
  * 验证当前用户是否为管理员
+ * 安全修复：移除localStorage降级逻辑
  * @param forceRefresh 是否强制刷新（忽略缓存）
  */
 export async function verifyAdmin(forceRefresh = false): Promise<boolean> {
@@ -60,38 +63,38 @@ export async function verifyAdmin(forceRefresh = false): Promise<boolean> {
         timestamp: Date.now()
       }
       
-      // 同步更新 localStorage 中的用户角色
-      if (isAdmin) {
-        const userInfo = localStorage.getItem('user_info')
-        if (userInfo) {
-          try {
-            const user = JSON.parse(userInfo)
-            user.role = response.data.data.role
-            localStorage.setItem('user_info', JSON.stringify(user))
-          } catch (e) {
-            // 忽略解析错误
-          }
-        }
-      }
-      
       return isAdmin
     }
     
+    // API返回非200，清除缓存并拒绝
+    clearAdminCache()
     return false
-  } catch (error) {
-    console.warn('[AdminVerify] 验证失败，回退到本地检查:', error)
     
-    // API 失败时回退到本地检查（降级策略）
+  } catch (error) {
+    // 安全修复：API失败时拒绝访问，不回退到localStorage
+    console.error('[AdminVerify] 验证失败:', error)
+    clearAdminCache()
+    clearLocalAdminState()
+    return false
+  }
+}
+
+/**
+ * 清除本地管理员状态
+ * 安全修复：API失败时清除本地存储的管理员角色
+ */
+function clearLocalAdminState(): void {
+  try {
     const userInfo = localStorage.getItem('user_info')
     if (userInfo) {
-      try {
-        const user = JSON.parse(userInfo)
-        return user.role === 'admin'
-      } catch (e) {
-        return false
+      const user = JSON.parse(userInfo)
+      if (user.role === 'admin') {
+        user.role = 'user'
+        localStorage.setItem('user_info', JSON.stringify(user))
       }
     }
-    return false
+  } catch (e) {
+    // 忽略解析错误
   }
 }
 

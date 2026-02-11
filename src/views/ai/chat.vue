@@ -6,7 +6,7 @@ import { useTopicStore } from '@/stores/topic'
 import { useStreamingStore } from '@/stores/streaming'
 import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
-import { useUsageStore } from '@/stores/usage'
+import { useCreditStore } from '@/stores/credit'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,7 +15,7 @@ import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
 import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
 import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
 import StrategySwitch from '@/components/chat/StrategySwitch.vue'
-import UsageDisplay from '@/components/chat/UsageDisplay.vue'
+import CreditDisplay from '@/components/chat/CreditDisplay.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
@@ -29,7 +29,7 @@ const topicStore = useTopicStore()
 const streamingStore = useStreamingStore()
 const userStore = useUserStore()
 const membershipStore = useMembershipStore()
-const usageStore = useUsageStore()
+const creditStore = useCreditStore()
 
 // State
 const messageInput = ref('')
@@ -189,13 +189,10 @@ async function sendMessage() {
 
   const content = messageInput.value.trim()
   
-  // 发送消息前检查用量
-  const mode = currentStrategy.value === 'agent' ? 'agent' : 'dag'
-  const checkResult = await usageStore.checkCanExecute(mode)
-  
-  if (!checkResult.allowed) {
-    // 用量不足，显示警告
-    showWarning(checkResult.message || `${mode === 'dag' ? 'DAG' : 'Agent'}查询已达上限，请升级会员或明日再试`)
+  // 发送消息前检查积分
+  if (!creditStore.canSendQuery) {
+    // 积分不足，显示警告
+    showWarning('今日积分已用完，请升级会员或明日再试')
     return
   }
   
@@ -231,8 +228,8 @@ async function sendMessage() {
     await nextTick()
     scrollToBottom()
     
-    // 刷新用量数据（消息发送成功后）
-    await usageStore.refresh()
+    // 刷新积分数据（消息发送成功后）
+    await creditStore.refresh()
   }
 }
 
@@ -422,8 +419,8 @@ onMounted(async () => {
   // 初始化会员store
   await membershipStore.init()
   
-  // 初始化用量store
-  await usageStore.init()
+  // 初始化积分store
+  await creditStore.init()
   
   // 初始化话题store
   topicStore.init()
@@ -470,8 +467,8 @@ onUnmounted(() => {
         </h1>
       </div>
       <div class="flex items-center gap-2">
-        <!-- 用量展示组件 -->
-        <UsageDisplay compact />
+        <!-- 积分展示组件 -->
+        <CreditDisplay compact />
         <!-- 策略切换（能量会员可见） -->
         <StrategySwitch 
           v-model="currentStrategy"

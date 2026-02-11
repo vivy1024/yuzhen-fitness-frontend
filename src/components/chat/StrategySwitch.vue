@@ -42,20 +42,9 @@ const membershipStore = useMembershipStore()
 const currentStrategy = ref<'dag' | 'agent'>(props.modelValue)
 
 // 是否是能量会员（可以使用Agent模式）
-// 开发测试阶段：会员系统禁用时，所有用户都可以使用Agent模式
 const isEnergyMember = computed(() => {
-  // 开发测试阶段：如果会员系统禁用，所有用户都视为能量会员
-  // 使用 membershipStore.isSystemEnabled 而不是 membership.system_enabled
-  if (!membershipStore.isSystemEnabled) {
-    return true
-  }
-  
-  const membership = membershipStore.membership
-  if (!membership) return false
-  
-  // 检查会员类型是否为energy
-  return membership.membership?.slug === 'energy' || 
-         membership.membership_type === 'energy'
+  // 直接使用后端提供的会员等级判断，不再依赖Feature Flag
+  return membershipStore.currentTier === 'energy'
 })
 
 // 是否显示切换开关（仅能量会员可见）

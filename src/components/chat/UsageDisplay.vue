@@ -1,11 +1,15 @@
 <script setup lang="ts">
 /**
- * 用量展示组件
- * 显示用户今日AI查询用量和剩余次数
+ * 用量展示组件（已废弃）
  * 
+ * @deprecated 此组件已被CreditDisplay.vue替代
+ * 积分体系改造后，使用CreditDisplay组件显示积分余额
+ * 保留此文件仅供参考，请勿在新代码中使用
+ * 
+ * @see CreditDisplay.vue
  * @author 薛小川
  * @created 2026-01-11
- * @requirements 6.1-6.5
+ * @deprecated 2026-02-05
  */
 import { computed, onMounted, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
