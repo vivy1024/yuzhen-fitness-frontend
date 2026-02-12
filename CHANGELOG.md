@@ -14,6 +14,16 @@
 
 ---
 
+## [1.99.0] - 2026-02-12
+
+### 修复
+- 🔧 **登录/注册错误提示兜底 + login.vue缺失导入修复**
+  - `auth store` login/register catch块恢复 `showError` 调用，防止拦截器防抖吞掉错误时用户无任何提示
+  - `login.vue` 添加缺失的 `showSuccess` 导入（手机号登录成功时需要）
+  - `_headers` 文件提交（sw.js no-cache头）
+
+---
+
 ## [1.98.0] - 2026-02-12
 
 ### 修复
