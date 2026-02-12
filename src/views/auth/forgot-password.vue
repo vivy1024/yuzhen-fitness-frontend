@@ -56,6 +56,7 @@ async function handleSendCode() {
     return
   }
 
+  if (loading.value) return // 防抖
   loading.value = true
   try {
     // 先检查邮箱是否已注册

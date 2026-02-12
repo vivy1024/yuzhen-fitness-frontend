@@ -6,7 +6,7 @@
         <component :is="Component" :key="route.path" />
       </Transition>
     </RouterView>
-    <Toaster position="top-center" :duration="3000" />
+    <Toaster position="top-center" :duration="3000" :toastOptions="{ style: 'pointer-events: auto; margin-top: env(safe-area-inset-top, 0px);' }" richColors />
     <InstallPrompt />
   </div>
 </template>

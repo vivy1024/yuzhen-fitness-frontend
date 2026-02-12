@@ -26,7 +26,25 @@ authStore.init()
 //   registerServiceWorker().catch(console.error)
 // }
 
-// ============ 全局错误边界 ============
+// ============ 全局错误边界（带防抖） ============
+
+// 错误Toast防抖：3秒内同一消息不重复显示
+const recentErrors = new Map<string, number>()
+const ERROR_DEBOUNCE_MS = 3000
+
+function showErrorDebounced(message: string) {
+  const now = Date.now()
+  const lastShown = recentErrors.get(message)
+  if (lastShown && now - lastShown < ERROR_DEBOUNCE_MS) return
+  recentErrors.set(message, now)
+  // 清理过期记录
+  if (recentErrors.size > 20) {
+    for (const [key, time] of recentErrors) {
+      if (now - time > ERROR_DEBOUNCE_MS) recentErrors.delete(key)
+    }
+  }
+  showError(message)
+}
 
 /**
  * 捕获未处理的Promise拒绝
@@ -43,7 +61,7 @@ window.addEventListener('unhandledrejection', (event) => {
   
   // 显示友好的错误提示
   const errorMessage = event.reason?.message || event.reason || '发生未知错误'
-  showError(`操作失败: ${errorMessage}`)
+  showErrorDebounced(`操作失败: ${errorMessage}`)
 })
 
 /**
@@ -63,7 +81,7 @@ window.addEventListener('error', (event) => {
   event.preventDefault()
   
   // 显示友好的错误提示
-  showError('页面发生错误，请刷新页面重试')
+  showErrorDebounced('页面发生错误，请刷新页面重试')
 })
 
 /**
@@ -78,7 +96,7 @@ app.config.errorHandler = (err, instance, info) => {
   })
   
   // 显示友好的错误提示
-  showError('组件加载失败，请刷新页面重试')
+  showErrorDebounced('组件加载失败，请刷新页面重试')
 }
 
 /**
