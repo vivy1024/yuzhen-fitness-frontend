@@ -21,10 +21,10 @@ app.component('Toaster', Toaster)
 const authStore = useAuthStore()
 authStore.init()
 
-// 注册Service Worker（生产环境）
-if (import.meta.env.PROD) {
-  registerServiceWorker().catch(console.error)
-}
+// Service Worker已禁用 - 使用Capacitor原生App替代PWA
+// if (import.meta.env.PROD) {
+//   registerServiceWorker().catch(console.error)
+// }
 
 // ============ 全局错误边界 ============
 

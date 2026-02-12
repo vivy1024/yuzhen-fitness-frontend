@@ -5,10 +5,13 @@ const config: CapacitorConfig = {
   appName: '玉珍健身',
   webDir: 'dist',
   server: {
-    // 生产环境配置
-    url: 'https://yuzhen-fitness.cn',
-    cleartext: false,
-    androidScheme: 'https'
+    // 使用本地打包的dist文件，不加载远程网页
+    androidScheme: 'https',
+    // 允许API请求到后端域名
+    allowNavigation: [
+      'api.yuzhen-fitness.cn',
+      'app.yuzhen-fitness.cn',
+    ]
   },
   plugins: {
     SplashScreen: {

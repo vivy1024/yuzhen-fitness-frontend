@@ -8,21 +8,24 @@ export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '')
   
+  // Android构建时禁用压缩（.gz/.br文件会导致Android资源合并冲突）
+  const isAndroid = process.env.BUILD_TARGET === 'android'
+  
   return {
     plugins: [
       vue(),
-      // gzip压缩插件
+      // gzip压缩插件（Android构建时禁用）
       viteCompression({
         verbose: true,
-        disable: false,
+        disable: isAndroid,
         threshold: 10240, // 10KB以上的文件才压缩
         algorithm: 'gzip',
         ext: '.gz',
       }),
-      // brotli压缩插件（更高压缩率）
+      // brotli压缩插件（Android构建时禁用）
       viteCompression({
         verbose: true,
-        disable: false,
+        disable: isAndroid,
         threshold: 10240,
         algorithm: 'brotliCompress',
         ext: '.br',

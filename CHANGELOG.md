@@ -14,6 +14,23 @@
 
 ---
 
+## [1.97.0] - 2026-02-12
+
+### 新增
+- 📱 **Capacitor Android移动端构建**
+  - 配置 `capacitor.config.ts`：移除远程URL加载，使用本地dist文件 + `androidScheme: 'https'`
+  - 添加 `build:android` 脚本：构建时禁用gzip/brotli压缩（避免Android资源合并冲突）
+  - `vite.config.ts` 支持 `BUILD_TARGET=android` 环境变量控制压缩插件开关
+  - 成功生成 `app-debug.apk`（~10MB）
+
+### 修复
+- 🐛 **修复PWA Service Worker无限循环问题**
+  - `public/sw.js` 替换为自毁版本：清除所有缓存并注销自身
+  - `src/main.ts` 禁用SW注册（注释掉 `registerServiceWorker()`）
+  - 解决旧SW缓存导致的页面无限拦截渲染问题
+
+---
+
 ## [1.95.0] - 2026-02-12
 
 ### 优化
