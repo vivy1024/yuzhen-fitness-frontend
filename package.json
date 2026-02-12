@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:android": "set BUILD_TARGET=android&& vite build && npx cap sync android",
     "build:check": "vue-tsc && vite build",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
@@ -19,6 +20,9 @@
     "lighthouse:mobile": "lhci autorun --config=lighthouserc.mobile.json"
   },
   "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
     "@types/dompurify": "^3.0.5",
     "@vee-validate/zod": "^4.15.1",
     "@vueuse/core": "^10.11.1",
