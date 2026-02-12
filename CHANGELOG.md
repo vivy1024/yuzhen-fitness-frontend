@@ -14,6 +14,18 @@
 
 ---
 
+## [1.98.0] - 2026-02-12
+
+### 修复
+- 🔧 **登录防抖 + Toast防重复 + 移动端适配**
+  - 登录/注册/忘记密码页面添加 `loading` 防抖守卫，防止重复提交
+  - 移除登录/注册页面重复的 `showError`/`showSuccess` 调用（auth store和拦截器已处理）
+  - API拦截器所有 `showError` 替换为 `showApiError`（3秒内同一消息不重复显示）
+  - `main.ts` 全局错误边界添加 `showErrorDebounced` 防抖包装
+  - `App.vue` Toaster 添加 `richColors` + `safe-area-inset-top` 安全区域适配
+
+---
+
 ## [1.97.0] - 2026-02-12
 
 ### 新增

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
-import { showSuccess, showError } from '@/components/ui/toast'
+import { showError } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2, Dumbbell } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -46,18 +46,19 @@ async function handleEmailLogin() {
     return
   }
   
+  if (loading.value) return // 防抖：防止重复提交
+  
   loading.value = true
   try {
     const result = await authStore.login(emailForm.value)
     
     if (result.success) {
-      showSuccess(result.message || '登录成功')
+      // auth store已显示成功Toast，不重复
       setTimeout(() => {
         router.push('/')
       }, 1000)
-    } else {
-      showError(result.message || '登录失败')
     }
+    // 失败时auth store或拦截器已显示错误Toast，不重复
   } finally {
     loading.value = false
   }
@@ -69,6 +70,8 @@ async function handlePhoneLogin() {
     showError('请填写手机号和验证码')
     return
   }
+  
+  if (loading.value) return // 防抖：防止重复提交
   
   loading.value = true
   try {

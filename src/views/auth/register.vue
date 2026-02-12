@@ -96,6 +96,7 @@ async function handleRegister() {
     showError('请完整填写表单')
     return
   }
+  if (loading.value) return // 防抖：防止重复提交
   loading.value = true
   try {
     const result = await authStore.register({
@@ -106,11 +107,10 @@ async function handleRegister() {
       password_confirmation: form.value.password_confirmation,
     })
     if (result.success) {
-      showSuccess(result.message || '注册成功')
+      // auth store已显示成功Toast，不重复
       setTimeout(() => router.push('/'), 1000)
-    } else {
-      showError(result.message || '注册失败')
     }
+    // 失败时auth store或拦截器已显示错误Toast，不重复
   } finally {
     loading.value = false
   }
