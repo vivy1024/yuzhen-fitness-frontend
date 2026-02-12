@@ -14,6 +14,16 @@
 
 ---
 
+## [1.101.0] - 2026-02-13
+
+### 修复
+- 🔧 **修复部署后白屏问题：自定义Caddyfile缓存策略**
+  - 根因：Zeabur每次部署JS chunk文件名变化，但index.html被浏览器缓存，请求旧JS文件名时SPA fallback返回HTML导致MIME type错误白屏
+  - 新增Caddyfile：index.html设no-cache（每次获取最新）、/assets/*设immutable长期缓存（有hash文件名）
+  - Dockerfile更新：COPY自定义Caddyfile覆盖默认配置
+
+---
+
 ## [1.100.0] - 2026-02-12
 
 ### 修复
