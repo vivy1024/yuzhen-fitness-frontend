@@ -286,13 +286,15 @@ router.beforeEach(async (to, _from, next) => {
       return
     }
     
-    // 检查Token是否即将过期（5分钟内），尝试自动刷新
+    // 检查Token是否即将过期（5分钟内），尝试自动刷新（带超时保护）
     if (isTokenExpiringSoon(token, 300)) {
       logger.sensitive('[Router] Token即将过期，尝试刷新...')
       try {
-        const refreshed = await tokenManager.refreshToken()
+        const refreshPromise = tokenManager.refreshToken()
+        const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000))
+        const refreshed = await Promise.race([refreshPromise, timeoutPromise])
         if (!refreshed) {
-          logger.sensitive('[Router] Token刷新失败，重定向到登录页')
+          logger.sensitive('[Router] Token刷新失败或超时，重定向到登录页')
           tokenManager.clearTokens()
           next('/auth/login')
           return
@@ -312,12 +314,14 @@ router.beforeEach(async (to, _from, next) => {
     return
   }
   
-  // 管理员权限检查 - 调用后端API验证
+  // 管理员权限检查 - 调用后端API验证（带超时保护）
   if (to.meta.requiresAdmin && isAuthenticated) {
     try {
       // 敏感路由强制刷新验证
       const forceRefresh = isSensitiveRoute(to.name as string)
-      const isAdmin = await verifyAdmin(forceRefresh)
+      const verifyPromise = verifyAdmin(forceRefresh)
+      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000))
+      const isAdmin = await Promise.race([verifyPromise, timeoutPromise])
       if (!isAdmin) {
         next('/')  // 非管理员重定向到首页
         return
