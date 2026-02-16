@@ -91,7 +91,7 @@ async function startPayment() {
     currentOrderNo.value = result.order.order_no
     currentStep.value = 'scan'
   } else {
-    toast({ title: '创建订单失败', description: result.error || '请稍后重试', variant: 'destructive' })
+    toast({ title: '创建订单失败', description: result.message || '请稍后重试', variant: 'destructive' })
   }
 }
 

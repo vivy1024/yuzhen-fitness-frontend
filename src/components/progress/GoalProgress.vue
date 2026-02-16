@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+
 import { Target, Plus, Clock, Scale, Percent, Dumbbell, TrendingUp, Star } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

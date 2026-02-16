@@ -77,10 +77,10 @@ function handleTemplateClick(template: DAGTemplate) {
   }
 }
 
-// 复杂度星星
-function getComplexityStars(complexity: number): string {
-  return '⭐'.repeat(complexity)
-}
+// 复杂度星星（暂未使用）
+// function getComplexityStars(complexity: number): string {
+//   return '⭐'.repeat(complexity)
+// }
 </script>
 
 <template>

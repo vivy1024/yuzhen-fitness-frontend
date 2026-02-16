@@ -23,12 +23,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { 
-  Coins, 
-  AlertTriangle, 
-  TrendingUp, 
+import {
+  Coins,
+  AlertTriangle,
+  TrendingUp,
   RefreshCw,
-  Zap,
   ArrowUpCircle
 } from 'lucide-vue-next'
 
@@ -44,7 +43,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const router = useRouter()
 const creditStore = useCreditStore()
-const membershipStore = useMembershipStore()
 const authStore = useAuthStore()
 
 // Sheet状态
