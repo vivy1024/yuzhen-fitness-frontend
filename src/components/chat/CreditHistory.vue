@@ -7,7 +7,7 @@
  * @created 2026-02-05
  * @requirements 3.4
  */
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useCreditStore } from '@/stores/credit'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,7 +76,8 @@ async function loadHistory() {
 }
 
 // 切换筛选
-async function onFilterChange(value: string) {
+async function onFilterChange(value: string | null) {
+  if (!value) return
   filterMode.value = value as 'all' | 'dag' | 'agent'
   currentPage.value = 1
   await loadHistory()

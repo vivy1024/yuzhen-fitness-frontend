@@ -4,7 +4,7 @@
  * 显示所有支付记录，支持订单详情查看和删除
  */
 import { ref, onMounted } from 'vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -28,15 +28,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useMembershipStore } from '@/stores/membership'
 import { showSuccess, showError } from '@/components/ui/toast'
-import { 
-  Receipt, 
-  CreditCard, 
+import {
+  Receipt,
   Calendar,
-  ChevronRight,
   RefreshCw,
   FileText,
-  Trash2,
-  X
+  Trash2
 } from 'lucide-vue-next'
 import type { BillingRecord } from '@/api/membership'
 

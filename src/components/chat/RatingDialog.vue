@@ -151,7 +151,7 @@ const resetForm = () => {
 /**
  * 渲染星星评分
  */
-const renderStars = (rating: number, onChange: (value: number) => void) => {
+const renderStars = () => {
   return Array.from({ length: 5 }, (_, i) => i + 1)
 }
 </script>

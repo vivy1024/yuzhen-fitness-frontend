@@ -3,7 +3,7 @@
  * 会员套餐定价组件
  * 显示所有会员套餐，支持套餐选择
  */
-import { computed } from 'vue'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

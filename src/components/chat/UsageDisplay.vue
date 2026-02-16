@@ -27,15 +27,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { 
-  Zap, 
-  AlertTriangle, 
-  TrendingUp, 
-  Cpu, 
+import {
+  Zap,
+  AlertTriangle,
+  TrendingUp,
+  Cpu,
   Sparkles,
   Gift,
-  RefreshCw,
-  ChevronRight
+  RefreshCw
 } from 'lucide-vue-next'
 
 // Props

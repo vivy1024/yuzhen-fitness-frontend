@@ -8,8 +8,6 @@
  * 数据来源: storage/app/public/exercises_v2/ (1603+ 动作)
  */
 
-import axios from 'axios'
-import { getToken } from '@/utils/token'
 import type {
   ExerciseBasic,
   ExerciseDetail,
@@ -17,8 +15,6 @@ import type {
   FilterConditions,
   PaginationInfo,
 } from '@/types/exercise'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 
 // 创建 axios 实例 - 使用auth.ts中的统一实例
 import api from './auth'
@@ -42,7 +38,7 @@ export const exerciseApi = {
     data: { items: ExerciseBasic[]; pagination: PaginationInfo } | null
   }> => {
     try {
-      const response = await api.get('/exercises-v2', {
+      const response: any = await api.get('/exercises-v2', {
         params: {
           page: params?.page || 1,
           per_page: params?.pageSize || 20,
@@ -89,7 +85,7 @@ export const exerciseApi = {
     data: ExerciseDetail | null
   }> => {
     try {
-      const response = await api.get(`/exercises-v2/${id}`)
+      const response: any = await api.get(`/exercises-v2/${id}`)
       if (response.code === 200 && response.data) {
         return { code: 200, msg: response.msg || '成功', data: response.data }
       }
@@ -110,7 +106,7 @@ export const exerciseApi = {
     data: FilterOptions | null
   }> => {
     try {
-      const response = await api.get('/exercises-v2/filter-options', { timeout: 30000 })
+      const response: any = await api.get('/exercises-v2/filter-options', { timeout: 30000 })
       if (response.code === 200 && response.data) {
         const apiData = response.data
         // ✅ 后端已修复为返回单数键名，直接使用

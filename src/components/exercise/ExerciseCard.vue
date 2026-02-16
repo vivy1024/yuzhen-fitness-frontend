@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Flame, Star, Dumbbell } from 'lucide-vue-next'
+import { Flame, Star } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import LazyImage from '@/components/ui/lazy-image/LazyImage.vue'

@@ -13,10 +13,9 @@ import type { Rating } from './RatingDialog.vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 // 从V2复刻的训练计划解析工具
-import { 
-  getMessageTextContent, 
-  getMessageTrainingPlans,
-  type TrainingPlan as ParsedTrainingPlan 
+import {
+  getMessageTextContent,
+  getMessageTrainingPlans
 } from '@/utils/trainingPlanParser'
 import { ariaLabels } from '@/utils/accessibility'
 

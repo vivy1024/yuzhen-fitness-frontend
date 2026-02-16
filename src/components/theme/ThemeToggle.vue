@@ -40,7 +40,8 @@ const currentIcon = computed(() => {
 })
 
 // 处理选择变化
-function handleSelect(value: string) {
+function handleSelect(value: string | null) {
+  if (!value) return
   setTheme(value as ThemeMode)
 }
 </script>
