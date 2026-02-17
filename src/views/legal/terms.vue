@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, FileText, AlertTriangle, Scale, Ban, RefreshCw, Mail } from 'lucide-vue-next'
 
 const router = useRouter()
+
+/** 同意协议并进入应用 */
+function agreeAndContinue() {
+  localStorage.setItem('yuzhen_terms_agreed', 'true')
+  router.replace('/')
+}
 </script>
 
 <template>
@@ -169,6 +175,13 @@ const router = useRouter()
       <div class="text-center text-muted-foreground text-xs py-4">
         <p>© 2026 玉珍健身 版权所有</p>
         <p class="mt-1">陕ICP备2026000942号-1</p>
+      </div>
+
+      <!-- 同意按钮（从路由守卫跳转过来时显示） -->
+      <div class="sticky bottom-0 bg-background/95 backdrop-blur border-t p-4">
+        <Button class="w-full" size="lg" @click="agreeAndContinue">
+          同意协议并继续
+        </Button>
       </div>
     </main>
   </div>
