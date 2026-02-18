@@ -4,9 +4,26 @@ import router from './router'
 import App from './App.vue'
 import { Toaster } from 'vue-sonner'
 import { useAuthStore } from './stores/auth'
-import { registerServiceWorker } from './utils/registerSW'
 import { showError } from './components/ui/toast'
 import './assets/styles/globals.css'
+
+// 强制清理残留的 Service Worker 和 Cache（解决手机端 PWA 缓存无法清理的问题）
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => {
+      reg.unregister()
+      console.log('[SW Cleanup] 已注销 Service Worker:', reg.scope)
+    })
+  })
+}
+if ('caches' in window) {
+  caches.keys().then(names => {
+    names.forEach(name => {
+      caches.delete(name)
+      console.log('[SW Cleanup] 已清除缓存:', name)
+    })
+  })
+}
 
 const app = createApp(App)
 
@@ -20,11 +37,6 @@ app.component('Toaster', Toaster)
 // 初始化认证状态
 const authStore = useAuthStore()
 authStore.init()
-
-// Service Worker已禁用 - 使用Capacitor原生App替代PWA
-// if (import.meta.env.PROD) {
-//   registerServiceWorker().catch(console.error)
-// }
 
 // ============ 全局错误边界（带防抖） ============
 

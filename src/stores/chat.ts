@@ -279,8 +279,8 @@ export const useChatStore = defineStore('chat', () => {
         }
       })
       
-      // 登录用户同时保存到后端
-      if (isLoggedIn.value) {
+      // 登录用户同时保存到后端（跳过空内容，避免422验证错误）
+      if (isLoggedIn.value && finalContent) {
         try {
           await topicApi.saveTopicMessage(actualTopicId, {
             role: 'assistant',

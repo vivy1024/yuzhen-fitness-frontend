@@ -2,29 +2,10 @@
  * 用户预热API
  * 用于登录后预热用户档案和会员数据到DAML-RAG缓存
  * 通过PHP后端代理转发到DAML-RAG服务
+ * 复用主API实例，享受401自动刷新token机制
  */
 
-import axios from 'axios'
-
-const DAML_RAG_API_URL = import.meta.env.VITE_DAML_RAG_API_URL || 'http://localhost:8000/ai'
-
-// 创建DAML-RAG专用axios实例（通过PHP后端代理）
-const damlRagApi = axios.create({
-  baseURL: DAML_RAG_API_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// 请求拦截器：自动附加JWT token
-damlRagApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+import api from './auth'
 
 export interface WarmupRequest {
   user_id: string
@@ -55,8 +36,7 @@ export interface WarmupStatusResponse {
  * @param forceRefresh 是否强制刷新缓存（用户档案更新时设为true）
  */
 export async function warmupUser(userId: string | number, forceRefresh: boolean = false): Promise<WarmupResponse> {
-  // 注意：VITE_DAML_RAG_API_URL 已包含 /api 前缀，这里不需要再加
-  const response = await damlRagApi.post<WarmupResponse>('/v1/user/warmup', {
+  const response = await api.post<WarmupResponse>('/ai/v1/user/warmup', {
     user_id: String(userId),
     force_refresh: forceRefresh
   })
@@ -67,7 +47,6 @@ export async function warmupUser(userId: string | number, forceRefresh: boolean 
  * 获取用户预热状态
  */
 export async function getWarmupStatus(userId: string | number): Promise<WarmupStatusResponse> {
-  // 注意：VITE_DAML_RAG_API_URL 已包含 /api 前缀，这里不需要再加
-  const response = await damlRagApi.get<WarmupStatusResponse>(`/v1/user/warmup/status/${userId}`)
+  const response = await api.get<WarmupStatusResponse>(`/ai/v1/user/warmup/status/${userId}`)
   return response.data
 }
