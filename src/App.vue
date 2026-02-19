@@ -8,6 +8,7 @@
     </RouterView>
     <Toaster position="top-center" :duration="3000" :toastOptions="{ style: { pointerEvents: 'auto', marginTop: 'env(safe-area-inset-top, 0px)' } }" richColors />
     <InstallPrompt />
+    <PWAUpdatePrompt />
   </div>
 </template>
 
@@ -19,6 +20,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useNetworkStatus } from '@/composables/useNetworkStatus'
 import SkipNav from '@/components/accessibility/SkipNav.vue'
 import InstallPrompt from '@/components/pwa/InstallPrompt.vue'
+import PWAUpdatePrompt from '@/components/pwa/PWAUpdatePrompt.vue'
 
 // 初始化主题
 const { initTheme } = useTheme()

@@ -8,6 +8,10 @@
 	@assets path /assets/*
 	header @assets Cache-Control "public, max-age=31536000, immutable"
 
+	# SW 和 manifest 必须不缓存（确保浏览器每次检查更新）
+	@swfiles path /sw.js /manifest.json /workbox-*.js
+	header @swfiles Cache-Control "no-cache, no-store, must-revalidate"
+
 	# 尝试文件 → SPA fallback
 	try_files {path} /index.html
 

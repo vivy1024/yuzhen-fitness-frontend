@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# 不索引 API 和内部路径
+Disallow: /api/
+Disallow: /internal/
