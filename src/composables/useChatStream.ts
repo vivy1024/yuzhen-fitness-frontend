@@ -60,6 +60,8 @@ export interface SendMessageParams {
   domain?: string
   strategy?: 'dag' | 'agent'  // 执行策略：dag=预定义工作流，agent=智能代理
   templateId?: string  // DAG模板ID（用户选择时强制使用，跳过LLM选择）
+  attachments?: { type: string; filename: string; mime_type: string; data: string; size: number }[]
+  personaId?: string  // SystemPersona 风格ID
 }
 
 export type StateSubscriber = (state: StreamState) => void
@@ -386,13 +388,15 @@ export function useChatStream() {
           payload: {
             url,
             body: {
-              user_id: params.userId,
+              user_id: Number(params.userId),
               query: params.query,
               session_id: sessionId,
               topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
               domain: params.domain || 'fitness',
               strategy: params.strategy || 'dag',  // 执行策略，默认DAG模式
-              template_id: params.templateId || null  // DAG模板ID（强制使用）
+              template_id: params.templateId || null,  // DAG模板ID（强制使用）
+              ...(params.attachments?.length ? { attachments: params.attachments } : {}),
+              ...(params.personaId ? { persona_id: params.personaId } : {}),
             },
             sessionId,
             token: localStorage.getItem('access_token') || undefined
@@ -405,13 +409,15 @@ export function useChatStream() {
         // 降级到直接Fetch模式
         console.warn('[useChatStream] Worker不可用，使用直接Fetch模式')
         await connectWithFetch(`${baseUrl}/v1/chat/stream`, {
-          user_id: params.userId,
+          user_id: Number(params.userId),
           query: params.query,
           session_id: sessionId,
           topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
           domain: params.domain || 'fitness',
           strategy: params.strategy || 'dag',  // 执行策略，默认DAG模式
-          template_id: params.templateId || null  // DAG模板ID（强制使用）
+          template_id: params.templateId || null,  // DAG模板ID（强制使用）
+          ...(params.attachments?.length ? { attachments: params.attachments } : {}),
+          ...(params.personaId ? { persona_id: params.personaId } : {}),
         })
       }
     } catch (err: any) {
@@ -546,7 +552,7 @@ export function useChatStream() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: params.userId,
+          user_id: Number(params.userId),
           query: params.query,
           session_id: params.sessionId,
           domain: params.domain || 'fitness'

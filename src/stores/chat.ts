@@ -15,6 +15,7 @@ import type { Message } from '@/components/chat/MessageItem.vue'
 import type { ToolCall } from '@/components/chat/ToolCallTimeline.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
+import type { PendingAttachment } from '@/components/chat/AttachmentButton.vue'
 import { useChatStream } from '@/composables/useChatStream'
 import { useToast } from '@/components/ui/toast'
 import { importTrainingPlan as importPlanAPI } from '@/api/training-plan'
@@ -31,6 +32,8 @@ export interface SendMessageData {
   topicId?: string
   strategy?: 'dag' | 'agent'  // 执行策略
   templateId?: string  // DAG模板ID（用户选择时强制使用）
+  attachments?: PendingAttachment[]  // 图片附件
+  personaId?: string  // SystemPersona 风格ID
 }
 
 /**
@@ -59,6 +62,19 @@ export const useChatStore = defineStore('chat', () => {
   
   // 当前流式消息ID
   let currentStreamingMessageId: string | null = null
+
+  // 待发送的图片附件
+  const pendingAttachments = ref<PendingAttachment[]>([])
+
+  // 当前 Persona 风格ID（持久化到 localStorage）
+  const currentPersonaId = ref<string>(
+    localStorage.getItem('yuzhen_persona_id') || 'coach_professional'
+  )
+
+  function setPersonaId(id: string) {
+    currentPersonaId.value = id
+    localStorage.setItem('yuzhen_persona_id', id)
+  }
 
   // Getters
   
@@ -161,10 +177,18 @@ export const useChatStore = defineStore('chat', () => {
       error.value = null
       
       // 获取用户ID
-      const userId = localStorage.getItem('current_user_id') || 
-                     localStorage.getItem('user_id') || 
+      const userId = localStorage.getItem('current_user_id') ||
+                     localStorage.getItem('user_id') ||
                      `guest_${Date.now()}`
-      
+
+      // 查询长度校验（后端限制2000字符）
+      if (data.content.length > 2000) {
+        error.value = `消息过长（${data.content.length}/2000字符），请精简后重试`
+        loading.value = false
+        streaming.value = false
+        return
+      }
+
       // 确保话题存在
       const topicStore = useTopicStore()
       const topicId = data.topicId || 'default'
@@ -179,7 +203,14 @@ export const useChatStore = defineStore('chat', () => {
         topicId: actualTopicId,
         role: 'user',
         content: data.content,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        ...(data.attachments?.length ? {
+          attachments: data.attachments.map(a => ({
+            type: 'image' as const,
+            mime_type: a.mime_type,
+            preview: a.preview,
+          }))
+        } : {}),
       }
       
       // 添加到消息列表
@@ -232,6 +263,17 @@ export const useChatStore = defineStore('chat', () => {
       
       console.log('[ChatStore] 发送消息，用户ID:', userId, '话题ID:', actualTopicId)
       
+      // 构建 API 格式的 attachments
+      const apiAttachments = data.attachments?.length
+        ? data.attachments.map(a => ({
+            type: 'image' as const,
+            filename: `image_${a.id.slice(0, 8)}.jpg`,
+            mime_type: a.mime_type,
+            data: a.base64,
+            size: a.size,
+          }))
+        : undefined
+
       // 启动流式响应（传递topicId用于多轮对话）
       await chatStream.startStream({
         userId,
@@ -240,7 +282,9 @@ export const useChatStore = defineStore('chat', () => {
         topicId: actualTopicId,  // 传递话题ID用于多轮对话上下文
         domain: 'fitness',
         strategy: data.strategy || 'dag',  // 传递执行策略
-        templateId: data.templateId  // 传递用户选择的DAG模板ID
+        templateId: data.templateId,  // 传递用户选择的DAG模板ID
+        attachments: apiAttachments,
+        personaId: data.personaId || currentPersonaId.value,  // Persona 风格
       })
       
       // 等待流式完成
@@ -620,6 +664,22 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  // ── 附件管理 ──
+
+  function addAttachment(attachment: PendingAttachment) {
+    if (pendingAttachments.value.length < 3) {
+      pendingAttachments.value.push(attachment)
+    }
+  }
+
+  function removeAttachment(id: string) {
+    pendingAttachments.value = pendingAttachments.value.filter(a => a.id !== id)
+  }
+
+  function clearAttachments() {
+    pendingAttachments.value = []
+  }
+
   /**
    * 生成消息ID
    */
@@ -639,6 +699,16 @@ export const useChatStore = defineStore('chat', () => {
     getMessagesByTopic,
     lastMessage,
     
+    // Attachments
+    pendingAttachments,
+    addAttachment,
+    removeAttachment,
+    clearAttachments,
+
+    // Persona
+    currentPersonaId,
+    setPersonaId,
+
     // Actions
     loadMessages,
     sendMessage,

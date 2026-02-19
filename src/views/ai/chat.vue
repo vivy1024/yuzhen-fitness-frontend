@@ -16,6 +16,8 @@ import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
 import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
 import StrategySwitch from '@/components/chat/StrategySwitch.vue'
 import CreditDisplay from '@/components/chat/CreditDisplay.vue'
+import AttachmentButton from '@/components/chat/AttachmentButton.vue'
+import type { PendingAttachment } from '@/components/chat/AttachmentButton.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
@@ -172,7 +174,8 @@ const currentMessages = computed(() => {
 })
 
 const canSend = computed(() => {
-  return messageInput.value.trim().length > 0 && !chatStore.loading && !chatStore.streaming
+  const hasContent = messageInput.value.trim().length > 0 || chatStore.pendingAttachments.length > 0
+  return hasContent && !chatStore.loading && !chatStore.streaming
 })
 
 const isStreaming = computed(() => chatStore.streaming)
@@ -212,16 +215,20 @@ async function sendMessage() {
     }
   }
   
-  // 发送消息
+  // 发送消息（携带附件）
   const result = await chatStore.sendMessage({
     content,
     topicId: topicStore.currentTopicId!,
     strategy: currentStrategy.value,  // 传递当前策略
-    templateId: selectedTemplateId.value || undefined  // 传递用户选择的模板ID
+    templateId: selectedTemplateId.value || undefined,  // 传递用户选择的模板ID
+    attachments: chatStore.pendingAttachments.length > 0
+      ? [...chatStore.pendingAttachments]
+      : undefined,
   })
-  
-  // 发送后清除选择的模板ID（下次发送需要重新选择）
+
+  // 发送后清除选择的模板ID和附件
   selectedTemplateId.value = null
+  chatStore.clearAttachments()
   
   if (result.success) {
     // 滚动到底部
@@ -601,6 +608,28 @@ onUnmounted(() => {
         <span>正在分析您的需求...</span>
       </div>
       
+      <!-- 附件预览区 -->
+      <div v-if="chatStore.pendingAttachments.length > 0" class="mb-2 flex gap-2 flex-wrap">
+        <div
+          v-for="att in chatStore.pendingAttachments"
+          :key="att.id"
+          class="relative group"
+        >
+          <img
+            :src="att.preview"
+            :alt="att.file.name"
+            class="h-14 w-14 rounded-lg object-cover border border-border"
+          />
+          <button
+            type="button"
+            class="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="chatStore.removeAttachment(att.id)"
+          >
+            <X class="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
       <form
         class="flex gap-2"
         @submit.prevent="sendMessage"
@@ -616,7 +645,14 @@ onUnmounted(() => {
         >
           <Sparkles class="h-4 w-4" />
         </Button>
-        
+
+        <!-- 📎 附件按钮 -->
+        <AttachmentButton
+          :attachments="chatStore.pendingAttachments"
+          @add-attachment="chatStore.addAttachment"
+          @remove-attachment="chatStore.removeAttachment"
+        />
+
         <Input
           v-model="messageInput"
           placeholder="输入消息，或点击左侧选择AI场景..."
@@ -630,7 +666,16 @@ onUnmounted(() => {
           <Send class="h-4 w-4" />
         </Button>
       </form>
-      
+
+      <!-- 字符计数（接近限制时显示） -->
+      <p
+        v-if="messageInput.length > 1800"
+        class="mt-1 text-xs text-right"
+        :class="messageInput.length > 2000 ? 'text-destructive' : 'text-muted-foreground'"
+      >
+        {{ messageInput.length }}/2000
+      </p>
+
       <!-- 免责声明 -->
       <p class="mt-2 text-xs text-muted-foreground text-center">
         本内容由智能系统辅助生成，仅供参考

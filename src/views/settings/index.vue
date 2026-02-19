@@ -10,6 +10,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
 import { validatePasswordStrength } from '@/utils/auth'
 import { Button } from '@/components/ui/button'
@@ -42,10 +43,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { 
-  ArrowLeft, 
-  Sun, 
-  Moon, 
+import {
+  ArrowLeft,
+  Sun,
+  Moon,
   Monitor,
   Bell,
   Lock,
@@ -54,14 +55,28 @@ import {
   Info,
   ChevronRight,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  MessageSquare
 } from 'lucide-vue-next'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { changePassword, deleteAccount, clearCache } from '@/api/settings'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const chatStore = useChatStore()
 const { mode, setTheme } = useTheme()
+
+// Persona 风格选项
+const personaOptions = [
+  { value: 'coach_professional', label: '🎓 专业教练', desc: '严谨专业，数据驱动' },
+  { value: 'coach_friendly', label: '😊 健身好友', desc: '轻松友好，鼓励为主' },
+  { value: 'coach_concise', label: '⚡ 简洁教练', desc: '直给结论，高效实用' },
+]
+
+function handlePersonaChange(value: string) {
+  chatStore.setPersonaId(value)
+  showSuccess('回答风格已切换')
+}
 
 // 通知设置
 const notifications = ref({
@@ -247,7 +262,7 @@ async function handleClearCache() {
   clearCacheLoading.value = true
   try {
     // 1. 清除本地存储的缓存数据
-    const keysToKeep = ['yuzhen_token', 'yuzhen_user', 'yuzhen_theme_mode', 'yuzhen_terms_agreed', 'yuzhen_language']
+    const keysToKeep = ['yuzhen_token', 'yuzhen_user', 'yuzhen_theme_mode', 'yuzhen_terms_agreed', 'yuzhen_language', 'yuzhen_persona_id']
     const allKeys = Object.keys(localStorage)
     allKeys.forEach(key => {
       if (!keysToKeep.includes(key)) {
@@ -332,6 +347,31 @@ function goToAbout() {
                     <component :is="option.icon" class="h-4 w-4" />
                     <span>{{ option.label }}</span>
                   </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <!-- 回答风格设置 -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <MessageSquare class="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <Label class="font-medium">回答风格</Label>
+                <p class="text-xs text-muted-foreground">
+                  {{ personaOptions.find(o => o.value === chatStore.currentPersonaId)?.desc }}
+                </p>
+              </div>
+            </div>
+            <Select :model-value="chatStore.currentPersonaId" @update:model-value="handlePersonaChange">
+              <SelectTrigger class="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="option in personaOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
                 </SelectItem>
               </SelectContent>
             </Select>

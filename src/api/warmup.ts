@@ -8,7 +8,7 @@
 import api from './auth'
 
 export interface WarmupRequest {
-  user_id: string
+  user_id: number
   force_refresh?: boolean  // 是否强制刷新缓存（用户档案更新时设为true）
 }
 
@@ -37,7 +37,7 @@ export interface WarmupStatusResponse {
  */
 export async function warmupUser(userId: string | number, forceRefresh: boolean = false): Promise<WarmupResponse> {
   const response = await api.post<WarmupResponse>('/ai/v1/user/warmup', {
-    user_id: String(userId),
+    user_id: Number(userId),
     force_refresh: forceRefresh
   })
   return response.data
