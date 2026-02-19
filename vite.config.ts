@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import viteCompression from 'vite-plugin-compression'
 
@@ -14,6 +15,22 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      // PWA 插件（Android构建时禁用）
+      ...(!isAndroid ? [VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
+        registerType: 'prompt',
+        injectRegister: false,
+        manifest: false,
+        injectManifest: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        },
+        devOptions: {
+          enabled: false,
+        },
+      })] : []),
       // gzip压缩插件（Android构建时禁用）
       viteCompression({
         verbose: true,

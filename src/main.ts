@@ -7,24 +7,6 @@ import { useAuthStore } from './stores/auth'
 import { showError } from './components/ui/toast'
 import './assets/styles/globals.css'
 
-// 强制清理残留的 Service Worker 和 Cache（解决手机端 PWA 缓存无法清理的问题）
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(reg => {
-      reg.unregister()
-      console.log('[SW Cleanup] 已注销 Service Worker:', reg.scope)
-    })
-  })
-}
-if ('caches' in window) {
-  caches.keys().then(names => {
-    names.forEach(name => {
-      caches.delete(name)
-      console.log('[SW Cleanup] 已清除缓存:', name)
-    })
-  })
-}
-
 const app = createApp(App)
 
 const pinia = createPinia()
