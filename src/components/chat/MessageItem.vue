@@ -69,6 +69,9 @@ export interface Message {
   personalizationScore?: number
   profileUtilizationRate?: number
   
+  // 附件（用户发送的图片）
+  attachments?: { preview: string; mime_type: string }[]
+
   // 流式状态
   streaming?: boolean
   
@@ -286,6 +289,16 @@ const renderedContent = computed(() => {
     <!-- 用户消息 -->
     <div v-if="message.role === 'user'" class="flex items-start gap-3 justify-end">
       <div class="flex flex-col items-end gap-1 max-w-[80%]">
+        <!-- 附件图片缩略图 -->
+        <div v-if="message.attachments?.length" class="flex gap-1.5 justify-end flex-wrap">
+          <img
+            v-for="(att, idx) in message.attachments"
+            :key="idx"
+            :src="att.preview"
+            :alt="`附件图片 ${idx + 1}`"
+            class="h-16 w-16 rounded-lg object-cover border border-border"
+          />
+        </div>
         <!-- 消息气泡 -->
         <div class="rounded-2xl bg-primary px-4 py-2.5 text-primary-foreground">
           <p class="text-sm whitespace-pre-wrap break-words">{{ message.content }}</p>

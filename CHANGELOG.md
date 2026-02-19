@@ -14,6 +14,30 @@
 
 ---
 
+## [1.103.0] - 2026-02-20
+
+### 删除
+- 🧹 **死代码清理**：删除 `HelloWorld.vue`（41 行）和 `test-components.vue`（157 行），均无引用
+
+---
+
+## [1.102.0] - 2026-02-20
+
+### 新增
+- 🎨 **设置页"回答风格"选择器**：支持专业教练/健身好友/简洁教练三种 Persona 风格
+- 📎 **chat.vue 集成附件按钮**：输入框新增📎按钮，支持选择图片/拍照，附件预览和删除
+- 🖼️ **消息气泡图片缩略图**：用户发送的图片在消息气泡上方展示缩略图
+- 🔗 **useChatStream persona_id 透传**：Worker模式和Fetch降级模式均携带 persona_id
+
+### 修改
+- `stores/chat.ts`: 新增 currentPersonaId + setPersonaId() + localStorage 持久化
+- `composables/useChatStream.ts`: SendMessageParams 新增 personaId
+- `views/settings/index.vue`: 通用设置卡片新增回答风格 Select
+- `views/ai/chat.vue`: 集成 AttachmentButton + 附件预览 + canSend 支持纯图片
+- `components/chat/MessageItem.vue`: 用户消息气泡新增附件缩略图
+
+---
+
 ## [1.101.0] - 2026-02-13
 
 ### 修复
