@@ -166,7 +166,7 @@ yuzhen_fitness/
 
 ## 🌟 功能列表
 
-### 已完成功能 (v1.51.0)
+### 已完成功能 (v1.103.0)
 
 #### 认证系统
 - ✅ 邮箱密码登录
@@ -294,35 +294,18 @@ type(scope): description
 
 - [系统架构](docs/02-核心架构/01-系统架构/)
 - [API 文档](docs/05-API文档/)
- - [可访问性指南](docs/06-部署运维/可访问性指南.md)
- - [性能测试指南](docs/06-部署运维/性能测试指南.md)
+- [部署运维](docs/06-部署运维/)
+- [CHANGELOG](CHANGELOG.md)
 
-## 🤝 贡献指南
+## 近期变更（2025-12 ~ 2026-02）
 
-欢迎贡献代码！请遵循以下步骤：
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'feat: Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
-
-## 👥 维护者
-
-- **薛小川** - 项目负责人
-
-## 🙏 致谢
-
-- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
-- [shadcn-vue](https://www.shadcn-vue.com/) - 高质量组件库
-- [TailwindCSS](https://tailwindcss.com/) - 原子化 CSS 框架
-- [Vite](https://vitejs.dev/) - 下一代前端构建工具
+- Persona 风格系统 + 多模态图片支持
+- 跨对话记忆 + WebSearch 集成
+- Token 预算控制
+- 安全加固：凭证清理、认证流程修复
+- 积分部署准备 + 权限系统重构集成
+- 代码库清理：删除死代码（HelloWorld.vue、test-components.vue）
 
 ---
 
-**版本**: v1.51.0  
-**最后更新**: 2026-01-07
+**开发者**: 薛小川 · **版本**: v1.103.0 · **更新**: 2026-02-20
