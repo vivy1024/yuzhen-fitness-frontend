@@ -247,10 +247,10 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, message: response.msg || '登录失败' }
       }
     } catch (error: any) {
-      // 安全兜底：拦截器可能因防抖未显示，这里确保用户看到错误
+      // 拦截器已处理所有API错误的Toast显示，这里只记录日志
+      // 不再调用showError，避免与拦截器的showApiError重复弹出
       const msg = error.message || '登录失败，请稍后重试'
       console.error('[Auth] 登录异常:', msg, error)
-      showError(msg)
       return { success: false, message: msg }
     } finally {
       loading.value = false
@@ -307,10 +307,9 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, message: response.msg || '注册失败' }
       }
     } catch (error: any) {
-      // 安全兜底：拦截器可能因防抖未显示，这里确保用户看到错误
+      // 拦截器已处理所有API错误的Toast显示，这里只记录日志
       const msg = error.message || '注册失败，请稍后重试'
       console.error('[Auth] 注册异常:', msg, error)
-      showError(msg)
       return { success: false, message: msg }
     } finally {
       loading.value = false

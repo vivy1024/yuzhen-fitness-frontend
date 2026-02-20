@@ -41,6 +41,16 @@ const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailForm.
 
 // 邮箱登录
 async function handleEmailLogin() {
+  // 浏览器autofill兜底：autofill可能不触发Vue的input事件，导致v-model为空
+  const emailInput = document.getElementById('email') as HTMLInputElement
+  const passwordInput = document.getElementById('password') as HTMLInputElement
+  if (emailInput?.value && !emailForm.value.email) {
+    emailForm.value.email = emailInput.value
+  }
+  if (passwordInput?.value && !emailForm.value.password) {
+    emailForm.value.password = passwordInput.value
+  }
+
   if (!emailForm.value.email || !emailForm.value.password) {
     showError('请填写邮箱和密码')
     return
@@ -186,6 +196,7 @@ async function sendSmsCode() {
                       type="email"
                       placeholder="请输入邮箱"
                       class="pl-10"
+                      autocomplete="email"
                       required
                     />
                   </div>
@@ -201,6 +212,7 @@ async function sendSmsCode() {
                       :type="showPassword ? 'text' : 'password'"
                       placeholder="请输入密码"
                       class="pl-10 pr-10"
+                      autocomplete="current-password"
                       required
                     />
                     <button
@@ -246,6 +258,7 @@ async function sendSmsCode() {
                       type="tel"
                       placeholder="请输入手机号"
                       class="pl-10"
+                      autocomplete="tel"
                       maxlength="11"
                       required
                     />
