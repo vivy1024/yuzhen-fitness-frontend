@@ -73,6 +73,8 @@ export default defineConfig(({ mode }) => {
             'form-vendor': ['vee-validate', '@vee-validate/zod'],
             // 图标库
             'icons-vendor': ['lucide-vue-next'],
+            // 图表库（按需导入，单独分割避免影响首屏）
+            'charts-vendor': ['echarts/core', 'echarts/charts', 'echarts/components', 'echarts/renderers'],
           },
           // 优化chunk文件名
           chunkFileNames: (chunkInfo) => {
