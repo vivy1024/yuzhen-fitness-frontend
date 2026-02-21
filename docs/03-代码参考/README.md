@@ -6,7 +6,7 @@
 
 ## 📚 文档列表
 
-### [01-核心组件](./01-核心组件/)
+### 01-核心组件 *(待创建)*
 - **聊天组件**: MessageItem、ToolCallTimeline、ToolCallDialog
 - **训练组件**: TrainingPlanCard
 - **通用组件**: TopicSidebar
@@ -17,12 +17,15 @@
 - **Streaming Store**: 流式状态管理
 - **Auth Store**: 用户认证
 
-### [03-Composables](./03-Composables/)
+### 03-Composables *(待创建)*
 - **useChatStream**: 流式响应核心逻辑
-- **useAuth**: 认证逻辑
-- **useToast**: Toast提示
+- **useAccessibility**: 无障碍功能
+- **useLazyImage**: 图片懒加载
+- **useNetworkStatus**: 网络状态检测
+- **usePWAInstall**: PWA安装引导
+- **useTheme**: 主题切换
 
-### [04-工具函数](./04-工具函数/)
+### 04-工具函数 *(待创建)*
 - **streaming-cache**: IndexedDB缓存
 - **format**: 格式化函数
 - **validation**: 验证函数
@@ -110,26 +113,65 @@ async function sendMessage(data: SendMessageData) {
 
 | 类型 | 数量 | 说明 |
 |------|------|------|
-| 页面组件 | 10+ | views目录 |
-| 业务组件 | 15+ | components目录 |
-| UI组件 | 30+ | shadcn-vue |
+| 页面组件 | 40 | views目录 |
+| 业务组件 | 146 | components目录（14个分类） |
+| 组件分类 | chat, training, exercise, food, ui, layout, user, user-profile, membership, progress, charts, accessibility, pwa, theme | |
 
-### Store统计
+### Store统计（15个）
 
-| Store | 状态数 | 方法数 | 说明 |
-|-------|--------|--------|------|
-| chat | 4 | 8 | 消息管理 |
-| topic | 4 | 8 | 话题管理 |
-| streaming | 6 | 5 | 流式状态 |
-| auth | 3 | 5 | 用户认证 |
+| Store | 说明 |
+|-------|------|
+| chat | 消息管理 |
+| topic | 话题管理 |
+| streaming | 流式状态 |
+| auth | 用户认证 |
+| user | 用户信息 |
+| training | 训练管理 |
+| exercise | 运动数据 |
+| food | 食物库 |
+| credit | 积分管理 |
+| membership | 会员管理 |
+| usage | 用量管理 |
+| notification | 通知管理 |
+| progress | 进度追踪 |
+| feedback | 用户反馈 |
+| theme | 主题设置 |
 
-### API统计
+### Composables统计（6个）
 
-| 模块 | 接口数 | 说明 |
-|------|--------|------|
-| auth | 4 | 认证相关 |
-| topic | 6 | 话题管理 |
-| training-plan | 5 | 训练计划 |
+| Composable | 说明 |
+|------------|------|
+| useChatStream | 流式响应核心逻辑 |
+| useAccessibility | 无障碍功能 |
+| useLazyImage | 图片懒加载 |
+| useNetworkStatus | 网络状态检测 |
+| usePWAInstall | PWA安装引导 |
+| useTheme | 主题切换 |
+
+### API统计（19个模块）
+
+| 模块 | 说明 |
+|------|------|
+| auth | 认证相关 |
+| user | 用户信息 |
+| exercise | 运动数据 |
+| training-session | 训练会话 |
+| training-plan | 训练计划 |
+| topic | 话题管理 |
+| food | 食物库 |
+| credit | 积分管理 |
+| membership | 会员管理 |
+| usage | 用量管理 |
+| rating | 评分系统 |
+| progress | 进度追踪 |
+| feedback | 用户反馈 |
+| help | 帮助中心 |
+| notification | 通知 |
+| warmup | 预热 |
+| email | 邮件 |
+| sms | 短信 |
+| settings | 设置 |
+| admin/ | 管理员后台（子目录） |
 
 ---
 
@@ -162,13 +204,24 @@ async function sendMessage(data: SendMessageData) {
 
 ```
 src/
-├── components/
+├── components/        # 业务组件（146个，14个分类）
 │   ├── chat/           # 聊天相关组件
 │   ├── training/       # 训练相关组件
-│   └── ui/            # UI基础组件
-├── stores/            # Pinia Store
-├── composables/       # 可复用逻辑
-├── api/              # API封装
+│   ├── exercise/       # 运动相关组件
+│   ├── food/           # 食物相关组件
+│   ├── user/           # 用户相关组件
+│   ├── user-profile/   # 用户档案组件
+│   ├── membership/     # 会员相关组件
+│   ├── progress/       # 进度追踪组件
+│   ├── charts/         # 图表组件
+│   ├── layout/         # 布局组件
+│   ├── ui/             # UI基础组件
+│   ├── accessibility/  # 无障碍组件
+│   ├── pwa/            # PWA相关组件
+│   └── theme/          # 主题组件
+├── stores/            # Pinia Store（15个）
+├── composables/       # 可复用逻辑（6个）
+├── api/              # API封装（19个模块）
 ├── utils/            # 工具函数
 └── types/            # 类型定义
 ```
@@ -177,11 +230,11 @@ src/
 
 ## 🔗 相关文档
 
-- [核心组件实现](./01-核心组件/README.md)
+- 01-核心组件实现 *(待创建)*
 - [Store实现](./02-Store实现/README.md)
-- [Composables实现](./03-Composables/README.md)
+- 03-Composables实现 *(待创建)*
 
 ---
 
 **维护者**: 薛小川  
-**最后更新**: 2025-01-02
+**最后更新**: 2026-02-21
