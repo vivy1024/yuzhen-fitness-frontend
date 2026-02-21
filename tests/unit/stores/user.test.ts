@@ -111,7 +111,7 @@ describe('User Store', () => {
       
       expect(store.userProfile).not.toBeNull()
       expect(store.userProfile?.basic_info.nickname).toBe('')
-      expect(store.userProfile?.fitness_goals.primary_goals).toEqual([])
+      expect(store.userProfile?.fitness_goals.primary_goal).toBe('')
       expect(store.userProfile?.training_preferences.available_equipment).toEqual([])
     })
 
