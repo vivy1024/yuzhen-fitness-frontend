@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -135,6 +135,7 @@ import {
 } from '@/api/knowledge'
 
 const router = useRouter()
+const route = useRoute()
 const { toast } = useToast()
 
 const loading = ref(false)
@@ -230,7 +231,15 @@ watch(loadMoreRef, (el) => {
 onMounted(async () => {
   const catRes = await getKnowledgeCategories()
   if (catRes.code === 200) categories.value = catRes.data
-  await fetchArticles()
+
+  // 支持 URL ?search= 参数（从AI引用点击跳转）
+  const q = route.query.search as string
+  if (q) {
+    searchQuery.value = q
+    await handleSearch()
+  } else {
+    await fetchArticles()
+  }
   setupObserver()
 })
 
