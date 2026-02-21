@@ -9,6 +9,10 @@
           </Button>
           <h1 class="text-lg font-semibold">知识库</h1>
         </div>
+        <Button variant="ghost" size="sm" @click="router.push('/knowledge/cards')">
+          <Layers class="h-4 w-4 mr-1" />
+          卡片
+        </Button>
       </div>
     </header>
 
@@ -120,7 +124,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, ChevronRight, Search, BookOpen } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Search, BookOpen, Layers } from 'lucide-vue-next'
 import { useToast } from '@/components/ui/toast'
 import {
   getKnowledgeList,
