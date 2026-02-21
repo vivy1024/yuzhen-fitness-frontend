@@ -19,14 +19,46 @@ vi.mock('@/utils/token', () => ({
   clearToken: vi.fn()
 }))
 
+// Mock toast（避免vue-sonner在测试环境中报错）
+vi.mock('@/components/ui/toast', () => ({
+  showError: vi.fn(),
+  showSuccess: vi.fn(),
+  showWarning: vi.fn(),
+  showInfo: vi.fn(),
+  toast: vi.fn(),
+  useToast: vi.fn(() => ({ toast: vi.fn() }))
+}))
+
+// Mock token-manager（401拦截器中getTokenManager会被调用）
+vi.mock('@/utils/token-manager', () => ({
+  getTokenManager: vi.fn(() => ({
+    refreshToken: vi.fn(() => Promise.resolve(false)),
+    getAccessToken: vi.fn(() => null)
+  }))
+}))
+
 describe('Auth API集成测试', () => {
   beforeAll(() => {
     server.listen({ onUnhandledRequest: 'error' })
   })
 
+  beforeEach(() => {
+    // Stub localStorage（happy-dom的localStorage.removeItem可能不完整）
+    const store: Record<string, string> = {}
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => store[key] || null),
+      setItem: vi.fn((key: string, value: string) => { store[key] = value }),
+      removeItem: vi.fn((key: string) => { delete store[key] }),
+      clear: vi.fn(() => { Object.keys(store).forEach(k => delete store[k]) }),
+      length: 0,
+      key: vi.fn()
+    })
+  })
+
   afterEach(() => {
     resetHandlers()
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   afterAll(() => {
