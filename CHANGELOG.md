@@ -5,6 +5,15 @@
 
 ---
 
+## #5 (feat) 知识卡片模式 — 2026-02-21
+
+- 新增 `views/knowledge/cards.vue`：CSS scroll-snap 卡片浏览（零依赖替代 Swiper）
+- 新增 `components/knowledge/KnowledgeCard.vue`：卡片组件（标题/摘要/标签/来源/难度）
+- `api/knowledge.ts`：新增 `getKnowledgeCards` API + KnowledgeArticle 类型扩展（difficulty/view_count/source_book）
+- 路由注册 `/knowledge/cards`（静态路由置于 `/:id` 动态路由之前）
+- `index.vue` 顶部添加"卡片"入口按钮
+- 对应产品版本：v1.1.0
+
 ## #4 (feat) 知识库前端页面 — 2026-02-21
 
 - 新增 `views/knowledge/index.vue`：分类导航 + 搜索 + 无限滚动文章列表

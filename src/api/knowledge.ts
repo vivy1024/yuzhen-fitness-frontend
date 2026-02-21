@@ -18,7 +18,10 @@ export interface KnowledgeArticle {
   category: KnowledgeCategory
   source_type: string
   source_name: string
+  source_book?: string
   tags: string[]
+  difficulty?: string
+  view_count?: number
   created_at: string
 }
 
@@ -72,4 +75,17 @@ export const searchKnowledge = (params: {
   per_page?: number
 }): Promise<KnowledgeListResponse> => {
   return api.get('/knowledge/search', { params })
+}
+
+export interface KnowledgeCardsResponse {
+  code: number
+  msg: string
+  data: KnowledgeArticle[]
+}
+
+export const getKnowledgeCards = (params?: {
+  count?: number
+  category_id?: number
+}): Promise<KnowledgeCardsResponse> => {
+  return api.get('/knowledge/cards', { params })
 }

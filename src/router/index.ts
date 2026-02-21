@@ -188,6 +188,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: '知识库' }
     },
     {
+      path: '/knowledge/cards',
+      name: 'KnowledgeCards',
+      component: () => import('@/views/knowledge/cards.vue'),
+      meta: { requiresAuth: true, title: '知识卡片' }
+    },
+    {
       path: '/knowledge/:id',
       name: 'KnowledgeDetail',
       component: () => import('@/views/knowledge/detail.vue'),
