@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { User, Bot, Wrench, Star } from 'lucide-vue-next'
+import { User, Bot, Wrench, Star, BookOpen } from 'lucide-vue-next'
 import ToolCallDialog from './ToolCallDialog.vue'
 import TrainingPlanCard from '../training/TrainingPlanCard.vue'
 import RatingDialog from './RatingDialog.vue'
@@ -91,6 +92,8 @@ interface Props {
   message: Message
   showToolCalls?: boolean
 }
+
+const router = useRouter()
 
 const props = withDefaults(defineProps<Props>(), {
   showToolCalls: true
@@ -259,6 +262,54 @@ const isRated = computed(() => {
 })
 
 /**
+ * 从AI回复中提取知识引用列表
+ * 匹配格式: [N] 标题 — 来源 Ch.X
+ */
+interface KnowledgeRef {
+  index: number
+  title: string
+  source: string
+}
+
+const extractedReferences = computed<KnowledgeRef[]>(() => {
+  if (!props.message.content || props.message.role !== 'assistant') return []
+
+  const content = props.message.content
+  // 匹配引用区块头部（参考来源/参考文献/引用来源/References）
+  const headerPattern = /\n(?:---\s*\n)?(?:参考[文来]?[献源]?|引用[来]?[源]?|References?)\s*[：:]\s*\n/i
+  const headerMatch = content.match(headerPattern)
+  if (!headerMatch) return []
+
+  const refSection = content.slice(content.indexOf(headerMatch[0]) + headerMatch[0].length)
+  const refs: KnowledgeRef[] = []
+
+  for (const line of refSection.split('\n')) {
+    const match = line.match(/^\s*\[(\d+)\]\s*(.+?)(?:\s*[—–\-]\s*(.+))?$/)
+    if (match) {
+      refs.push({
+        index: parseInt(match[1]),
+        title: match[2].trim(),
+        source: match[3]?.trim() || ''
+      })
+    }
+  }
+  return refs
+})
+
+/**
+ * 去除引用区块后的正文内容
+ */
+const contentWithoutReferences = computed(() => {
+  if (!props.message.content || extractedReferences.value.length === 0) {
+    return props.message.content
+  }
+  const headerPattern = /\n(?:---\s*\n)?(?:参考[文来]?[献源]?|引用[来]?[源]?|References?)\s*[：:]\s*\n/i
+  const headerMatch = props.message.content.match(headerPattern)
+  if (!headerMatch) return props.message.content
+  return props.message.content.slice(0, props.message.content.indexOf(headerMatch[0])).trimEnd()
+})
+
+/**
  * 渲染Markdown内容
  * 将AI返回的Markdown文本转换为HTML，并使用DOMPurify防止XSS攻击
  * 使用从V2复刻的getMessageTextContent函数移除训练计划JSON
@@ -267,12 +318,28 @@ const renderedContent = computed(() => {
   if (!props.message.content) return ''
   try {
     // 使用V2的函数提取纯文本内容（移除[TRAINING_PLAN:{...}]）
-    const textContent = props.message.role === 'assistant' 
-      ? getMessageTextContent(props.message.content)
+    const baseContent = props.message.role === 'assistant'
+      ? contentWithoutReferences.value || props.message.content
       : props.message.content
-    
+    const textContent = props.message.role === 'assistant'
+      ? getMessageTextContent(baseContent)
+      : baseContent
+
     const rawHtml = marked.parse(textContent) as string
-    return DOMPurify.sanitize(rawHtml, purifyConfig)
+    let html = DOMPurify.sanitize(rawHtml, purifyConfig)
+
+    // 将内联 [N] 引用标记转换为上标样式
+    if (extractedReferences.value.length > 0) {
+      const refIndices = new Set(extractedReferences.value.map(r => r.index))
+      html = html.replace(/\[(\d+)\]/g, (match, num) => {
+        if (refIndices.has(parseInt(num))) {
+          return `<sup class="citation-marker">[${num}]</sup>`
+        }
+        return match
+      })
+    }
+
+    return html
   } catch (e) {
     console.error('Markdown解析错误:', e)
     return props.message.content
@@ -367,6 +434,33 @@ const renderedContent = computed(() => {
             @import="handleImportPlan"
             @view-detail="handleViewPlanDetail"
           />
+        </div>
+
+        <!-- 知识引用列表 -->
+        <div v-if="extractedReferences.length > 0 && !message.streaming" class="mt-2 rounded-lg bg-muted/50 px-3 py-2.5">
+          <div class="flex items-center gap-1.5 mb-2">
+            <BookOpen class="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            <span class="text-xs font-medium text-muted-foreground">参考来源</span>
+          </div>
+          <ul class="space-y-1.5">
+            <li
+              v-for="ref in extractedReferences"
+              :key="ref.index"
+              class="flex items-start gap-2 text-xs"
+            >
+              <span class="shrink-0 bg-primary/10 text-primary rounded px-1 py-0.5 font-medium">{{ ref.index }}</span>
+              <span class="text-muted-foreground">
+                <span
+                  class="text-foreground cursor-pointer hover:text-primary transition-colors"
+                  role="link"
+                  tabindex="0"
+                  @click="router.push(`/knowledge?search=${encodeURIComponent(ref.title)}`)"
+                  @keyup.enter="router.push(`/knowledge?search=${encodeURIComponent(ref.title)}`)"
+                >{{ ref.title }}</span>
+                <span v-if="ref.source"> · {{ ref.source }}</span>
+              </span>
+            </li>
+          </ul>
         </div>
         
         <!-- 个性化指标 -->
@@ -535,5 +629,10 @@ const renderedContent = computed(() => {
 
 :deep(.prose hr) {
   @apply border-border my-4;
+}
+
+/* 知识引用上标标记 */
+:deep(.citation-marker) {
+  @apply text-primary cursor-default font-medium text-[10px] ml-0.5;
 }
 </style>

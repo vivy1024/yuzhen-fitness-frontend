@@ -5,7 +5,17 @@
 
 ---
 
-## #5 (feat) 知识卡片模式 — 2026-02-21
+## #6 (feat) AI引用展示 + 知识搜索参数支持 — 2026-02-21
+
+- `components/chat/MessageItem.vue`：AI回答中的知识引用渲染
+  - `extractedReferences` computed：解析 `[N] 标题 — 来源` 格式的引用区块
+  - `contentWithoutReferences`：从正文中剥离引用区块，避免重复展示
+  - 内联 `[1]` 标记渲染为上标样式（`.citation-marker`）
+  - 引用列表：BookOpen 图标 + 编号 badge + 可点击标题（跳转知识搜索）
+- `views/knowledge/index.vue`：支持 URL `?search=` 参数
+  - `onMounted` 读取 `route.query.search`，自动触发搜索
+  - 从 AI 引用点击跳转后直接展示搜索结果
+- 对应产品版本：v1.1.0
 
 - 新增 `views/knowledge/cards.vue`：CSS scroll-snap 卡片浏览（零依赖替代 Swiper）
 - 新增 `components/knowledge/KnowledgeCard.vue`：卡片组件（标题/摘要/标签/来源/难度）
