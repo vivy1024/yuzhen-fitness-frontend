@@ -13,7 +13,7 @@
 - 路由注册：`/knowledge` + `/knowledge/:id`
 - 使用 shadcn-vue 组件：Card/Badge/Skeleton/Separator/Button/Input
 - IntersectionObserver 实现无限滚动加载
-- 对应产品版本：v1.0.0
+- 对应产品版本：v1.1.0
 
 ## #3 (test) useChatStream composable 测试 — 2026-02-21
 
@@ -22,14 +22,14 @@
 - Worker 消息处理：CHUNK/STEP/STRUCTURED_DATA/DONE/ERROR/RECONNECTING/TIMEOUT/RATE_LIMIT
 - subscribe 订阅、cleanup 资源清理、renderedContent/hasError/isDone 计算属性
 - 全量测试：20 个文件 358 个用例全部通过
-- 对应产品版本：v1.0.0
+- 对应产品版本：v1.1.0
 
 ## #2 (test) 测试修复 — 2026-02-21
 
 - 修复 user store 测试：`primary_goals`(数组) → `primary_goal`(字符串) 匹配实际代码
 - 修复 auth 集成测试 3 个失败：添加 localStorage/toast/token-manager mock
 - 测试结果：280/280 全部通过（18 个测试文件）
-- 对应产品版本：v1.0.0
+- 对应产品版本：v1.1.0
 
 ## #1 (chore) MVP 基线 — 2026-02-21
 
