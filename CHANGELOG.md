@@ -5,6 +5,16 @@
 
 ---
 
+## #4 (feat) 知识库前端页面 — 2026-02-21
+
+- 新增 `views/knowledge/index.vue`：分类导航 + 搜索 + 无限滚动文章列表
+- 新增 `views/knowledge/detail.vue`：Markdown 正文渲染 + 引用来源 + 相关推荐
+- 新增 `api/knowledge.ts`：4 个 API 函数 + TypeScript 类型定义
+- 路由注册：`/knowledge` + `/knowledge/:id`
+- 使用 shadcn-vue 组件：Card/Badge/Skeleton/Separator/Button/Input
+- IntersectionObserver 实现无限滚动加载
+- 对应产品版本：v1.0.0
+
 ## #3 (test) useChatStream composable 测试 — 2026-02-21
 
 - 创建 `tests/composables/useChatStream.test.ts`：45 个测试用例

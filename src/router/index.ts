@@ -181,6 +181,18 @@ const router = createRouter({
       component: () => import('@/views/feedback/index.vue'),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/knowledge',
+      name: 'Knowledge',
+      component: () => import('@/views/knowledge/index.vue'),
+      meta: { requiresAuth: true, title: '知识库' }
+    },
+    {
+      path: '/knowledge/:id',
+      name: 'KnowledgeDetail',
+      component: () => import('@/views/knowledge/detail.vue'),
+      meta: { requiresAuth: true, title: '知识详情' }
+    },
     // 管理员路由
     {
       path: '/admin',
