@@ -5,6 +5,14 @@
 
 ---
 
+## #8 (test) composable + store 测试补充 — 2026-02-22
+
+- 新增 3 个 composable 测试：useTheme(9)、useNetworkStatus(6)、usePWAInstall(10)
+- 新增 4 个 store 测试：streaming(17)、theme(14)、notification(15)、exercise(18)
+- 全量测试：27 文件 447 用例全部通过（+167 新用例）
+- composables 覆盖率 4/6=66.7%，stores 覆盖率 10/15=66.7%
+- 对应产品版本：v1.1.0
+
 ## #7 (chore) radix-vue → reka-ui 统一 — 2026-02-22
 
 - 4 个 tooltip 组件从 `radix-vue` 迁移到 `reka-ui`（Tooltip/TooltipContent/TooltipProvider/TooltipTrigger）
