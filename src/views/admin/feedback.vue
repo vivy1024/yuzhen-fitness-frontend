@@ -414,7 +414,8 @@ const getStatusVariant = (status: string) => {
 }
 
 // 格式化日期
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return ''
   const date = new Date(dateString)
   const now = new Date()
   const diff = now.getTime() - date.getTime()

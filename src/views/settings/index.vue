@@ -8,6 +8,7 @@
  * @updated 2026-01-06
  */
 import { ref, computed, onMounted } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
@@ -76,8 +77,8 @@ const personaOptions = [
   { value: 'coach_concise', label: '⚡ 简洁教练', desc: '直给结论，高效实用' },
 ]
 
-function handlePersonaChange(value: string) {
-  chatStore.setPersonaId(value)
+function handlePersonaChange(value: AcceptableValue) {
+  chatStore.setPersonaId(String(value))
   showSuccess('回答风格已切换')
 }
 
@@ -193,8 +194,8 @@ function goBack() {
 }
 
 // 处理主题变更
-function handleThemeChange(value: string) {
-  setTheme(value as ThemeMode)
+function handleThemeChange(value: AcceptableValue) {
+  setTheme(String(value) as ThemeMode)
   showSuccess('主题已切换')
 }
 
@@ -443,21 +444,21 @@ function goToAbout() {
             <Label class="font-medium">训练提醒</Label>
             <Switch
               :checked="notifications.training"
-              @update:checked="(v) => handleNotificationChange('training', v)"
+              @update:checked="(v: boolean) => handleNotificationChange('training', v)"
             />
           </div>
           <div class="flex items-center justify-between">
             <Label class="font-medium">营养提醒</Label>
             <Switch 
               :checked="notifications.nutrition" 
-              @update:checked="(v) => handleNotificationChange('nutrition', v)"
+              @update:checked="(v: boolean) => handleNotificationChange('nutrition', v)"
             />
           </div>
           <div class="flex items-center justify-between">
             <Label class="font-medium">系统通知</Label>
             <Switch 
               :checked="notifications.system" 
-              @update:checked="(v) => handleNotificationChange('system', v)"
+              @update:checked="(v: boolean) => handleNotificationChange('system', v)"
             />
           </div>
         </CardContent>

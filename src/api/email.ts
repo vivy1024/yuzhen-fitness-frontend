@@ -17,14 +17,14 @@ export interface EmailResponse {
  * @param email 邮箱地址
  * @param type 验证码类型：register(注册), login(登录), reset(重置密码)
  */
-export const sendEmailCode = (email: string, type: 'register' | 'login' | 'reset' = 'login'): Promise<EmailResponse> => {
+export const sendEmailCode = (email: string, type: 'register' | 'login' | 'reset' = 'login'): Promise<any> => {
   return api.post('/auth/email/send', { email, type })
 }
 
 /**
  * 验证邮箱验证码
  */
-export const verifyEmailCode = (email: string, code: string): Promise<EmailResponse> => {
+export const verifyEmailCode = (email: string, code: string): Promise<any> => {
   return api.post('/auth/email/verify', { email, code })
 }
 
@@ -38,7 +38,7 @@ export const emailLogin = (email: string, code: string): Promise<any> => {
 /**
  * 检查邮箱是否已注册
  */
-export const checkEmailExists = (email: string): Promise<EmailResponse> => {
+export const checkEmailExists = (email: string): Promise<any> => {
   return api.get('/auth/email/check', { params: { email } })
 }
 
@@ -52,6 +52,6 @@ export interface ResetPasswordParams {
   password_confirmation: string
 }
 
-export const resetPassword = (params: ResetPasswordParams): Promise<EmailResponse> => {
+export const resetPassword = (params: ResetPasswordParams): Promise<any> => {
   return api.post('/auth/email/reset-password', params)
 }

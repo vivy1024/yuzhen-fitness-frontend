@@ -55,7 +55,7 @@
         
         <!-- 数据列表 -->
         <div class="space-y-2">
-          <div v-for="(record, index) in data.slice(0, 5)" :key="record.id"
+          <div v-for="(record, _index) in data.slice(0, 5)" :key="record.id"
                class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
             <div class="text-sm">
               <span class="text-gray-500">{{ formatDate(record.recorded_at) }}</span>

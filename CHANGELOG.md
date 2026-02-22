@@ -5,6 +5,19 @@
 
 ---
 
+## #14 (chore) TypeScript strict 类型错误全量修复 — 2026-02-22
+
+- vue-tsc --noEmit 从 114 个错误降至 0 个
+- 清理 34 个未使用导入/变量（18 个文件）
+- 修复 AcceptableValue 泛型适配（shadcn-vue Select/Tabs 回调）
+- 修复 null vs undefined 类型不兼容（stores 层 error.value）
+- 补全接口缺失属性（ExerciseDetail/WorkerMessage/MembershipTier 等）
+- 修复隐式 any 类型注解（RatingDialog/settings/session）
+- 扩展 RestPattern 联合类型、修复 @tanstack/vue-table 缺失导入
+- 对应产品版本：v1.1.0
+
+---
+
 ## #13 (feat) PWA 推送提醒前端基础设施 — 2026-02-22
 
 - 新增 `usePushNotification.ts` composable：Push 订阅/取消/提醒时间管理

@@ -74,7 +74,7 @@ const debouncedSendCode = useDebounceFn(async () => {
         if (emailCountdown.value <= 0) clearInterval(timer)
       }, 1000)
     } else {
-      showError(response.message || response.msg || '发送失败')
+      showError(response.message || (response as any).msg || '发送失败')
     }
   } catch (error: any) {
     showError(error.message || '发送失败')

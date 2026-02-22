@@ -8,6 +8,7 @@
  * @requirements 3.4
  */
 import { onMounted, ref } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { useCreditStore } from '@/stores/credit'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,9 +77,9 @@ async function loadHistory() {
 }
 
 // 切换筛选
-async function onFilterChange(value: string | null) {
+async function onFilterChange(value: AcceptableValue) {
   if (!value) return
-  filterMode.value = value as 'all' | 'dag' | 'agent'
+  filterMode.value = String(value) as 'all' | 'dag' | 'agent'
   currentPage.value = 1
   await loadHistory()
 }

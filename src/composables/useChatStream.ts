@@ -129,15 +129,6 @@ function getSSEWorker(): Worker | null {
   return sseWorker
 }
 
-function destroySSEWorker(): void {
-  if (sseWorker) {
-    sseWorker.terminate()
-    sseWorker = null
-    workerInitialized = false
-    console.log('[useChatStream] SSE Worker已销毁')
-  }
-}
-
 // ============ Composable ============
 
 export function useChatStream() {
@@ -388,7 +379,7 @@ export function useChatStream() {
           payload: {
             url,
             body: {
-              user_id: Number(params.userId),
+              user_id: String(params.userId),
               query: params.query,
               session_id: sessionId,
               topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
@@ -424,7 +415,7 @@ export function useChatStream() {
       console.error('[useChatStream] 发送消息失败:', err)
       error.value = err.message || '发送消息失败'
       isStreaming.value = false
-      toast({ title: '发送失败', description: error.value, variant: 'destructive' })
+      toast({ title: '发送失败', description: error.value ?? undefined, variant: 'destructive' })
     }
   }
 
@@ -579,7 +570,7 @@ export function useChatStream() {
       console.error('[useChatStream] 非流式请求失败:', err)
       error.value = err.message || '请求失败'
       isStreaming.value = false
-      toast({ title: '请求失败', description: error.value, variant: 'destructive' })
+      toast({ title: '请求失败', description: error.value ?? undefined, variant: 'destructive' })
     }
   }
 
@@ -709,14 +700,6 @@ export function useChatStream() {
       title: 'AI回复已生成完成',
       description: '点击查看',
       duration: 5000,
-      action: {
-        label: '查看',
-        onClick: () => {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/ai-chat'
-          }
-        }
-      }
     })
   }
 

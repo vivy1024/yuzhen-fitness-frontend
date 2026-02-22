@@ -184,7 +184,7 @@ export const useUsageStore = defineStore('usage', () => {
     } catch (err: any) {
       console.error('获取今日用量失败:', err)
       error.value = err.message || '获取用量统计失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }
@@ -210,7 +210,7 @@ export const useUsageStore = defineStore('usage', () => {
     } catch (err: any) {
       console.error('获取额度余额失败:', err)
       error.value = err.message || '获取额度余额失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }
@@ -304,7 +304,7 @@ export const useUsageStore = defineStore('usage', () => {
     } catch (err: any) {
       console.error('获取用量历史失败:', err)
       error.value = err.message || '获取用量历史失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }

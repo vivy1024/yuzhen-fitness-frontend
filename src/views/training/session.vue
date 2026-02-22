@@ -102,7 +102,7 @@
             <div class="flex items-center justify-center">
               <Checkbox
                 :checked="set.completed"
-                @update:checked="(checked) => toggleSetComplete(exerciseIndex, setIndex, checked)"
+                @update:checked="(checked: boolean) => toggleSetComplete(exerciseIndex, setIndex, checked)"
               />
             </div>
           </div>
@@ -219,7 +219,6 @@ import {
   completeTrainingSession,
   createSessionFromPlan,
   type ExerciseRecord,
-  type SetRecord,
 } from '@/api/training-session'
 
 const router = useRouter()
@@ -258,7 +257,7 @@ const shareCardData = computed<ShareCardData>(() => ({
   exerciseNames: session.value.exercises.map(e => e.name),
 }))
 
-const feelings = [
+const feelings: { value: 'excellent' | 'good' | 'fair' | 'poor'; label: string }[] = [
   { value: 'excellent', label: '😄 很好' },
   { value: 'good', label: '🙂 良好' },
   { value: 'fair', label: '😐 一般' },

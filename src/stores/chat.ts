@@ -525,8 +525,8 @@ export const useChatStore = defineStore('chat', () => {
         'push_pull_legs': '推拉腿分化',
         'bro_split': '部位分化'
       }
-      const splitName = splitTypeMap[overview.training_split] || overview.training_split || '训练计划'
-      const planName = overview.program_name || `AI定制${splitName}`
+      const splitName = overview.training_split ? (splitTypeMap[overview.training_split] || overview.training_split) : '训练计划'
+      const planName = (overview as any).program_name || `AI定制${splitName}`
       
       // 提取所有动作（从training_days中）
       const exercises: any[] = []
@@ -569,7 +569,7 @@ export const useChatStore = defineStore('chat', () => {
         '中级': 'intermediate',
         '高级': 'advanced'
       }
-      const difficulty = difficultyMap[overview.difficulty_level] || 'intermediate'
+      const difficulty = overview.difficulty_level ? (difficultyMap[overview.difficulty_level] || 'intermediate') : 'intermediate'
       
       // 构建后端API期望的数据格式
       const importData = {

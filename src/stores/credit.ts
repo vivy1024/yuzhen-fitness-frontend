@@ -151,7 +151,7 @@ export const useCreditStore = defineStore('credit', () => {
     } catch (err: any) {
       console.error('获取积分余额失败:', err)
       error.value = err.message || '获取积分余额失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }
@@ -185,7 +185,7 @@ export const useCreditStore = defineStore('credit', () => {
     } catch (err: any) {
       console.error('获取流水历史失败:', err)
       error.value = err.message || '获取流水历史失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }
@@ -212,7 +212,7 @@ export const useCreditStore = defineStore('credit', () => {
     } catch (err: any) {
       console.error('获取统计数据失败:', err)
       error.value = err.message || '获取统计数据失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }

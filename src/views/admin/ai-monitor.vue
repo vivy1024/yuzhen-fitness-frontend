@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { 
-  ArrowLeft, RefreshCw, Brain, Star, Users, TrendingUp,
+  ArrowLeft, RefreshCw, Brain, Star, Users,
   CheckCircle2, AlertTriangle, BarChart3, Server, Database, Cpu, HardDrive, Activity,
   LineChart, Radio, GitBranch, FileText, ChevronRight
 } from 'lucide-vue-next'

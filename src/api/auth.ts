@@ -1,9 +1,28 @@
 import axios from 'axios'
-import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import type { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
 import { getToken, getRefreshToken } from '@/utils/token'
 import { clearToken } from '@/utils/token'
 import { showError } from '@/components/ui/toast'
 import { getTokenManager } from '@/utils/token-manager'
+
+/** 后端统一响应格式（响应拦截器已解包 response.data） */
+export interface ApiResponse<T = any> {
+  code: number
+  msg: string
+  data: T
+}
+
+/** 覆盖 axios 实例类型，使 .get/.post 等返回 ApiResponse 而非 AxiosResponse */
+export interface ApiInstance {
+  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>>
+  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>>
+  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>>
+  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>>
+  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>>
+  (config: AxiosRequestConfig): Promise<ApiResponse>
+  defaults: typeof axios.defaults
+  interceptors: typeof axios.interceptors
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 
@@ -297,4 +316,4 @@ export const logout = (): Promise<any> => {
   return api.post('/auth/logout')
 }
 
-export default api
+export default api as unknown as ApiInstance

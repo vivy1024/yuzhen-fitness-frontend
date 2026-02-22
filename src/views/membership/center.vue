@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router'
 import { useMembershipStore } from '@/stores/membership'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -28,18 +28,15 @@ import PricingPlans from '@/components/membership/PricingPlans.vue'
 import PaymentFlow from '@/components/membership/PaymentFlow.vue'
 import BillingHistory from '@/components/membership/BillingHistory.vue'
 import { showSuccess, showError } from '@/components/ui/toast'
-import { 
-  ArrowLeft, 
-  Crown, 
-  Sparkles, 
-  Calendar, 
-  Clock, 
-  Check,
+import {
+  ArrowLeft,
+  Crown,
+  Sparkles,
+  Calendar,
+  Clock,
   MessageSquare,
   Target,
-  Zap,
-  Shield,
-  RefreshCw
+  Zap
 } from 'lucide-vue-next'
 import type { MembershipTier } from '@/api/membership'
 
@@ -65,11 +62,11 @@ const memberBenefits = computed(() => {
   
   const freeAiQueries = freeTier?.limits?.daily_ai_queries ?? 5
   const freeTrainingPlans = freeTier?.limits?.max_training_plans ?? 3
-  const freeDagTemplates = freeTier?.limits?.dag_template_count ?? 13
-  
+  const freeDagTemplates = (freeTier?.limits as any)?.dag_template_count ?? 13
+
   const vipAiQueries = warmheartTier?.limits?.daily_ai_queries ?? 30
   const vipTrainingPlans = warmheartTier?.limits?.max_training_plans ?? 10
-  const vipDagTemplates = warmheartTier?.limits?.dag_template_count ?? 13
+  const vipDagTemplates = (warmheartTier?.limits as any)?.dag_template_count ?? 13
   
   const benefits = [
     {

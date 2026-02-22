@@ -34,6 +34,11 @@ export interface WorkerMessage {
       query: string
       session_id?: string
       domain?: string
+      topic_id?: string | null
+      strategy?: string
+      template_id?: string | null
+      attachments?: any[]
+      persona_id?: string
     }
     sessionId?: string
     token?: string
@@ -508,18 +513,18 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   }
 }
 
-self.onerror = (event: ErrorEvent) => {
+self.onerror = (event: string | Event) => {
   log('error', 'Worker错误', event)
-  
+
   postResponse({
     type: 'ERROR',
     payload: {
       sessionId: state.sessionId || undefined,
-      error: event.message || 'Worker内部错误',
+      error: (event instanceof ErrorEvent ? event.message : String(event)) || 'Worker内部错误',
       status: 'error'
     }
   })
-  
+
   cleanup()
 }
 

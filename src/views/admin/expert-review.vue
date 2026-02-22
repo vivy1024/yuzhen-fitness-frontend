@@ -10,15 +10,15 @@
  * 只有三轨评分都完成，才能导入Few-Shot库
  */
 import { ref, onMounted, computed } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Slider } from '@/components/ui/slider'
-import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/toast'
 import { 
   ArrowLeft, RefreshCw, Star, CheckCircle2, AlertTriangle, 
@@ -171,8 +171,8 @@ function getPersonalizationAverage(session: any) {
   return ((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) / 20).toFixed(2)
 }
 
-function onTabChange(tab: string) {
-  currentTab.value = tab
+function onTabChange(tab: AcceptableValue) {
+  currentTab.value = String(tab)
   loadSessions()
 }
 

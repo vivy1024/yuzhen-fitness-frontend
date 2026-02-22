@@ -11,7 +11,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as chatHistoryDB from '@/utils/chat-history-db'
 import * as topicApi from '@/api/topic'
-import type { ChatTopic } from '@/utils/chat-history-db'
 
 // 前端Topic格式
 export interface Topic {

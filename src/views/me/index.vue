@@ -3,7 +3,7 @@
  * 我的页面
  * 整合个人中心、会员、设置等功能入口
  */
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMembershipStore } from '@/stores/membership'
@@ -40,7 +40,7 @@ const avatarInitial = computed(() => {
 // 会员状态
 const membershipLabel = computed(() => {
   if (!membershipStore.membership) return '普通用户'
-  return membershipStore.membership.tier_name || '普通用户'
+  return (membershipStore.membership as any)?.tier_name || membershipStore.membership?.membership?.name || '普通用户'
 })
 
 const isMember = computed(() => {
@@ -48,7 +48,7 @@ const isMember = computed(() => {
 })
 
 // 菜单项
-const menuSections = [
+const menuSections: Array<{ title: string; items: Array<{ icon: any; label: string; path: string; color: string; badge?: string }> }> = [
   {
     title: '我的服务',
     items: [

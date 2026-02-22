@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { sendSmsCode as sendSmsCodeApi, smsLogin } from '@/api/sms'
-import { sendEmailCode as sendEmailCodeApi } from '@/api/email'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +19,6 @@ const loginType = ref<'email' | 'phone'>('email')
 const showPassword = ref(false)
 const loading = ref(false)
 const smsCountdown = ref(0)
-const emailCountdown = ref(0)
 
 // 邮箱登录表单
 const emailForm = ref({
@@ -37,7 +35,6 @@ const phoneForm = ref({
 
 // 验证
 const isPhoneValid = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.value.phone))
-const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailForm.value.email))
 
 // 邮箱登录
 async function handleEmailLogin() {

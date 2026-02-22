@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { login as loginApi, register as registerApi, logout as logoutApi, refreshToken as refreshTokenApi, type LoginCredentials, type RegisterData, type AuthResponse } from '@/api/auth'
+import { login as loginApi, register as registerApi, logout as logoutApi, refreshToken as refreshTokenApi, type LoginCredentials, type RegisterData } from '@/api/auth'
 import { setToken, clearToken, getRefreshToken, getToken } from '@/utils/token'
 import { getTokenManager } from '@/utils/token-manager'
 import { parseJWTPayload } from '@/utils/auth'

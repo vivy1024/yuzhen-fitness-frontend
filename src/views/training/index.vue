@@ -3,11 +3,10 @@
  * 训练主页面
  * 整合训练计划、训练记录、训练统计等功能入口
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import Footer from '@/components/layout/Footer.vue'
 import { 
@@ -23,9 +22,6 @@ import {
 } from 'lucide-vue-next'
 
 const router = useRouter()
-
-// 当前选中的标签
-const activeTab = ref('overview')
 
 // 统计数据
 const stats = ref({

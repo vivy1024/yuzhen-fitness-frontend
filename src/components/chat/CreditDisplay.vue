@@ -10,7 +10,6 @@
 import { computed, onMounted, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCreditStore } from '@/stores/credit'
-import { useMembershipStore } from '@/stores/membership'
 import { useAuthStore } from '@/stores/auth'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -80,12 +79,6 @@ async function refreshCredit() {
 function goToMembership() {
   sheetOpen.value = false
   router.push('/membership')
-}
-
-// 跳转到积分历史
-function goToHistory() {
-  sheetOpen.value = false
-  router.push('/credits/history')
 }
 
 // 初始化

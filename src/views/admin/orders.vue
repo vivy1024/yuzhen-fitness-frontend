@@ -3,9 +3,10 @@
  * 管理员订单审核页面
  * 审核用户上传的支付截图
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
 import { 
-  CheckCircle2, XCircle, Clock, Search, RefreshCw, 
+  CheckCircle2, XCircle, Search, RefreshCw,
   Eye, Image as ImageIcon, User, Calendar, CreditCard, ArrowLeft
 } from 'lucide-vue-next'
 import api from '@/api/auth'
@@ -182,8 +183,8 @@ function formatDate(date: string) {
   return new Date(date).toLocaleString('zh-CN')
 }
 
-function onTabChange(tab: string) {
-  currentTab.value = tab
+function onTabChange(tab: AcceptableValue) {
+  currentTab.value = String(tab)
   loadOrders()
 }
 </script>
