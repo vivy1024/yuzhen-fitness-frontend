@@ -5,6 +5,18 @@
 
 ---
 
+## #11 (refactor) TypeScript 类型修复 — 2026-02-22
+
+- 新增 `AchievementBadge` 接口到 user-profile.ts
+- `UserProfile` 接口添加 streak_days/total_training_days/last_training_date/achievements 字段
+- 修复 `session.vue`：setNumber→set_number API 映射（新增 mapExercisesForApi 辅助函数）
+- 修复 `profile.vue`：unlockedCount 使用 AchievementBadge 类型替代 any
+- vue-tsc 类型错误从 154 降至 145
+- 全量测试 447 用例零回归
+- 对应产品版本：v1.1.0
+
+---
+
 ## #10 (feat) 训练分享卡片 + 成就徽章 — 2026-02-22
 
 - 新增 `TrainingShareCard.vue`：Canvas 绘制品牌化分享图片（训练数据+Logo+网址）

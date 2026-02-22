@@ -129,6 +129,15 @@ export interface FFMIAssessment {
 
 // ==================== 完整用户档案 ====================
 
+export interface AchievementBadge {
+  name: string
+  icon: string
+  description: string
+  requiredDays: number
+  unlocked: boolean
+  type?: string
+}
+
 export interface UserProfile {
   user_id: number
   basic_info: BasicInfo
@@ -139,6 +148,10 @@ export interface UserProfile {
   health_status: HealthStatus
   nutrition_profile: NutritionProfile
   ffmi_assessment?: FFMIAssessment
+  streak_days?: number
+  total_training_days?: number
+  last_training_date?: string
+  achievements?: AchievementBadge[]
   created_at: string
   updated_at: string
   version: number
