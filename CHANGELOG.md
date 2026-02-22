@@ -5,6 +5,20 @@
 
 ---
 
+## #12 (feat) 饮食计划 + 模板浏览页 — 2026-02-22
+
+- 新增 `FoodSelector.vue`：食物搜索选择器（Sheet弹出，搜索+分类筛选+多选+营养预览）
+- 新增 `NutritionPlanTab.vue`：饮食计划 Tab（早/午/晚/加餐四餐次，份量配置，营养汇总面板）
+- 新增 `TemplateCard.vue`：模板卡片组件（目标/难度/周期展示+一键使用）
+- 新增 `templates.vue`：模板浏览页（目标+难度筛选，12个官方模板）
+- 更新 `plan-create.vue`：集成饮食计划 Tab，保存/编辑时同步 nutrition 数据
+- 更新 `plans.vue`：空状态添加"模板库"入口按钮
+- 更新 `training-plan.ts` API：新增 nutrition 字段 + getTemplates/useTemplate 接口
+- 更新 `router/index.ts`：注册 `/training/templates` 路由
+- 对应产品版本：v1.1.0
+
+---
+
 ## #11 (refactor) TypeScript 类型修复 — 2026-02-22
 
 - 新增 `AchievementBadge` 接口到 user-profile.ts

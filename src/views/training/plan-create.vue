@@ -120,6 +120,9 @@
           共 {{ form.exercises.length }} 个动作，分布在 {{ activeDayCount }} 天
         </div>
       </section>
+
+      <!-- 饮食计划 -->
+      <NutritionPlanTab v-model:items="form.nutrition" v-model:day-of-week="currentDayNumber" />
     </div>
 
     <!-- 动作选择器 -->
@@ -140,6 +143,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/toast'
 import ExerciseSelector from '@/components/training/ExerciseSelector.vue'
 import ExerciseConfig from '@/components/training/ExerciseConfig.vue'
+import NutritionPlanTab from '@/components/training/NutritionPlanTab.vue'
+import type { NutritionPlanItem } from '@/components/training/NutritionPlanTab.vue'
 import { createTrainingPlan, updateTrainingPlan, getTrainingPlanDetail } from '@/api/training-plan'
 import type { CreatePlanData } from '@/api/training-plan'
 import type { PlanExerciseForm } from '@/components/training/ExerciseConfig.vue'
@@ -164,6 +169,7 @@ const form = ref({
   duration_weeks: 4,
   workouts_per_week: 3,
   exercises: [] as PlanExerciseForm[],
+  nutrition: [] as NutritionPlanItem[],
 })
 
 const weekDays = [
@@ -180,6 +186,8 @@ const activeDayCount = computed(() => {
   const days = new Set(form.value.exercises.map(e => e.day_of_week))
   return days.size
 })
+
+const currentDayNumber = computed(() => Number(activeDay.value))
 
 function getExercisesForDay(day: number): PlanExerciseForm[] {
   return form.value.exercises.filter(e => e.day_of_week === day)
@@ -250,6 +258,14 @@ async function handleSave() {
         notes: e.notes || undefined,
         order_index: e.order_index ?? i,
       })),
+      nutrition: form.value.nutrition.map(n => ({
+        food_id: n.food_id,
+        food_name: n.food_name,
+        meal_type: n.meal_type,
+        portion_grams: n.portion_grams,
+        day_of_week: n.day_of_week,
+        notes: n.notes || undefined,
+      })),
     }
 
     if (isEdit.value) {
@@ -290,6 +306,20 @@ onMounted(async () => {
             rest_time: e.restTime,
             notes: e.notes,
             order_index: e.orderIndex,
+          }))
+        }
+        if (d.nutritionPlans?.length) {
+          form.value.nutrition = d.nutritionPlans.map(n => ({
+            food_id: n.foodId,
+            food_name: n.foodName,
+            meal_type: n.mealType,
+            portion_grams: n.portionGrams,
+            day_of_week: n.dayOfWeek,
+            notes: n.notes,
+            _energy_per100: n.nutrition?.energyKcal ?? null,
+            _protein_per100: n.nutrition?.protein ?? null,
+            _carb_per100: n.nutrition?.carbohydrate ?? null,
+            _fat_per100: n.nutrition?.fat ?? null,
           }))
         }
       }

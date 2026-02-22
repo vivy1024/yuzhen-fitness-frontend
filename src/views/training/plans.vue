@@ -42,7 +42,8 @@ import {
   Sparkles,
   ChevronRight,
   Copy,
-  Pencil
+  Pencil,
+  BookOpen
 } from 'lucide-vue-next'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
@@ -477,6 +478,10 @@ function goBack() {
           <Button @click="handleCreatePlan">
             <Plus class="h-4 w-4 mr-2" />
             手动创建
+          </Button>
+          <Button variant="outline" @click="router.push('/training/templates')">
+            <BookOpen class="h-4 w-4 mr-2" />
+            模板库
           </Button>
           <Button variant="outline" @click="router.push({ path: '/ai/chat', query: { action: 'generate-plan' } })">
             <Sparkles class="h-4 w-4 mr-2" />
