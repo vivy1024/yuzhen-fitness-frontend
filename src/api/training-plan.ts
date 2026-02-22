@@ -36,9 +36,26 @@ export interface TrainingPlanResponse {
 export interface TrainingPlanDetail extends TrainingPlanResponse {
   exercises: any[]
   planExercises?: PlanExerciseItem[]
+  nutritionPlans?: NutritionPlanDetail[]
   targetMuscles?: string[]
   safetyNotes?: string[]
   chatSessionId?: number
+}
+
+export interface NutritionPlanDetail {
+  id?: number
+  foodId?: number
+  foodName: string
+  mealType: string
+  portionGrams: number
+  dayOfWeek?: number
+  notes?: string
+  nutrition?: {
+    energyKcal?: number
+    protein?: number
+    carbohydrate?: number
+    fat?: number
+  }
 }
 
 export interface PlanExerciseItem {

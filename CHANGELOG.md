@@ -5,6 +5,18 @@
 
 ---
 
+## #13 (feat) PWA 推送提醒前端基础设施 — 2026-02-22
+
+- 新增 `usePushNotification.ts` composable：Push 订阅/取消/提醒时间管理
+- 更新 `sw.ts`：添加 push + notificationclick 事件监听
+- 更新 `settings/index.vue`：推送开关 + 提醒时间选择器
+- 更新 `notification.ts` API：新增 subscribe/unsubscribe/reminder-time 端点
+- 更新 `training-plan.ts`：TrainingPlanDetail 添加 nutritionPlans 类型
+- 后端部分（web-push 库 + 迁移）待 Docker 环境补充
+- 对应产品版本：v1.1.0
+
+---
+
 ## #12 (feat) 饮食计划 + 模板浏览页 — 2026-02-22
 
 - 新增 `FoodSelector.vue`：食物搜索选择器（Sheet弹出，搜索+分类筛选+多选+营养预览）

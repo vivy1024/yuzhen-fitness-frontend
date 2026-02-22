@@ -1,8 +1,8 @@
 # 训练计划API文档
 
 **状态**: ✅ 已完成
-**版本**: v1.0.0
-**更新日期**: 2026-01-17
+**版本**: v2.0.0
+**更新日期**: 2026-02-22
 
 ---
 
@@ -18,6 +18,9 @@
 - ✅ **训练日志关联** - 查看训练计划关联的训练记录
 - ✅ **计划激活** - 设置当前使用的训练计划
 - ✅ **计划完成** - 标记训练计划为已完成
+- ✅ **计划复制** - 复制现有计划（含动作+饮食）
+- ✅ **饮食计划** - 计划内嵌套饮食安排（按餐次+星期）
+- ✅ **模板库** - 浏览官方模板并一键创建计划
 
 ---
 
@@ -446,12 +449,34 @@ interface TrainingExercise {
   plan_id: number
   exercise_id?: number        // 关联动作库ID
   exercise_name: string
+  day_of_week: number         // 星期几（1=周一 ~ 7=周日）
   sets?: number
   reps?: string               // 如 "8-12"
   weight?: string             // 如 "60kg"
   rest_time?: string          // 如 "90s"
   notes?: string
   order_index: number         // 排序索引
+}
+```
+
+### NutritionPlanItem（饮食计划项）
+
+```typescript
+interface NutritionPlanItem {
+  id: number
+  plan_id: number
+  food_id?: number            // 关联食物库ID
+  food_name: string
+  meal_type: string           // breakfast | lunch | dinner | snack
+  portion_grams: number       // 份量（克）
+  day_of_week?: number        // 星期几（1-7）
+  notes?: string
+  nutrition?: {               // 关联食物的营养数据（每100g）
+    energyKcal?: number
+    protein?: number
+    carbohydrate?: number
+    fat?: number
+  }
 }
 ```
 
@@ -587,10 +612,136 @@ async function activatePlan(planId: number) {
 - [训练日志API](./06-训练日志API.md) - 训练记录管理
 - [个人最佳记录API](./07-个人最佳记录API.md) - 力量进步追踪
 - [动作库API](./08-动作库API.md) - 动作查询
+- [食物库API](./08-食物库API.md) - 食物营养查询
+
+---
+
+## 📡 v2.0 新增端点
+
+### 11. 复制训练计划
+
+**端点**: `POST /api/training/plans/:id/copy`
+
+**认证**: 需要JWT Token
+
+**说明**: 复制现有计划，包含所有训练动作和饮食安排。新计划名称自动添加"(副本)"后缀。
+
+**响应示例**:
+```json
+{
+  "code": 201,
+  "msg": "计划复制成功",
+  "data": {
+    "id": 5,
+    "name": "8周增肌计划 (副本)",
+    "...": "..."
+  }
+}
+```
+
+---
+
+### 12. 获取模板列表
+
+**端点**: `GET /api/training/templates`
+
+**认证**: 需要JWT Token
+
+**请求参数**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| goal | string | 否 | 筛选目标：gain_muscle, lose_weight, strength, body_shaping |
+| level | string | 否 | 筛选难度：beginner, intermediate, advanced |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "初级增肌4周计划",
+      "description": "适合零基础的增肌入门计划",
+      "goal": "gain_muscle",
+      "level": "beginner",
+      "duration_weeks": 4,
+      "workouts_per_week": 3,
+      "exercises_preview": ["杠铃深蹲", "卧推", "硬拉"]
+    }
+  ]
+}
+```
+
+---
+
+### 13. 从模板创建计划
+
+**端点**: `POST /api/training/templates/:id/use`
+
+**认证**: 需要JWT Token
+
+**说明**: 从官方模板一键创建个人训练计划，自动复制模板中的所有训练动作配置。
+
+**响应示例**:
+```json
+{
+  "code": 201,
+  "msg": "从模板创建计划成功",
+  "data": {
+    "id": 6,
+    "name": "初级增肌4周计划",
+    "source": "template",
+    "...": "..."
+  }
+}
+```
+
+---
+
+### 创建/更新计划时的 nutrition 字段
+
+v2.0 起，`POST /api/training/plans` 和 `PUT /api/training/plans/:id` 支持 `nutrition` 嵌套数组：
+
+```json
+{
+  "name": "增肌4周计划",
+  "exercises": [...],
+  "nutrition": [
+    {
+      "food_id": 42,
+      "food_name": "鸡胸肉",
+      "meal_type": "lunch",
+      "portion_grams": 200,
+      "day_of_week": 1,
+      "notes": "水煮"
+    }
+  ]
+}
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| nutrition[].food_name | string | 是 | 食物名称 |
+| nutrition[].meal_type | string | 是 | 餐次：breakfast, lunch, dinner, snack |
+| nutrition[].portion_grams | integer | 是 | 份量（克，≥10） |
+| nutrition[].food_id | integer | 否 | 关联食物库ID |
+| nutrition[].day_of_week | integer | 否 | 星期几（1-7） |
+| nutrition[].notes | string | 否 | 备注 |
 
 ---
 
 ## 📈 版本历史
+
+### v2.0.0 (2026-02-22) - 用户自建计划
+
+**变更内容**:
+- ✅ 新增计划复制端点 `POST /plans/:id/copy`
+- ✅ 新增饮食计划嵌套（nutrition 字段）
+- ✅ 新增模板库端点（列表 + 从模板创建）
+- ✅ TrainingExercise 新增 `day_of_week` 字段（周视图支持）
+- ✅ 新增 NutritionPlanItem 数据结构
+- ✅ 更新前端集成示例
 
 ### v1.0.0 (2026-01-17) - 初始版本
 

@@ -62,3 +62,29 @@ export const deleteNotification = (notificationId: string): Promise<SuccessRespo
 export const markAllNotificationsAsRead = (): Promise<SuccessResponse> => {
   return api.put('/notifications/read-all')
 }
+
+// ─── Push Subscription ───────────────────────────
+
+/**
+ * 注册推送订阅
+ */
+export const subscribePush = (data: {
+  subscription: PushSubscriptionJSON
+  reminder_time?: string
+}): Promise<SuccessResponse> => {
+  return api.post('/push/subscribe', data)
+}
+
+/**
+ * 取消推送订阅
+ */
+export const unsubscribePush = (endpoint: string): Promise<SuccessResponse> => {
+  return api.post('/push/unsubscribe', { endpoint })
+}
+
+/**
+ * 更新提醒时间
+ */
+export const updateReminderTime = (reminder_time: string): Promise<SuccessResponse> => {
+  return api.put('/push/reminder-time', { reminder_time })
+}

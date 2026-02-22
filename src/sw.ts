@@ -51,3 +51,36 @@ registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
   new NetworkOnly()
 )
+
+// ─── Push Notification ───────────────────────────
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+
+  let payload: { title: string; body: string; icon?: string; url?: string }
+  try {
+    payload = event.data.json()
+  } catch {
+    payload = { title: '玉珍健身', body: event.data.text() }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: payload.icon || '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      data: { url: payload.url || '/' },
+    })
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url || '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((c) => c.url.includes(url))
+      if (existing) return existing.focus()
+      return self.clients.openWindow(url)
+    })
+  )
+})

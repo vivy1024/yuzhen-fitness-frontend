@@ -60,11 +60,14 @@ import {
 } from 'lucide-vue-next'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { changePassword, deleteAccount, clearCache } from '@/api/settings'
+import { usePushNotification } from '@/composables/usePushNotification'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
 const { mode, setTheme } = useTheme()
+const { isSupported: pushSupported, isSubscribed: pushEnabled, permission: pushPermission, reminderTime, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe, setReminderTime } = usePushNotification()
+const pushLoading = ref(false)
 
 // Persona 风格选项
 const personaOptions = [
@@ -199,6 +202,28 @@ function handleThemeChange(value: string) {
 function handleNotificationChange(type: keyof typeof notifications.value, value: boolean) {
   notifications.value[type] = value
   // TODO: 保存到后端
+}
+
+// 处理推送开关
+async function handlePushToggle(enabled: boolean) {
+  pushLoading.value = true
+  try {
+    if (enabled) {
+      const ok = await pushSubscribe()
+      if (ok) {
+        showSuccess('训练提醒已开启')
+      } else if (pushPermission.value === 'denied') {
+        showError('浏览器已禁止通知，请在设置中允许')
+      } else {
+        showError('推送订阅失败')
+      }
+    } else {
+      await pushUnsubscribe()
+      showSuccess('训练提醒已关闭')
+    }
+  } finally {
+    pushLoading.value = false
+  }
 }
 
 // 修改密码
@@ -388,10 +413,36 @@ function goToAbout() {
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
+          <!-- PWA 推送提醒 -->
+          <div v-if="pushSupported" class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <Label class="font-medium">训练推送提醒</Label>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  {{ pushPermission === 'denied' ? '浏览器已禁止通知' : '到点提醒你该训练了' }}
+                </p>
+              </div>
+              <Switch
+                :checked="pushEnabled"
+                :disabled="pushLoading || pushPermission === 'denied'"
+                @update:checked="handlePushToggle"
+              />
+            </div>
+            <div v-if="pushEnabled" class="flex items-center justify-between pl-1">
+              <Label class="text-sm text-muted-foreground">提醒时间</Label>
+              <Input
+                type="time"
+                :model-value="reminderTime"
+                class="w-28 h-8 text-sm"
+                @change="setReminderTime(($event.target as HTMLInputElement).value)"
+              />
+            </div>
+          </div>
+
           <div class="flex items-center justify-between">
             <Label class="font-medium">训练提醒</Label>
-            <Switch 
-              :checked="notifications.training" 
+            <Switch
+              :checked="notifications.training"
               @update:checked="(v) => handleNotificationChange('training', v)"
             />
           </div>
