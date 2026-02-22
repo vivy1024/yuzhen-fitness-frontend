@@ -30,6 +30,49 @@
         </CardContent>
       </Card>
 
+      <!-- 训练统计 & 成就徽章 -->
+      <Card v-if="userStore.userProfile.streak_days !== undefined" class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20">
+        <CardHeader class="pb-2">
+          <CardTitle class="text-base flex items-center gap-2">
+            <Flame class="h-4 w-4 text-orange-500" />
+            训练统计
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ userStore.userProfile.streak_days || 0 }}</div>
+              <div class="text-xs text-gray-500">连续天数</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ userStore.userProfile.total_training_days || 0 }}</div>
+              <div class="text-xs text-gray-500">累计天数</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ unlockedCount }}</div>
+              <div class="text-xs text-gray-500">已解锁徽章</div>
+            </div>
+          </div>
+          <!-- 成就徽章 -->
+          <div v-if="userStore.userProfile.achievements?.length" class="flex flex-wrap gap-2">
+            <div
+              v-for="badge in userStore.userProfile.achievements"
+              :key="badge.name"
+              :class="[
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all',
+                badge.unlocked
+                  ? 'bg-amber-100 dark:bg-amber-800/40 text-amber-800 dark:text-amber-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 opacity-60'
+              ]"
+              :title="badge.description"
+            >
+              <span>{{ badge.icon }}</span>
+              <span>{{ badge.name }}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <!-- 基础信息 -->
       <Card>
         <CardHeader class="pb-2">
@@ -207,7 +250,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useToast } from '@/components/ui/toast'
@@ -215,7 +258,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Edit, User, Dumbbell, Target, Settings, Heart, RefreshCw } from 'lucide-vue-next'
+import { ArrowLeft, Edit, User, Dumbbell, Target, Settings, Heart, RefreshCw, Flame } from 'lucide-vue-next'
 import type { FitnessLevel, Gender, TrainingIntensity } from '@/types/user-profile'
 import InfoRow from '@/components/user/InfoRow.vue'
 
@@ -225,6 +268,10 @@ const { toast } = useToast()
 
 // 独立的同步状态，避免与页面加载状态混淆
 const isSyncing = ref(false)
+
+const unlockedCount = computed(() => {
+  return (userStore.userProfile?.achievements || []).filter((b: any) => b.unlocked).length
+})
 
 // 翻译函数
 function translateGender(gender: Gender | null | undefined): string {

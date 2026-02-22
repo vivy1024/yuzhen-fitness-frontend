@@ -192,11 +192,17 @@
         </Button>
       </div>
     </div>
+
+    <!-- 分享卡片弹窗 -->
+    <TrainingShareCard
+      v-model:open="showShareCard"
+      :data="shareCardData"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Plus, Check } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -206,6 +212,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/components/ui/toast/use-toast'
+import TrainingShareCard, { type ShareCardData } from '@/components/share/TrainingShareCard.vue'
 import {
   createTrainingSession,
   updateTrainingSession,
@@ -233,6 +240,23 @@ const session = ref({
 })
 
 const saving = ref(false)
+const showShareCard = ref(false)
+
+// 分享弹窗关闭后跳转到历史记录
+watch(showShareCard, (isOpen) => {
+  if (!isOpen && session.value.status === 'completed') {
+    router.push('/training/history')
+  }
+})
+
+const shareCardData = computed<ShareCardData>(() => ({
+  date: session.value.date,
+  totalVolume: totalVolume.value,
+  totalSets: totalSets.value,
+  averageRPE: averageRPE.value,
+  feeling: session.value.feeling,
+  exerciseNames: session.value.exercises.map(e => e.name),
+}))
 
 const feelings = [
   { value: 'excellent', label: '😄 很好' },
@@ -416,8 +440,9 @@ async function completeSession(): Promise<void> {
         description: `总训练量: ${totalVolume.value.toFixed(1)}kg, 总组数: ${totalSets.value}组`,
       })
 
-      // 跳转到历史记录页面
-      router.push('/training/history')
+      // 弹出分享卡片
+      session.value.status = 'completed'
+      showShareCard.value = true
     }
   } catch (error: any) {
     console.error('Complete session error:', error)
