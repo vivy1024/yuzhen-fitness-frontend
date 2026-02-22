@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
             // Vue核心库
             'vue-vendor': ['vue', 'vue-router', 'pinia'],
             // UI组件库
-            'ui-vendor': ['reka-ui', 'radix-vue', 'class-variance-authority', 'clsx', 'tailwind-merge'],
+            'ui-vendor': ['reka-ui', 'class-variance-authority', 'clsx', 'tailwind-merge'],
             // 工具库
             'utils-vendor': ['axios', 'date-fns', 'zod', 'dompurify', 'marked'],
             // 表单验证
