@@ -346,6 +346,23 @@ function toggleSetComplete(
   session.value.exercises[exerciseIndex].sets[setIndex].completed = checked
 }
 
+/** 将前端 exercises 数据映射为 API 请求格式 */
+function mapExercisesForApi() {
+  return session.value.exercises.map(ex => ({
+    exercise_id: ex.exerciseId,
+    name: ex.name,
+    sets: ex.sets.map(s => ({
+      set_number: s.setNumber,
+      weight: s.weight,
+      reps: s.reps,
+      rpe: s.rpe,
+      rest: s.rest,
+      completed: s.completed,
+    })),
+    notes: ex.notes,
+  }))
+}
+
 /** 保存草稿 */
 async function saveDraft(): Promise<void> {
   saving.value = true
@@ -355,12 +372,7 @@ async function saveDraft(): Promise<void> {
       plan_id: session.value.planId || undefined,
       date: session.value.date,
       start_time: session.value.startTime,
-      exercises: session.value.exercises.map(ex => ({
-        exercise_id: ex.exerciseId,
-        name: ex.name,
-        sets: ex.sets,
-        notes: ex.notes,
-      })),
+      exercises: mapExercisesForApi(),
       feeling: session.value.feeling,
       notes: session.value.notes,
       status: 'in_progress' as const,
@@ -416,12 +428,7 @@ async function completeSession(): Promise<void> {
         plan_id: session.value.planId || undefined,
         date: session.value.date,
         start_time: session.value.startTime,
-        exercises: session.value.exercises.map(ex => ({
-          exercise_id: ex.exerciseId,
-          name: ex.name,
-          sets: ex.sets,
-          notes: ex.notes,
-        })),
+        exercises: mapExercisesForApi(),
         feeling: session.value.feeling,
         notes: session.value.notes,
       }

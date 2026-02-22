@@ -259,7 +259,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, Edit, User, Dumbbell, Target, Settings, Heart, RefreshCw, Flame } from 'lucide-vue-next'
-import type { FitnessLevel, Gender, TrainingIntensity } from '@/types/user-profile'
+import type { FitnessLevel, Gender, TrainingIntensity, AchievementBadge } from '@/types/user-profile'
 import InfoRow from '@/components/user/InfoRow.vue'
 
 const router = useRouter()
@@ -270,7 +270,7 @@ const { toast } = useToast()
 const isSyncing = ref(false)
 
 const unlockedCount = computed(() => {
-  return (userStore.userProfile?.achievements || []).filter((b: any) => b.unlocked).length
+  return (userStore.userProfile?.achievements || []).filter((b: AchievementBadge) => b.unlocked).length
 })
 
 // 翻译函数
