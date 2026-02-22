@@ -29,8 +29,6 @@ let refreshTimer: number | null = null
 // 指标数据
 const healthData = ref<any>(null)
 const metricsData = ref<any>(null)
-const prometheusData = ref<any[]>([])
-
 // 时序数据
 const requestDurationData = ref<any[]>([])
 const requestRateData = ref<any[]>([])

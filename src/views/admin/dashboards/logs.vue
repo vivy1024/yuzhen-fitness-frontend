@@ -64,16 +64,6 @@ const levelColors: Record<string, string> = {
   'DEBUG': 'bg-gray-500'
 }
 
-// 日志级别图标
-const levelIcons: Record<string, any> = {
-  'ERROR': AlertCircle,
-  'CRITICAL': AlertCircle,
-  'WARN': AlertTriangle,
-  'WARNING': AlertTriangle,
-  'INFO': Info,
-  'DEBUG': Bug
-}
-
 // 加载所有数据
 async function loadAllData() {
   loading.value = true

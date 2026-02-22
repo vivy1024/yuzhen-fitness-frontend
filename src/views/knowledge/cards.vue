@@ -71,7 +71,7 @@
       @scroll="onScroll"
     >
       <div
-        v-for="(card, index) in cards"
+        v-for="(card, _index) in cards"
         :key="card.id"
         class="snap-center shrink-0 w-full"
       >

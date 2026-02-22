@@ -197,7 +197,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useFeedbackStore } from '@/stores/feedback'
+import { useFeedbackStore, type FeedbackType } from '@/stores/feedback'
 import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -216,7 +216,7 @@ const { toast } = useToast()
 
 // 反馈表单
 const feedbackForm = ref({
-  type: 'feature',
+  type: 'feature' as FeedbackType,
   content: '',
   images: [] as string[],
   contact: ''

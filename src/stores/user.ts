@@ -146,7 +146,7 @@ export const useUserStore = defineStore('user', () => {
           chronic_diseases: [],
           injury_history: [],
           medications: [],
-          other_notes: null,
+          other_notes: undefined,
         } as HealthStatus
       }
 
@@ -500,7 +500,7 @@ export const useUserStore = defineStore('user', () => {
         training_split: null,
         available_equipment: [],
         training_location: null,
-        preferred_intensity: null as any,  // 新用户不预设训练强度
+        training_intensity: null as any,  // 新用户不预设训练强度
       },
       health_status: {
         chronic_diseases: [],
@@ -559,7 +559,7 @@ export const useUserStore = defineStore('user', () => {
       })
   }
 
-  async function loadFFMIHistory(limit = 10): Promise<FFMIHistory[]> {
+  async function loadFFMIHistory(_limit = 10): Promise<FFMIHistory[]> {
     if (userProfile.value?.ffmi_assessment) {
       const mockHistory: FFMIHistory = {
         id: 1,

@@ -10,9 +10,10 @@
  * @created 2025-01-03
  */
 import { ref, computed, onMounted } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -157,8 +158,8 @@ async function confirmDelete() {
   }
 }
 
-function handleFilterChange(key: string, value: string) {
-  trainingStore.setFilters({ [key]: value })
+function handleFilterChange(key: string, value: AcceptableValue) {
+  trainingStore.setFilters({ [key]: String(value) })
 }
 
 function formatDate(dateStr: string): string {

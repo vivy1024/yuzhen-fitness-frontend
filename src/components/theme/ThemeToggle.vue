@@ -4,6 +4,7 @@
  * 支持浅色/深色/跟随系统三种模式
  */
 import { computed } from 'vue'
+import type { AcceptableValue } from 'reka-ui'
 import { Button } from '@/components/ui/button'
 import { 
   Select,
@@ -40,9 +41,9 @@ const currentIcon = computed(() => {
 })
 
 // 处理选择变化
-function handleSelect(value: string | null) {
+function handleSelect(value: AcceptableValue) {
   if (!value) return
-  setTheme(value as ThemeMode)
+  setTheme(String(value) as ThemeMode)
 }
 </script>
 

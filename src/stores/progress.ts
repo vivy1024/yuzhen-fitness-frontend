@@ -18,12 +18,10 @@ import { ref, computed } from 'vue'
 import { useUserStore } from './user'
 import {
   getProgressOverview,
-  getProgressRecords,
   createProgressRecord,
   getTrainingCalendar,
   getGoals,
   type ProgressRecord,
-  type ProgressOverview,
   type TrainingCalendarDay,
   type FitnessGoal,
   type WeightTrend,
@@ -132,10 +130,13 @@ export const useProgressStore = defineStore('progress', () => {
         // 更新统计数据
         stats.value = {
           ...data.stats,
+          totalVolume: (data.stats as any).totalVolume || 0,
           // 如果后端没有返回当前体重，从用户档案获取
           currentWeight: data.stats.currentWeight || userStore.userProfile?.basic_info.weight || 0,
           currentBodyFat: data.stats.currentBodyFat || userStore.userProfile?.basic_info.body_fat_percentage,
           currentFFMI: data.stats.currentFFMI || userStore.ffmiData?.ffmi,
+          bodyFatChange: data.stats.bodyFatChange ?? undefined,
+          ffmiChange: data.stats.ffmiChange ?? undefined,
         }
         
         // 更新趋势数据

@@ -290,7 +290,7 @@ export const useMembershipStore = defineStore('membership', () => {
     } catch (err: any) {
       console.error('获取会员信息失败:', err)
       error.value = err.message || '获取会员信息失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       loading.value = false
     }
@@ -303,8 +303,8 @@ export const useMembershipStore = defineStore('membership', () => {
     try {
       const response = await getMembershipTiers()
       if (response.code === 200 && response.data) {
-        // API返回 { memberships: [...], count: n }，需要提取memberships数组
-        const membershipsData = response.data.memberships || response.data
+        // API返回的data可能是数组或 { memberships: [...], count: n }
+        const membershipsData = (response.data as any)?.memberships || response.data
         
         // 映射API字段到前端期望的字段
         if (Array.isArray(membershipsData)) {
@@ -387,7 +387,7 @@ export const useMembershipStore = defineStore('membership', () => {
     } catch (err: any) {
       console.error('创建支付订单失败:', err)
       error.value = err.message || '创建订单失败'
-      return { success: false, message: error.value }
+      return { success: false, message: error.value ?? undefined }
     } finally {
       paymentLoading.value = false
     }
@@ -460,7 +460,7 @@ export const useMembershipStore = defineStore('membership', () => {
    */
   async function cancelOrder(orderNo: string): Promise<{ success: boolean; message?: string }> {
     try {
-      const response = await cancelPaymentOrder(orderNo)
+      const response = await cancelPaymentOrder(Number(orderNo))
       if (response.code === 200) {
         currentOrder.value = null
         stopPollingPaymentStatus()
@@ -527,8 +527,8 @@ export const useMembershipStore = defineStore('membership', () => {
       
       const response = await getPaymentHistory({ page, per_page: 10 })
       if (response.code === 200 && response.data) {
-        // 后端返回 orders，前端期望 records，做兼容处理
-        const orders = response.data.orders || response.data.records || []
+        // 后端返回 records（或 orders 做兼容），前端统一用 records
+        const orders = (response.data as any).orders || response.data.records || []
         // 转换订单数据为账单记录格式
         billingRecords.value = orders.map((order: any) => ({
           id: order.id,

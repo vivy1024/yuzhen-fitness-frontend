@@ -7,9 +7,9 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  ArrowLeft, ClipboardList, Users, BarChart3, Settings, 
-  TrendingUp, Brain, Shield, Star, MessageSquare
+import {
+  ArrowLeft, ClipboardList, Users,
+  Brain, Shield, Star, MessageSquare
 } from 'lucide-vue-next'
 import api from '@/api/auth'
 
@@ -39,12 +39,12 @@ async function loadStats() {
       api.get('/v2/quality/stats').catch(() => ({ data: {} }))
     ])
     
-    if (orderRes.code === 200) {
+    if ((orderRes as any).code === 200) {
       stats.value.pendingOrders = orderRes.data.reviewing || 0
       stats.value.todayRevenue = orderRes.data.today_revenue || 0
     }
-    
-    if (qualityRes.code === 200) {
+
+    if ((qualityRes as any).code === 200) {
       stats.value.fewshotEligible = qualityRes.data.fewshot_eligible || 0
       stats.value.totalUsers = qualityRes.data.total_sessions || 0
     }

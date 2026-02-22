@@ -3,7 +3,7 @@
     <!-- 头像预览 -->
     <div class="relative">
       <Avatar class="h-24 w-24">
-        <AvatarImage v-if="previewUrl || currentAvatar" :src="previewUrl || currentAvatar" />
+        <AvatarImage v-if="previewUrl || currentAvatar" :src="(previewUrl || currentAvatar) ?? ''" />
         <AvatarFallback class="text-2xl">
           {{ fallbackText }}
         </AvatarFallback>

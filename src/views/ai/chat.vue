@@ -17,12 +17,11 @@ import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
 import StrategySwitch from '@/components/chat/StrategySwitch.vue'
 import CreditDisplay from '@/components/chat/CreditDisplay.vue'
 import AttachmentButton from '@/components/chat/AttachmentButton.vue'
-import type { PendingAttachment } from '@/components/chat/AttachmentButton.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import type { DAGTemplate } from '@/config/dag-templates'
 import { showInfo, showWarning } from '@/components/ui/toast'
-import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles, History } from 'lucide-vue-next'
+import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles } from 'lucide-vue-next'
 import * as topicApi from '@/api/topic'
 
 const router = useRouter()
@@ -229,8 +228,8 @@ async function sendMessage() {
   // 发送后清除选择的模板ID和附件
   selectedTemplateId.value = null
   chatStore.clearAttachments()
-  
-  if (result.success) {
+
+  if (result?.success) {
     // 滚动到底部
     await nextTick()
     scrollToBottom()
@@ -281,7 +280,7 @@ async function handleSessionChange(sessionId: string) {
         content: msg.content,
         timestamp: msg.timestamp,
         streaming: false,
-        metadata: msg.metadata
+        metadata: msg.metadata ?? undefined
       }))
       
       // 更新消息列表

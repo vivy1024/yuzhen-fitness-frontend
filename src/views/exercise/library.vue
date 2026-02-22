@@ -432,10 +432,10 @@ function toggleFilter(type: keyof FilterConditions, value: string, checked: bool
   
   if (isChecked) {
     if (!arr.includes(value)) {
-      currentFilters.value[type] = [...arr, value]
+      ;(currentFilters.value as any)[type] = [...arr, value]
     }
   } else {
-    currentFilters.value[type] = arr.filter(v => v !== value)
+    ;(currentFilters.value as any)[type] = arr.filter(v => v !== value)
   }
   
   console.log(`[Filter] ${type}: ${value} -> ${isChecked}`, currentFilters.value)

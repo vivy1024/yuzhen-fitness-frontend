@@ -174,6 +174,9 @@ export interface ExerciseDetail extends ExerciseBasic {
   regression_options?: string[] | Array<{ id: number; name: string; name_zh?: string }>
 
   // 旧字段兼容
+  categories?: string[]
+  mechanic_type?: string | { id: number; name: string; name_zh: string }
+  force_type?: string | { id: number; name: string; name_zh: string }
   instructions?: string[]
   instructions_zh?: string[]
   tips?: string[]

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
-  ArrowLeft, RefreshCw, Search, Users, Crown, User, Mail, Calendar
+  ArrowLeft, RefreshCw, Search, Users, Crown, Mail, Calendar
 } from 'lucide-vue-next'
 import api from '@/api/auth'
 

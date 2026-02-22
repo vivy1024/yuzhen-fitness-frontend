@@ -3,7 +3,6 @@
  * 使用shadcn-vue的Toast组件
  */
 
-import { h } from 'vue'
 import { toast as sonnerToast } from 'vue-sonner'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'

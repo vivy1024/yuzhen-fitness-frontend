@@ -10,7 +10,7 @@ export type Gender = 'male' | 'female'
 export type TrainingSplit = '全身训练' | '上下分化' | '推拉腿' | '三分化' | '四分化' | '五分化'
 export type TrainingLocation = '健身房' | '家里' | '户外' | '混合'
 export type TrainingIntensity = 'low' | 'moderate' | 'high'
-export type RestPattern = '练一休一' | '练二休一' | '练三休一' | '练四休一' | '练五休一' | '练六休一' | '练七休一'
+export type RestPattern = '练一休一' | '练二休一' | '练三休一' | '练四休一' | '练五休一' | '练五休二' | '练六休一' | '练七休一'
 export type BudgetLevel = 'low' | 'moderate' | 'high'
 export type BMIStatus = 'underweight' | 'normal' | 'overweight' | 'obese'
 

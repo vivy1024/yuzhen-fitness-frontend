@@ -423,16 +423,16 @@ const currentStep = ref(0)
 const formData = reactive({
   // 基础信息
   nickname: '',
-  age: null as number | null,
+  age: undefined as number | undefined,
   gender: 'male' as Gender,
-  height: null as number | null,
-  weight: null as number | null,
-  body_fat_percentage: null as number | null,
+  height: undefined as number | undefined,
+  weight: undefined as number | undefined,
+  body_fat_percentage: undefined as number | undefined,
   fitness_level: 'beginner' as FitnessLevel,
   // 健身目标
   primary_goal: '' as string,  // 主要目标（单选）
   secondary_goals: [] as string[],  // 次要目标（多选）
-  target_weight: null as number | null,
+  target_weight: undefined as number | undefined,
   training_split: null as TrainingSplit | null,
   // 训练偏好
   training_location: null as TrainingLocation | null,
@@ -474,12 +474,12 @@ function initFormData() {
   formData.gender = profile.basic_info.gender
   formData.height = profile.basic_info.height
   formData.weight = profile.basic_info.weight
-  formData.body_fat_percentage = profile.basic_info.body_fat_percentage || null
+  formData.body_fat_percentage = profile.basic_info.body_fat_percentage || undefined
   formData.fitness_level = profile.basic_info.fitness_level
   
   formData.primary_goal = profile.fitness_goals.primary_goal || ''
   formData.secondary_goals = [...(profile.fitness_goals.secondary_goals || [])]
-  formData.target_weight = profile.fitness_goals.target_weight || null
+  formData.target_weight = profile.fitness_goals.target_weight || undefined
   formData.training_split = profile.fitness_goals.training_split
   
   formData.training_location = profile.training_preferences.training_location
@@ -517,7 +517,7 @@ function initFormData() {
 }
 
 // 切换目标选择（仅用于次要目标）
-function toggleGoal(type: 'secondary', goal: string) {
+function toggleGoal(_type: 'secondary', goal: string) {
   const arr = formData.secondary_goals
   const index = arr.indexOf(goal)
   if (index === -1) {

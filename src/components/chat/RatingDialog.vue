@@ -188,7 +188,7 @@ const renderStars = () => {
             <Label>整体满意度</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(overall, (v) => overall = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"
@@ -217,7 +217,7 @@ const renderStars = () => {
             <Label>易懂性</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(clarity, (v) => clarity = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"
@@ -243,7 +243,7 @@ const renderStars = () => {
             <Label>实用性</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(usefulness, (v) => usefulness = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"
@@ -269,7 +269,7 @@ const renderStars = () => {
             <Label>详细程度</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(detail, (v) => detail = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"
@@ -295,7 +295,7 @@ const renderStars = () => {
             <Label>友好度</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(friendliness, (v) => friendliness = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"
@@ -321,7 +321,7 @@ const renderStars = () => {
             <Label>整体满意度</Label>
             <div class="flex items-center gap-2">
               <button
-                v-for="star in renderStars(overall, (v) => overall = v)"
+                v-for="star in renderStars()"
                 :key="star"
                 type="button"
                 class="transition-colors hover:scale-110"

@@ -34,8 +34,8 @@ const membershipTier = computed((): 'free' | 'warmheart' | 'energy' => {
   if (!membership) return 'free'
   
   // 尝试多种方式获取slug
-  const slug = membership.membership?.slug || 
-               membership.membership?.tier ||
+  const slug = membership.membership?.slug ||
+               (membership.membership as any)?.tier ||
                (membership as any).slug ||
                (membership as any).tier
   
