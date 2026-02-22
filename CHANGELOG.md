@@ -5,6 +5,20 @@
 
 ---
 
+## #9 (feat) 用户自建训练计划创建器 — 2026-02-22
+
+- 新增 `ExerciseSelector.vue`：动作搜索弹窗（肌群筛选 + 多选 + 分页加载）
+- 新增 `ExerciseConfig.vue`：动作参数配置（组数/次数/重量/休息/备注）
+- 新增 `plan-create.vue`：计划创建/编辑页（基本信息 + 周视图 Tabs 排列动作）
+- 更新 `plans.vue`：类型筛选 + 编辑/复制按钮 + 手动创建入口
+- 更新 `training-plan.ts` API：createTrainingPlan/updateTrainingPlan/copyTrainingPlan
+- 更新 `training.ts` store：TrainingPlanFilters 添加 type 筛选
+- 路由注册：`/training/plans/create` + `/training/plans/:id/edit`
+- 全量测试 447 用例零回归
+- 对应产品版本：v1.1.0
+
+---
+
 ## #8 (test) composable + store 测试补充 — 2026-02-22
 
 - 新增 3 个 composable 测试：useTheme(9)、useNetworkStatus(6)、usePWAInstall(10)

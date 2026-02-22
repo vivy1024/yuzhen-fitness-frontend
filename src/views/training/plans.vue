@@ -28,22 +28,25 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/components/ui/toast'
-import { 
-  ArrowLeft, 
-  Plus, 
-  Dumbbell, 
-  Calendar, 
-  Target, 
-  Trash2, 
-  Star, 
+import {
+  ArrowLeft,
+  Plus,
+  Dumbbell,
+  Calendar,
+  Target,
+  Trash2,
+  Star,
   Clock,
   Filter,
   RefreshCw,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Copy,
+  Pencil
 } from 'lucide-vue-next'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import { copyTrainingPlan } from '@/api/training-plan'
 
 // ============ 状态 ============
 
@@ -107,11 +110,23 @@ function handlePlanClick(planId: number) {
 }
 
 function handleCreatePlan() {
-  // 跳转到AI聊天页面生成训练计划
-  router.push({
-    path: '/ai/chat',
-    query: { action: 'generate-plan' }
-  })
+  router.push('/training/plans/create')
+}
+
+function handleEditPlan(planId: number, event: Event) {
+  event.stopPropagation()
+  router.push(`/training/plans/${planId}/edit`)
+}
+
+async function handleCopyPlan(planId: number, event: Event) {
+  event.stopPropagation()
+  try {
+    await copyTrainingPlan(planId)
+    toast({ title: '复制成功' })
+    await trainingStore.fetchPlans()
+  } catch (error: any) {
+    toast({ title: '复制失败', description: error.message, variant: 'destructive' })
+  }
 }
 
 function handleDeleteClick(planId: number, event: Event) {
@@ -247,6 +262,17 @@ function goBack() {
             <SelectItem value="frequency">频率</SelectItem>
           </SelectContent>
         </Select>
+
+        <Select :model-value="filters.type || 'all'" @update:model-value="(v) => handleFilterChange('type', v)">
+          <SelectTrigger class="w-24 h-8 text-xs">
+            <SelectValue placeholder="类型" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部</SelectItem>
+            <SelectItem value="manual">手动创建</SelectItem>
+            <SelectItem value="ai_generated">AI生成</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
 
@@ -321,13 +347,29 @@ function goBack() {
                   </div>
                 </div>
                 
-                <div class="flex items-center gap-2 ml-2">
+                <div class="flex items-center gap-1 ml-2">
                   <Badge :class="getDifficultyColor(plan.difficulty)" class="text-white text-xs">
                     {{ getDifficultyLabel(plan.difficulty) }}
                   </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="handleEditPlan(plan.id, $event)"
+                  >
+                    <Pencil class="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="handleCopyPlan(plan.id, $event)"
+                  >
+                    <Copy class="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     class="h-8 w-8 text-destructive hover:text-destructive"
                     @click="handleDeleteClick(plan.id, $event)"
                   >
@@ -346,9 +388,9 @@ function goBack() {
             <Dumbbell class="h-4 w-4" />
             <span>其他计划</span>
           </div>
-          
-          <Card 
-            v-for="plan in archivedPlans" 
+
+          <Card
+            v-for="plan in archivedPlans"
             :key="plan.id"
             class="cursor-pointer hover:shadow-md transition-shadow"
             @click="handlePlanClick(plan.id)"
@@ -362,8 +404,11 @@ function goBack() {
                       <Sparkles class="h-3 w-3 mr-1" />
                       {{ getTypeLabel(plan.type) }}
                     </Badge>
+                    <Badge v-else-if="plan.type === 'manual'" variant="outline" class="text-xs">
+                      手动
+                    </Badge>
                   </div>
-                  
+
                   <div class="flex items-center gap-4 text-xs text-muted-foreground">
                     <span class="flex items-center gap-1">
                       <Calendar class="h-3 w-3" />
@@ -378,20 +423,36 @@ function goBack() {
                       {{ plan.exerciseCount }}个动作
                     </span>
                   </div>
-                  
+
                   <div class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                     <Clock class="h-3 w-3" />
                     <span>创建于{{ formatDate(plan.createdAt) }}</span>
                   </div>
                 </div>
-                
-                <div class="flex items-center gap-2 ml-2">
+
+                <div class="flex items-center gap-1 ml-2">
                   <Badge :class="getDifficultyColor(plan.difficulty)" class="text-white text-xs">
                     {{ getDifficultyLabel(plan.difficulty) }}
                   </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="handleEditPlan(plan.id, $event)"
+                  >
+                    <Pencil class="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8"
+                    @click="handleCopyPlan(plan.id, $event)"
+                  >
+                    <Copy class="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     class="h-8 w-8 text-destructive hover:text-destructive"
                     @click="handleDeleteClick(plan.id, $event)"
                   >
@@ -411,11 +472,17 @@ function goBack() {
           <Dumbbell class="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 class="text-lg font-medium mb-2">还没有训练计划</h3>
-        <p class="text-sm text-muted-foreground mb-6">让智能健身顾问为您定制专属训练计划</p>
-        <Button @click="handleCreatePlan">
-          <Sparkles class="h-4 w-4 mr-2" />
-          生成训练计划
-        </Button>
+        <p class="text-sm text-muted-foreground mb-6">创建专属训练计划，开始科学训练</p>
+        <div class="flex gap-3">
+          <Button @click="handleCreatePlan">
+            <Plus class="h-4 w-4 mr-2" />
+            手动创建
+          </Button>
+          <Button variant="outline" @click="router.push({ path: '/ai/chat', query: { action: 'generate-plan' } })">
+            <Sparkles class="h-4 w-4 mr-2" />
+            AI生成
+          </Button>
+        </div>
       </div>
     </div>
 
