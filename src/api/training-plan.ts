@@ -72,6 +72,14 @@ export interface CreatePlanData {
     notes?: string
     order_index?: number
   }[]
+  nutrition?: {
+    food_id?: number
+    food_name: string
+    meal_type: string
+    portion_grams: number
+    day_of_week?: number
+    notes?: string
+  }[]
 }
 
 export interface ApiResponse<T = any> {
@@ -164,4 +172,36 @@ export const exportTrainingPlan = (id: number, format: 'json' | 'pdf' = 'json'):
  */
 export const startTrainingPlan = (id: number): Promise<ApiResponse<{ id: number; startedAt: string }>> => {
   return api.post(`/training/plans/${id}/start`)
+}
+
+// ========== 模板 API ==========
+
+export interface PlanTemplate {
+  id: number
+  name: string
+  description: string
+  goal: string
+  level: string
+  duration_weeks: number
+  workouts_per_week: number
+  exercises_count: number
+}
+
+/**
+ * 获取官方模板列表
+ * GET /api/training/templates
+ */
+export const getTemplates = (params?: {
+  goal?: string
+  level?: string
+}): Promise<ApiResponse<PlanTemplate[]>> => {
+  return api.get('/training/templates', { params })
+}
+
+/**
+ * 从模板创建计划
+ * POST /api/training/templates/:id/use
+ */
+export const useTemplate = (id: number): Promise<ApiResponse<{ id: number; name: string }>> => {
+  return api.post(`/training/templates/${id}/use`)
 }

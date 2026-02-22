@@ -88,6 +88,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/training/templates',
+      name: 'training-templates',
+      component: () => import('@/views/training/templates.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/training/session',
       name: 'training-session',
       component: () => import('@/views/training/session.vue'),
