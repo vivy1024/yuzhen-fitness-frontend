@@ -5,6 +5,13 @@
 
 ---
 
+## #7 (chore) radix-vue → reka-ui 统一 — 2026-02-22
+
+- 4 个 tooltip 组件从 `radix-vue` 迁移到 `reka-ui`（Tooltip/TooltipContent/TooltipProvider/TooltipTrigger）
+- 从 `package.json` devDependencies 移除 `radix-vue`（shadcn-vue 已全面迁移到 reka-ui）
+- Vite 构建验证通过，无新增错误
+- 对应产品版本：v1.1.0
+
 ## #6 (feat) AI引用展示 + 知识搜索参数支持 — 2026-02-21
 
 - `components/chat/MessageItem.vue`：AI回答中的知识引用渲染
