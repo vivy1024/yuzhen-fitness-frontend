@@ -70,6 +70,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/training/plans/create',
+      name: 'training-plan-create',
+      component: () => import('@/views/training/plan-create.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/training/plans/:id/edit',
+      name: 'training-plan-edit',
+      component: () => import('@/views/training/plan-create.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/training/plans/:id',
       name: 'training-plan-detail',
       component: () => import('@/views/training/plan-detail.vue'),

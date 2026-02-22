@@ -35,9 +35,43 @@ export interface TrainingPlanResponse {
 
 export interface TrainingPlanDetail extends TrainingPlanResponse {
   exercises: any[]
+  planExercises?: PlanExerciseItem[]
   targetMuscles?: string[]
   safetyNotes?: string[]
   chatSessionId?: number
+}
+
+export interface PlanExerciseItem {
+  id?: number
+  exerciseId?: number
+  exerciseName: string
+  dayOfWeek?: number
+  sets: number
+  reps: string
+  weight?: string
+  restTime?: string
+  notes?: string
+  orderIndex?: number
+}
+
+export interface CreatePlanData {
+  name: string
+  description?: string
+  goal?: 'lose_weight' | 'gain_muscle' | 'maintain' | 'improve_fitness'
+  difficulty?: 'novice' | 'beginner' | 'intermediate' | 'advanced'
+  duration_weeks: number
+  workouts_per_week: number
+  exercises: {
+    exercise_id?: number
+    exercise_name: string
+    day_of_week?: number
+    sets: number
+    reps: string
+    weight?: string
+    rest_time?: string
+    notes?: string
+    order_index?: number
+  }[]
 }
 
 export interface ApiResponse<T = any> {
@@ -62,6 +96,7 @@ export const getTrainingPlans = (params?: {
   status?: 'active' | 'completed'
   difficulty?: 'beginner' | 'intermediate' | 'advanced'
   goal?: string
+  type?: 'manual' | 'ai_generated'
 }): Promise<ApiResponse<TrainingPlanResponse[]>> => {
   return api.get('/training/plans', { params })
 }
@@ -75,17 +110,27 @@ export const getTrainingPlanDetail = (id: number): Promise<ApiResponse<TrainingP
 }
 
 /**
- * 更新训练计划
+ * 手动创建训练计划
+ * POST /api/training/plans
+ */
+export const createTrainingPlan = (data: CreatePlanData): Promise<ApiResponse<{ id: number; name: string; exerciseCount: number; createdAt: string }>> => {
+  return api.post('/training/plans', data)
+}
+
+/**
+ * 更新训练计划（含动作同步）
  * PUT /api/training/plans/:id
  */
-export const updateTrainingPlan = (id: number, data: {
-  name?: string
-  description?: string
-  is_active?: boolean
-  started_at?: string
-  completed_at?: string
-}): Promise<ApiResponse<{ id: number; name: string; updatedAt: string }>> => {
+export const updateTrainingPlan = (id: number, data: Partial<CreatePlanData>): Promise<ApiResponse<{ id: number; name: string; exerciseCount: number; updatedAt: string }>> => {
   return api.put(`/training/plans/${id}`, data)
+}
+
+/**
+ * 复制训练计划
+ * POST /api/training/plans/:id/copy
+ */
+export const copyTrainingPlan = (id: number): Promise<ApiResponse<{ id: number; name: string; exerciseCount: number; createdAt: string }>> => {
+  return api.post(`/training/plans/${id}/copy`)
 }
 
 /**

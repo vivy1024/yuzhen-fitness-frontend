@@ -34,6 +34,7 @@ export interface TrainingPlanFilters {
   status?: 'active' | 'completed' | 'all'
   difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'all'
   goal?: string
+  type?: 'manual' | 'ai_generated' | 'all'
   sortBy?: 'createdAt' | 'name' | 'frequency'
   sortOrder?: 'asc' | 'desc'
 }
@@ -96,6 +97,11 @@ export const useTrainingStore = defineStore('training', () => {
     // 目标筛选
     if (filters.value.goal) {
       result = result.filter(p => p.goal === filters.value.goal)
+    }
+
+    // 类型筛选
+    if (filters.value.type && filters.value.type !== 'all') {
+      result = result.filter(p => p.type === filters.value.type)
     }
 
     // 排序
