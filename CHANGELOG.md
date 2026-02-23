@@ -5,6 +5,18 @@
 
 ---
 
+## #16 (feat) 统一可观测性仪表盘前端 — 2026-02-24
+
+对应产品版本：v1.3.0
+
+- 新增 src/api/admin/metrics.ts: 6 个聚合 API 封装 + TypeScript 类型定义
+- 新增 src/views/admin/metrics.vue: 7 个 Tab（系统总览/模型对比/模式对比/工具使用/用户消费/质量趋势/数据库）
+- ai-monitor.vue: 统一仪表盘入口（NEW 标记）+ 旧 Dashboard 标记（旧）
+- router/index.ts: /admin/metrics 路由 + 旧 dashboard 路由 deprecated meta
+- npm run build 零错误通过
+
+---
+
 ## #15 (fix) SSE Worker 心跳识别 — 2026-02-23
 
 - SSE Worker 识别服务端 `: ping` 注释行，重置 60 秒超时计时器
