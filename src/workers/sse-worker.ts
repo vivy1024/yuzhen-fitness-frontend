@@ -394,18 +394,22 @@ async function startStream(params: WorkerMessage['payload']): Promise<void> {
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6)
-          
+
           if (data === '[DONE]') {
             log('info', '收到完成标记 [DONE]')
             continue
           }
-          
+
           try {
             const event: SSEEvent = JSON.parse(data)
             handleSSEEvent(event)
           } catch (parseErr) {
             log('warn', '解析SSE事件失败', { data, error: parseErr })
           }
+        } else if (line.startsWith(':')) {
+          // SSE 注释行（包括服务端 ping 心跳），重置超时计时器
+          updateLastChunkTime()
+          resetTimeoutTimer()
         }
       }
     }
