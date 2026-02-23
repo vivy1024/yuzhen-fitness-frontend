@@ -69,8 +69,6 @@ export default defineConfig(({ mode }) => {
             'ui-vendor': ['reka-ui', 'class-variance-authority', 'clsx', 'tailwind-merge'],
             // 工具库
             'utils-vendor': ['axios', 'date-fns', 'zod', 'dompurify', 'marked'],
-            // 表单验证
-            'form-vendor': ['vee-validate', '@vee-validate/zod'],
             // 图标库
             'icons-vendor': ['lucide-vue-next'],
             // 图表库（按需导入，单独分割避免影响首屏）

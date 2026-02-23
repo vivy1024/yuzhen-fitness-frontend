@@ -3,22 +3,20 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import BottomNav from '@/components/layout/BottomNav.vue'
 import Footer from '@/components/layout/Footer.vue'
-import { 
-  MessageSquare, 
-  Dumbbell, 
-  Target, 
-  User, 
-  Crown, 
-  Settings, 
+import {
+  MessageSquare,
+  Dumbbell,
+  Target,
+  User,
+  Crown,
+  Settings,
   ChevronRight,
   Flame,
-  Calendar,
   TrendingUp,
-  Activity,
   Apple
 } from 'lucide-vue-next'
 
@@ -241,40 +239,6 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <!-- 今日概览 -->
-      <Card>
-        <CardHeader class="pb-3">
-          <div class="flex items-center justify-between">
-            <CardTitle class="text-lg">今日概览</CardTitle>
-            <Activity class="h-5 w-5 text-muted-foreground" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div class="grid grid-cols-3 gap-4">
-            <div class="text-center p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30">
-              <div class="h-10 w-10 mx-auto mb-2 rounded-lg bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center">
-                <Dumbbell class="h-5 w-5 text-white" />
-              </div>
-              <div class="text-xl font-bold text-purple-700 dark:text-purple-300">{{ stats.todayWorkouts }}</div>
-              <div class="text-xs text-purple-600 dark:text-purple-400">训练次数</div>
-            </div>
-            <div class="text-center p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30">
-              <div class="h-10 w-10 mx-auto mb-2 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                <Calendar class="h-5 w-5 text-white" />
-              </div>
-              <div class="text-xl font-bold text-pink-700 dark:text-pink-300">{{ stats.todayDuration }}</div>
-              <div class="text-xs text-pink-600 dark:text-pink-400">训练时长</div>
-            </div>
-            <div class="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
-              <div class="h-10 w-10 mx-auto mb-2 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                <TrendingUp class="h-5 w-5 text-white" />
-              </div>
-              <div class="text-xl font-bold text-emerald-700 dark:text-emerald-300">{{ stats.weekDays }}</div>
-              <div class="text-xs text-emerald-600 dark:text-emerald-400">本星期训练</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </main>
 
     <!-- 页脚备案信息 -->
