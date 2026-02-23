@@ -19,26 +19,36 @@ import api from '@/api/auth'
 
 // Dashboard导航
 const dashboards = [
-  { 
-    name: '性能监控', 
+  {
+    name: '统一仪表盘',
+    route: '/admin/metrics',
+    icon: BarChart3,
+    description: '系统总览、模型对比、用户消费',
+    highlight: true
+  },
+  {
+    name: '性能监控',
     route: '/admin/dashboards/performance',
     icon: LineChart,
-    description: '请求耗时、错误率、缓存命中率'
+    description: '请求耗时、错误率、缓存命中率',
+    deprecated: true
   },
-  { 
-    name: '流式输出', 
+  {
+    name: '流式输出',
     route: '/admin/dashboards/streaming',
     icon: Radio,
-    description: 'TTFB、成功率、令牌生成速率'
+    description: 'TTFB、成功率、令牌生成速率',
+    deprecated: true
   },
-  { 
-    name: '工作流性能', 
+  {
+    name: '工作流性能',
     route: '/admin/dashboards/workflow',
     icon: GitBranch,
-    description: '步骤耗时、缓存、LLM调用'
+    description: '步骤耗时、缓存、LLM调用',
+    deprecated: true
   },
-  { 
-    name: '日志分析', 
+  {
+    name: '日志分析',
     route: '/admin/dashboards/logs',
     icon: FileText,
     description: '实时日志、错误追踪'
@@ -207,10 +217,19 @@ const dbConnections = computed(() => {
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div v-for="dash in dashboards" :key="dash.route"
                  @click="router.push(dash.route)"
-                 class="flex items-center gap-3 p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors">
+                 :class="[
+                   'flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors',
+                   dash.highlight ? 'bg-primary/10 border border-primary/30 hover:bg-primary/20' :
+                   dash.deprecated ? 'bg-muted/50 opacity-60 hover:opacity-80' :
+                   'bg-accent hover:bg-accent/80'
+                 ]">
               <component :is="dash.icon" class="h-5 w-5 text-primary shrink-0" />
               <div class="flex-1 min-w-0">
-                <div class="font-medium text-sm">{{ dash.name }}</div>
+                <div class="font-medium text-sm flex items-center gap-1">
+                  {{ dash.name }}
+                  <Badge v-if="dash.highlight" variant="default" class="text-[10px] px-1 py-0">NEW</Badge>
+                  <Badge v-if="dash.deprecated" variant="secondary" class="text-[10px] px-1 py-0">旧</Badge>
+                </div>
                 <div class="text-xs text-muted-foreground truncate">{{ dash.description }}</div>
               </div>
               <ChevronRight class="h-4 w-4 text-muted-foreground shrink-0" />

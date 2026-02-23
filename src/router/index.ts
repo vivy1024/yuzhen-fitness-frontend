@@ -257,29 +257,35 @@ const router = createRouter({
           component: () => import('@/views/admin/feedback.vue'),
           meta: { requiresAuth: true, requiresAdmin: true }
         },
-        // 监控Dashboard路由
+        // 监控Dashboard路由（旧，已被 /admin/metrics 统一仪表盘替代）
         {
           path: 'dashboards/performance',
           name: 'admin-dashboard-performance',
           component: () => import('@/views/admin/dashboards/performance.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
+          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
         },
         {
           path: 'dashboards/streaming',
           name: 'admin-dashboard-streaming',
           component: () => import('@/views/admin/dashboards/streaming.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
+          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
         },
         {
           path: 'dashboards/workflow',
           name: 'admin-dashboard-workflow',
           component: () => import('@/views/admin/dashboards/workflow.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
+          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
         },
         {
           path: 'dashboards/logs',
           name: 'admin-dashboard-logs',
           component: () => import('@/views/admin/dashboards/logs.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true }
+        },
+        {
+          path: 'metrics',
+          name: 'admin-metrics',
+          component: () => import('@/views/admin/metrics.vue'),
           meta: { requiresAuth: true, requiresAdmin: true }
         }
       ]
