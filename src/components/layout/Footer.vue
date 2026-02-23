@@ -15,7 +15,7 @@
             rel="noopener noreferrer"
             class="hover:text-primary transition-colors"
           >
-            陕ICP备2026010270号-1
+            陕ICP备2026000942号-1
           </a>
         </div>
 
