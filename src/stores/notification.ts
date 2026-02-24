@@ -1,59 +1,87 @@
 /**
- * 通知状态管理
- * 使用Pinia管理消息通知状态
+ * 推送设置状态管理
+ *
+ * 通知列表功能已降级，改为管理推送订阅设置。
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
-  getNotifications,
-  markNotificationAsRead,
-  deleteNotification as deleteNotificationApi,
-  markAllNotificationsAsRead,
-  type Notification
+  subscribePush,
+  unsubscribePush,
+  updateReminderTime,
 } from '@/api/notification'
 
 export const useNotificationStore = defineStore('notification', () => {
   // State
-  const notifications = ref<Notification[]>([])
+  const pushEnabled = ref(false)
+  const reminderTime = ref('08:00')
   const loading = ref(false)
 
-  // Getters
-  const unreadCount = computed(() => {
-    return notifications.value.filter(n => !n.read).length
-  })
-
-  const unreadNotifications = computed(() => {
-    return notifications.value.filter(n => !n.read)
-  })
-
-  const systemNotifications = computed(() => {
-    return notifications.value.filter(n => n.type === 'system')
-  })
-
-  const trainingNotifications = computed(() => {
-    return notifications.value.filter(n => n.type === 'training')
-  })
-
-  const membershipNotifications = computed(() => {
-    return notifications.value.filter(n => n.type === 'membership')
-  })
+  // Getters — 保留 unreadCount 兼容导航栏 badge
+  const unreadCount = computed(() => 0)
 
   // Actions
 
   /**
-   * 获取通知列表
+   * 初始化推送设置（从 localStorage 恢复）
    */
-  async function fetchNotifications() {
-    try {
-      loading.value = true
-      const response = await getNotifications()
-      
-      if (response.code === 200 && response.data) {
-        notifications.value = response.data
+  function initSettings() {
+    const saved = localStorage.getItem('push_settings')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        pushEnabled.value = parsed.enabled ?? false
+        reminderTime.value = parsed.reminderTime ?? '08:00'
+      } catch {
+        // ignore
       }
+    }
+  }
+
+  /**
+   * 保存推送设置到 localStorage
+   */
+  function persistSettings() {
+    localStorage.setItem('push_settings', JSON.stringify({
+      enabled: pushEnabled.value,
+      reminderTime: reminderTime.value,
+    }))
+  }
+
+  /**
+   * 切换推送订阅
+   */
+  async function togglePush() {
+    loading.value = true
+    try {
+      if (pushEnabled.value) {
+        // 取消订阅
+        const reg = await navigator.serviceWorker?.ready
+        const sub = await reg?.pushManager?.getSubscription()
+        if (sub) {
+          await unsubscribePush(sub.endpoint)
+          await sub.unsubscribe()
+        }
+        pushEnabled.value = false
+      } else {
+        // 订阅
+        const reg = await navigator.serviceWorker?.ready
+        if (reg) {
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
+          })
+          await subscribePush({
+            subscription: sub.toJSON(),
+            reminder_time: reminderTime.value,
+          })
+          pushEnabled.value = true
+        }
+      }
+      persistSettings()
     } catch (error) {
-      console.error('Failed to fetch notifications:', error)
+      console.error('切换推送订阅失败:', error)
       throw error
     } finally {
       loading.value = false
@@ -61,103 +89,31 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   /**
-   * 标记通知为已读
+   * 更新提醒时间
    */
-  async function markAsRead(notificationId: string) {
+  async function setReminderTime(time: string) {
     try {
-      const response = await markNotificationAsRead(notificationId)
-      
-      if (response.code === 200) {
-        // 更新本地状态
-        const notification = notifications.value.find(n => n.id === notificationId)
-        if (notification) {
-          notification.read = true
-          notification.read_at = new Date().toISOString()
-        }
-      }
+      await updateReminderTime(time)
+      reminderTime.value = time
+      persistSettings()
     } catch (error) {
-      console.error('Failed to mark notification as read:', error)
+      console.error('更新提醒时间失败:', error)
       throw error
     }
-  }
-
-  /**
-   * 标记所有通知为已读
-   */
-  async function markAllAsRead() {
-    try {
-      const response = await markAllNotificationsAsRead()
-      
-      if (response.code === 200) {
-        // 更新本地状态
-        const now = new Date().toISOString()
-        notifications.value.forEach(n => {
-          n.read = true
-          n.read_at = now
-        })
-      }
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error)
-      throw error
-    }
-  }
-
-  /**
-   * 删除通知
-   */
-  async function deleteNotification(notificationId: string) {
-    try {
-      const response = await deleteNotificationApi(notificationId)
-      
-      if (response.code === 200) {
-        // 从本地状态中移除
-        const index = notifications.value.findIndex(n => n.id === notificationId)
-        if (index !== -1) {
-          notifications.value.splice(index, 1)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to delete notification:', error)
-      throw error
-    }
-  }
-
-  /**
-   * 添加新通知（用于实时推送）
-   */
-  function addNotification(notification: Notification) {
-    // 检查是否已存在
-    const exists = notifications.value.some(n => n.id === notification.id)
-    if (!exists) {
-      notifications.value.unshift(notification)
-    }
-  }
-
-  /**
-   * 清空所有通知
-   */
-  function clearNotifications() {
-    notifications.value = []
   }
 
   return {
     // State
-    notifications,
+    pushEnabled,
+    reminderTime,
     loading,
 
     // Getters
     unreadCount,
-    unreadNotifications,
-    systemNotifications,
-    trainingNotifications,
-    membershipNotifications,
 
     // Actions
-    fetchNotifications,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    addNotification,
-    clearNotifications,
+    initSettings,
+    togglePush,
+    setReminderTime,
   }
 })

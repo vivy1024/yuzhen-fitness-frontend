@@ -574,7 +574,7 @@ export const useChatStore = defineStore('chat', () => {
       // 构建后端API期望的数据格式
       const importData = {
         name: planName,
-        description: `目标: ${overview.training_goal || '综合健身'} | 每周${overview.training_days_per_week || 3}天`,
+        description: `目标: ${overview.training_goal || '综合健身'} | 每星期${overview.training_days_per_week || 3}天`,
         weeks: 12, // 默认12周计划
         frequency: overview.training_days_per_week || 3,
         exercises: exercises,

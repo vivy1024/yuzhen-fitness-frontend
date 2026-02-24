@@ -74,17 +74,46 @@ export function deleteAccount(password: string): Promise<ApiResponse<{ message: 
 export const logout = authLogout
 
 /**
- * 获取缓存信息
+ * 获取缓存信息（本地降级：读取 localStorage 大小）
  */
 export function getCacheInfo(): Promise<ApiResponse<CacheInfo>> {
-  return api.get('/cache/info')
+  const items: CacheInfo['items'] = []
+  let totalBytes = 0
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key) {
+      const value = localStorage.getItem(key) || ''
+      const size = new Blob([value]).size
+      totalBytes += size
+      items.push({
+        name: key,
+        size: size > 1024 ? `${(size / 1024).toFixed(1)}KB` : `${size}B`,
+        type: 'localStorage',
+      })
+    }
+  }
+
+  return Promise.resolve({
+    code: 200,
+    msg: '获取成功',
+    data: {
+      total_size: totalBytes > 1024 ? `${(totalBytes / 1024).toFixed(1)}KB` : `${totalBytes}B`,
+      items,
+    },
+  })
 }
 
 /**
- * 清除缓存
+ * 清除缓存（本地降级：清理 localStorage）
  */
-export function clearCache(type?: string): Promise<ApiResponse<{ message: string }>> {
-  return api.post('/cache/clear', { type })
+export function clearCache(_type?: string): Promise<ApiResponse<{ message: string }>> {
+  localStorage.clear()
+  return Promise.resolve({
+    code: 200,
+    msg: '操作成功',
+    data: { message: '本地缓存已清除' },
+  })
 }
 
 /**

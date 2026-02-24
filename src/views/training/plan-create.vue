@@ -32,10 +32,12 @@
             <Select v-model="form.goal">
               <SelectTrigger><SelectValue placeholder="选择目标" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="gain_muscle">增肌</SelectItem>
-                <SelectItem value="lose_weight">减脂</SelectItem>
-                <SelectItem value="improve_fitness">体能提升</SelectItem>
-                <SelectItem value="maintain">维持</SelectItem>
+                <SelectItem value="hypertrophy">增肌</SelectItem>
+                <SelectItem value="fat_loss">减脂</SelectItem>
+                <SelectItem value="strength">增强力量</SelectItem>
+                <SelectItem value="endurance">提高耐力</SelectItem>
+                <SelectItem value="body_shaping">塑形</SelectItem>
+                <SelectItem value="general_fitness">综合健身</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -59,7 +61,7 @@
             <Input v-model.number="form.duration_weeks" type="number" min="1" max="52" />
           </div>
           <div>
-            <Label class="text-xs text-muted-foreground mb-1 block">每周训练次数</Label>
+            <Label class="text-xs text-muted-foreground mb-1 block">每星期训练次数</Label>
             <Input v-model.number="form.workouts_per_week" type="number" min="1" max="7" />
           </div>
         </div>
@@ -173,13 +175,13 @@ const form = ref({
 })
 
 const weekDays = [
-  { value: 1, label: '周一' },
-  { value: 2, label: '周二' },
-  { value: 3, label: '周三' },
-  { value: 4, label: '周四' },
-  { value: 5, label: '周五' },
-  { value: 6, label: '周六' },
-  { value: 7, label: '周日' },
+  { value: 1, label: '星期一' },
+  { value: 2, label: '星期二' },
+  { value: 3, label: '星期三' },
+  { value: 4, label: '星期四' },
+  { value: 5, label: '星期五' },
+  { value: 6, label: '星期六' },
+  { value: 7, label: '星期日' },
 ]
 
 const activeDayCount = computed(() => {
