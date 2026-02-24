@@ -74,7 +74,7 @@ export interface PlanExerciseItem {
 export interface CreatePlanData {
   name: string
   description?: string
-  goal?: 'lose_weight' | 'gain_muscle' | 'maintain' | 'improve_fitness'
+  goal?: 'hypertrophy' | 'fat_loss' | 'strength' | 'endurance' | 'body_shaping' | 'general_fitness'
   difficulty?: 'novice' | 'beginner' | 'intermediate' | 'advanced'
   duration_weeks: number
   workouts_per_week: number

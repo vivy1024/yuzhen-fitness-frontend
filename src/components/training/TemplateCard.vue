@@ -43,9 +43,9 @@ const loading = ref(false)
 
 const goalLabel = computed(() => {
   const map: Record<string, string> = {
-    gain_muscle: '增肌', lose_weight: '减脂',
-    strength: '力量', body_shaping: '塑形',
-    improve_fitness: '体能', maintain: '维持',
+    hypertrophy: '增肌', fat_loss: '减脂',
+    strength: '增强力量', endurance: '提高耐力',
+    body_shaping: '塑形', general_fitness: '综合健身',
   }
   return map[props.template.goal] || props.template.goal
 })

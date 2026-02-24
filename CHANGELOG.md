@@ -5,6 +5,17 @@
 
 ---
 
+## #17 (chore) 三端枚举统一 — 前端同步 — 2026-02-24
+
+对应产品版本：v1.4.0
+
+- training-plan.ts: `CreatePlanData.goal` 类型改为 `hypertrophy | fat_loss | strength | endurance | body_shaping | general_fitness`
+- plan-create.vue: SelectItem 值从旧枚举（gain_muscle/lose_weight/maintain/improve_fitness）更新为统一枚举
+- templates.vue: 模板筛选 SelectItem 同步更新
+- TemplateCard.vue: goalLabel 映射更新为统一枚举中英文对照
+
+---
+
 ## #16 (feat) 统一可观测性仪表盘前端 — 2026-02-24
 
 对应产品版本：v1.3.0

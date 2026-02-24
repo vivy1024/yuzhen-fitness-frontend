@@ -32,10 +32,12 @@
             <Select v-model="form.goal">
               <SelectTrigger><SelectValue placeholder="选择目标" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="gain_muscle">增肌</SelectItem>
-                <SelectItem value="lose_weight">减脂</SelectItem>
-                <SelectItem value="improve_fitness">体能提升</SelectItem>
-                <SelectItem value="maintain">维持</SelectItem>
+                <SelectItem value="hypertrophy">增肌</SelectItem>
+                <SelectItem value="fat_loss">减脂</SelectItem>
+                <SelectItem value="strength">增强力量</SelectItem>
+                <SelectItem value="endurance">提高耐力</SelectItem>
+                <SelectItem value="body_shaping">塑形</SelectItem>
+                <SelectItem value="general_fitness">综合健身</SelectItem>
               </SelectContent>
             </Select>
           </div>

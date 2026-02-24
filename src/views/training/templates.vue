@@ -19,10 +19,12 @@
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部目标</SelectItem>
-            <SelectItem value="gain_muscle">增肌</SelectItem>
-            <SelectItem value="lose_weight">减脂</SelectItem>
-            <SelectItem value="strength">力量</SelectItem>
+            <SelectItem value="hypertrophy">增肌</SelectItem>
+            <SelectItem value="fat_loss">减脂</SelectItem>
+            <SelectItem value="strength">增强力量</SelectItem>
+            <SelectItem value="endurance">提高耐力</SelectItem>
             <SelectItem value="body_shaping">塑形</SelectItem>
+            <SelectItem value="general_fitness">综合健身</SelectItem>
           </SelectContent>
         </Select>
         <Select v-model="filterLevel">
