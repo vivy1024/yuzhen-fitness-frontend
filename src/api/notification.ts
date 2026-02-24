@@ -1,33 +1,11 @@
 /**
- * 通知API接口
+ * 通知与推送设置API
+ *
+ * 通知列表功能已降级为本地管理，后端通知API暂未实现。
+ * 保留推送订阅相关API（已有后端支持）。
  */
 
 import api from './auth'
-
-export interface Notification {
-  id: string
-  user_id: number
-  type: 'system' | 'training' | 'membership'
-  title: string
-  content: string
-  action_url?: string
-  read: boolean
-  read_at?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface NotificationResponse {
-  code: number
-  msg: string
-  data: Notification[]
-}
-
-export interface SingleNotificationResponse {
-  code: number
-  msg: string
-  data: Notification
-}
 
 export interface SuccessResponse {
   code: number
@@ -35,32 +13,9 @@ export interface SuccessResponse {
   data?: any
 }
 
-/**
- * 获取通知列表
- */
-export const getNotifications = (): Promise<NotificationResponse> => {
-  return api.get('/notifications')
-}
-
-/**
- * 标记通知为已读
- */
-export const markNotificationAsRead = (notificationId: string): Promise<SuccessResponse> => {
-  return api.put(`/notifications/${notificationId}/read`)
-}
-
-/**
- * 删除通知
- */
-export const deleteNotification = (notificationId: string): Promise<SuccessResponse> => {
-  return api.delete(`/notifications/${notificationId}`)
-}
-
-/**
- * 标记所有通知为已读
- */
-export const markAllNotificationsAsRead = (): Promise<SuccessResponse> => {
-  return api.put('/notifications/read-all')
+export interface PushSettings {
+  enabled: boolean
+  reminderTime: string
 }
 
 // ─── Push Subscription ───────────────────────────

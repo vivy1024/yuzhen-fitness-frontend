@@ -5,6 +5,19 @@
 
 ---
 
+## #18 (feat) 前端 API 缺口修复 — 降级处理 — 2026-02-24
+
+对应产品版本：v1.4.0
+
+- notification.ts: 移除 404 的 /notifications API 调用，保留 /push 订阅 API
+- stores/notification.ts: 从通知列表管理改为推送设置管理（togglePush/setReminderTime）
+- notifications/index.vue: 从通知列表页改为推送设置页（订阅开关 + 提醒时间）
+- membership.ts: cancelAutoRenew/enableAutoRenew 改为 no-op（当前手动付费模式）
+- membership/center.vue: 隐藏自动续费 Card + 移除相关 import 和函数
+- settings.ts: getCacheInfo/clearCache 改为本地 localStorage 操作
+
+---
+
 ## #17 (chore) 三端枚举统一 — 前端同步 — 2026-02-24
 
 对应产品版本：v1.4.0
