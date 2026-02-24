@@ -192,19 +192,19 @@ export const getPaymentHistory = (params?: {
 }
 
 /**
- * 取消自动续费
- * POST /api/membership/cancel-auto-renew
+ * 取消自动续费（暂未实现，当前为手动付费模式）
  */
 export const cancelAutoRenew = (): Promise<ApiResponse<null>> => {
-  return api.post('/membership/cancel-auto-renew')
+  console.warn('[membership] cancelAutoRenew: 当前为手动付费模式，自动续费功能暂未开放')
+  return Promise.resolve({ code: 200, msg: '操作成功', data: null })
 }
 
 /**
- * 开启自动续费
- * POST /api/membership/enable-auto-renew
+ * 开启自动续费（暂未实现，当前为手动付费模式）
  */
 export const enableAutoRenew = (): Promise<ApiResponse<null>> => {
-  return api.post('/membership/enable-auto-renew')
+  console.warn('[membership] enableAutoRenew: 当前为手动付费模式，自动续费功能暂未开放')
+  return Promise.resolve({ code: 200, msg: '操作成功', data: null })
 }
 
 /**

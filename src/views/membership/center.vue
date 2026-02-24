@@ -10,24 +10,12 @@ import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import PricingPlans from '@/components/membership/PricingPlans.vue'
 import PaymentFlow from '@/components/membership/PaymentFlow.vue'
 import BillingHistory from '@/components/membership/BillingHistory.vue'
-import { showSuccess, showError } from '@/components/ui/toast'
+import { showSuccess } from '@/components/ui/toast'
 import {
   ArrowLeft,
   Crown,
@@ -51,8 +39,7 @@ const activeTab = ref('plans')
 const showPaymentDialog = ref(false)
 const selectedTier = ref<MembershipTier | null>(null)
 
-// 取消自动续费确认弹窗
-const showCancelAutoRenewDialog = ref(false)
+// 取消自动续费确认弹窗（功能暂未开放）
 
 // 会员权益列表 - MVP阶段简化版
 const memberBenefits = computed(() => {
@@ -119,33 +106,6 @@ function handlePaymentSuccess() {
 function handlePaymentCancel() {
   showPaymentDialog.value = false
   selectedTier.value = null
-}
-
-// 切换自动续费
-async function handleToggleAutoRenew() {
-  if (membershipStore.autoRenewEnabled) {
-    // 如果当前是开启状态，显示确认弹窗
-    showCancelAutoRenewDialog.value = true
-  } else {
-    // 如果当前是关闭状态，直接开启
-    const result = await membershipStore.toggleAutoRenew()
-    if (result.success) {
-      showSuccess('已开启自动续费')
-    } else {
-      showError(result.message || '操作失败')
-    }
-  }
-}
-
-// 确认取消自动续费
-async function confirmCancelAutoRenew() {
-  showCancelAutoRenewDialog.value = false
-  const result = await membershipStore.toggleAutoRenew()
-  if (result.success) {
-    showSuccess('已关闭自动续费')
-  } else {
-    showError(result.message || '操作失败')
-  }
 }
 
 // 返回
@@ -244,23 +204,7 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <!-- 自动续费设置（仅VIP显示） -->
-      <Card v-if="membershipStore.isVip">
-        <CardContent class="p-4">
-          <div class="flex items-center justify-between">
-            <div class="space-y-0.5">
-              <Label class="text-base">自动续费</Label>
-              <p class="text-sm text-muted-foreground">
-                到期后自动续费，可随时取消
-              </p>
-            </div>
-            <Switch 
-              :checked="membershipStore.autoRenewEnabled"
-              @update:checked="handleToggleAutoRenew"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <!-- 自动续费设置（暂未开放，当前为手动付费模式） -->
 
       <!-- 会员权益对比 -->
       <Card>
@@ -322,20 +266,5 @@ onMounted(async () => {
       @cancel="handlePaymentCancel"
     />
 
-    <!-- 取消自动续费确认弹窗 -->
-    <AlertDialog v-model:open="showCancelAutoRenewDialog">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认关闭自动续费？</AlertDialogTitle>
-          <AlertDialogDescription>
-            关闭后，会员到期将不会自动续费。您可以随时重新开启。
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="confirmCancelAutoRenew">确认关闭</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   </div>
 </template>
