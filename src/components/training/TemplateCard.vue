@@ -36,18 +36,14 @@ import { Target, Calendar, Dumbbell, Loader2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { PlanTemplate } from '@/api/training-plan'
+import { TRAINING_GOAL_LABELS } from '@/types/user-profile'
 
 const props = defineProps<{ template: PlanTemplate }>()
 const emit = defineEmits<{ use: [id: number] }>()
 const loading = ref(false)
 
 const goalLabel = computed(() => {
-  const map: Record<string, string> = {
-    hypertrophy: '增肌', fat_loss: '减脂',
-    strength: '增强力量', endurance: '提高耐力',
-    body_shaping: '塑形', general_fitness: '综合健身',
-  }
-  return map[props.template.goal] || props.template.goal
+  return TRAINING_GOAL_LABELS[props.template.goal] || props.template.goal
 })
 
 const levelLabel = computed(() => {

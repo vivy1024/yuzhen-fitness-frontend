@@ -275,6 +275,20 @@ export const TRAINING_GOAL_PARAMS = {
 export type TrainingGoalKey = keyof typeof TRAINING_GOAL_PARAMS
 
 /**
+ * 训练目标英文枚举 → 中文标签映射
+ * 与后端 CreatePlanData.goal / PlanTemplate.goal 枚举值一致
+ * 用于 SelectItem、TemplateCard 等组件的显示
+ */
+export const TRAINING_GOAL_LABELS: Record<string, string> = {
+  hypertrophy: '增肌',
+  fat_loss: '减脂',
+  strength: '增强力量',
+  endurance: '提高耐力',
+  body_shaping: '塑形',
+  general_fitness: '综合健身',
+}
+
+/**
  * 可用器械选项
  * 
  * 与Neo4j Equipment节点完全对应（21个节点）
@@ -498,7 +512,7 @@ export const REST_PATTERN_OPTIONS: Array<{
   { value: '练二休一', label: '练二休一', description: '训练2天，休息1天（适合新手）', recommendedFor: ['novice'] },
   { value: '练三休一', label: '练三休一', description: '训练3天，休息1天（标准模式）', recommendedFor: ['intermediate'] },
   { value: '练四休一', label: '练四休一', description: '训练4天，休息1天（适合高级）', recommendedFor: ['advanced'] },
-  { value: '练五休二', label: '练五休二', description: '周一到周五训练，周末休息（上班族推荐）', recommendedFor: ['intermediate', 'advanced'] },
+  { value: '练五休二', label: '练五休二', description: '星期一到星期五训练，周末休息（上班族推荐）', recommendedFor: ['intermediate', 'advanced'] },
 ]
 
 // ==================== 营养档案选项 ====================

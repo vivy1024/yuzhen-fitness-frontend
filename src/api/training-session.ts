@@ -98,7 +98,7 @@ export interface TrainingStats {
   totalVolume: number // kg
   totalSets: number
   averageRPE: number
-  trainingFrequency: number // 每周训练次数
+  trainingFrequency: number // 每星期训练次数
   currentStreak: number // 当前连续训练天数
   longestStreak: number // 最长连续训练天数
   volumeTrend: {
