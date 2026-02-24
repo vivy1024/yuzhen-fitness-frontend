@@ -84,3 +84,4 @@ tests/unit/              # 单元测试
 |------|---------|
 | API 响应标准详细版 | `.kiro/steering/api-design.md` |
 | Zeabur 生产环境 | `.kiro/steering/zeabur-production.md` |
+| 跨端枚举/字段变更 | `.kiro/steering/cross-stack-data-contract.md` |
