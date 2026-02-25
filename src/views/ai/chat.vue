@@ -43,6 +43,9 @@ const currentSessionId = ref<string | null>(null)
 const currentStrategy = ref<'dag' | 'agent'>('dag')  // 当前执行策略
 const selectedTemplateId = ref<string | null>(null)  // 用户选择的DAG模板ID
 
+// 动态工具列表缓存（从后端 /api/ai/health 获取，localStorage 持久化）
+const cachedTools = ref<Record<string, { display_name: string; data_source: string }>>({})
+
 // 检查用户档案是否完整（基础必填字段）
 const profileIncomplete = computed(() => {
   const profile = userStore.userProfile
@@ -118,6 +121,11 @@ const formattedToolCalls = computed(() => {
 
 // 获取工具的数据来源标识
 function getToolDataSource(toolName: string): string {
+  // 优先使用动态缓存
+  if (cachedTools.value[toolName]?.data_source) {
+    return cachedTools.value[toolName].data_source
+  }
+  // fallback 到硬编码
   const dataSourceMap: Record<string, string> = {
     'intelligent_exercise_selector': '基于1790个专业动作数据库',
     'contraindications_checker': '基于专业医学禁忌症知识库',
@@ -143,6 +151,11 @@ function getToolDataSource(toolName: string): string {
 
 // 获取工具的中文显示名称
 function getToolDisplayName(toolName: string): string {
+  // 优先使用动态缓存
+  if (cachedTools.value[toolName]?.display_name) {
+    return cachedTools.value[toolName].display_name
+  }
+  // fallback 到硬编码
   const toolNameMap: Record<string, string> = {
     'intelligent_exercise_selector': '智能动作选择',
     'contraindications_checker': '禁忌症检查',
@@ -415,10 +428,46 @@ function toggleTemplateSelector() {
 }
 
 // Lifecycle
+
+/** 从后端获取工具列表并缓存到 localStorage */
+async function fetchToolList() {
+  try {
+    const response = await fetch('/api/ai/health')
+    if (!response.ok) return
+    const data = await response.json()
+    // PHP 代理会用 success() 包装，实际数据在 data.data 中
+    const healthData = data?.data || data
+    if (healthData?.tools) {
+      const toolMap: Record<string, { display_name: string; data_source: string }> = {}
+      for (const tool of healthData.tools) {
+        toolMap[tool.name] = {
+          display_name: tool.display_name,
+          data_source: tool.data_source || '',
+        }
+      }
+      cachedTools.value = toolMap
+      localStorage.setItem('ai_tool_list', JSON.stringify(toolMap))
+    }
+  } catch {
+    // 静默失败，使用硬编码 fallback
+  }
+}
+
 onMounted(async () => {
   // 标记进入聊天页面
   streamingStore.setOnChatPage(true)
-  
+
+  // 从 localStorage 恢复工具列表缓存
+  try {
+    const cached = localStorage.getItem('ai_tool_list')
+    if (cached) {
+      cachedTools.value = JSON.parse(cached)
+    }
+  } catch { /* ignore */ }
+
+  // 后台刷新工具列表（不阻塞页面加载）
+  fetchToolList()
+
   // 初始化用户档案（检查是否完整）
   await userStore.init()
   

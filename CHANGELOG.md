@@ -5,6 +5,21 @@
 
 ---
 
+## #19 (fix) 前端数据一致性+体验优化 — 时间戳/去重/状态/字段/工具动态化/开始训练 — 2026-02-25
+
+对应产品版本：v1.5.0
+
+- utils/timestamp.ts（新建）: normalizeTimestamp() 统一处理 ISO字符串/毫秒/秒级时间戳
+- stores/chat.ts: IndexedDB 和 API 两条消息加载路径统一使用 normalizeTimestamp
+- stores/chat.ts: 三级消息去重（client_id → 后端id → role+内容前50字+时间±2秒模糊匹配）
+- api/training-session.ts: 状态类型补全 pending | in_progress | completed | skipped
+- views/training/history.vue: 新增 pending（待开始）和 skipped（已跳过）状态标签样式
+- api/training-plan.ts: TrainingPlanImportData 字段名统一 weeks→duration_weeks, frequency→workouts_per_week
+- views/ai/chat.vue: 工具名称动态化，启动时从 /api/ai/health 获取工具列表缓存到 localStorage
+- views/training/plan-detail.vue: "开始训练"按钮跳转到 /training/session?planId=xxx 创建训练会话
+
+---
+
 ## #18 (feat) 前端 API 缺口修复 — 降级处理 — 2026-02-24
 
 对应产品版本：v1.4.0
