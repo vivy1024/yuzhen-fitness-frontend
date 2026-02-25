@@ -5,6 +5,23 @@
 
 ---
 
+## #20 (feat) 计算器卡片前端 — 7个Vue计算器组件 + API模块 + 路由 — 2026-02-25
+
+对应产品版本：v1.5.0
+
+- 新增 `api/calculators.ts`: 7个API调用函数 + 完整TypeScript类型定义
+- 新增 `views/tools/CalculatorsPage.vue`: 计算器卡片列表页
+- 新增 `views/tools/CalculatorDetail.vue`: 计算器详情页（动态组件加载）
+- 新增7个计算器Vue组件（`components/calculators/`）：
+  - TDEECalculator / FFMICalculator / OneRMCalculator
+  - IntensityConverter / WeightRecommender
+  - CarbCyclingCalculator / MacroCalculator
+- 路由: `/tools/calculators` + `/tools/calculators/:id`
+- 删除前端 `utils/ffmi-calculator.ts`，FFMI计算统一走后端API
+- stores/user.ts FFMI相关调用改为API
+
+---
+
 ## #19 (fix) 前端数据一致性+体验优化 — 时间戳/去重/状态/字段/工具动态化/开始训练 — 2026-02-25
 
 对应产品版本：v1.5.0
