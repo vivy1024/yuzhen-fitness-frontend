@@ -83,8 +83,8 @@
                 </span>
               </div>
             </div>
-            <Badge :variant="session.status === 'completed' ? 'default' : 'secondary'">
-              {{ session.status === 'completed' ? '已完成' : '进行中' }}
+            <Badge :variant="getStatusVariant(session.status)">
+              {{ getStatusLabel(session.status) }}
             </Badge>
           </div>
 
@@ -399,6 +399,28 @@ function getFeelingLabel(feeling: string): string {
     poor: '😞 较差',
   }
   return labels[feeling] || feeling
+}
+
+/** 获取状态标签 */
+function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: '待开始',
+    in_progress: '进行中',
+    completed: '已完成',
+    skipped: '已跳过',
+  }
+  return labels[status] || status
+}
+
+/** 获取状态Badge样式 */
+function getStatusVariant(status: string): 'default' | 'secondary' | 'outline' | 'destructive' {
+  const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+    pending: 'outline',
+    in_progress: 'secondary',
+    completed: 'default',
+    skipped: 'destructive',
+  }
+  return variants[status] || 'secondary'
 }
 
 /** 获取训练历史 */
