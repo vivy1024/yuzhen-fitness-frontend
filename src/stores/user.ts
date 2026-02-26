@@ -5,9 +5,9 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserProfile, FFMIAssessment, BasicInfo, FitnessGoals, TrainingPreferences, StrengthData, HealthStatus, NutritionProfile } from '@/types/user-profile'
+import type { UserProfile, FFMIAssessment, BMIStatus, BasicInfo, FitnessGoals, TrainingPreferences, StrengthData, HealthStatus, NutritionProfile } from '@/types/user-profile'
 import { userProfileApi, type FFMIHistory } from '@/api/user'
-import { calculateFFMI } from '@/utils/ffmi-calculator'
+import { calculateFFMI as calculateFFMIApi } from '@/api/calculators'
 import { warmupUser } from '@/api/warmup'
 import { encryptData, decryptData, isCryptoAvailable } from '@/utils/crypto'
 
@@ -398,7 +398,28 @@ export const useUserStore = defineStore('user', () => {
     const { height, weight, body_fat_percentage, gender } = userProfile.value.basic_info
     if (!height || !weight || !gender) throw new Error('缺少必需的身体数据')
 
-    const result = calculateFFMI({ height, weight, bodyFat: body_fat_percentage, gender })
+    const res = await calculateFFMIApi({
+      height_cm: height,
+      weight_kg: weight,
+      gender,
+      body_fat: body_fat_percentage ?? undefined,
+      save_to_profile: true,
+    })
+
+    const d = res.data
+    const result: FFMIAssessment = {
+      bmi: d.bmi,
+      bmi_status: d.bmi_status as BMIStatus,
+      lean_body_mass: d.lean_body_mass,
+      ffmi: d.ffmi,
+      normalized_ffmi: d.normalized_ffmi,
+      assessment: d.assessment,
+      natural_potential: d.natural_potential,
+      training_recommendation: d.training_recommendation,
+      used_estimated_bf: d.used_estimated_bf,
+      calculated_at: new Date().toISOString(),
+    }
+
     ffmiData.value = result
     userProfile.value.ffmi_assessment = result
     await saveToLocal()

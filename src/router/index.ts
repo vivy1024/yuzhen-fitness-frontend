@@ -147,6 +147,18 @@ const router = createRouter({
       redirect: '/training/progress',  // 重定向到新路径
     },
     {
+      path: '/tools/calculators',
+      name: 'calculators',
+      component: () => import('@/views/tools/CalculatorsPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/tools/calculators/:id',
+      name: 'calculator-detail',
+      component: () => import('@/views/tools/CalculatorDetail.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/ai-advisor',
       name: 'ai-advisor',
       redirect: '/ai/chat',  // 重定向到正确的AI聊天路径

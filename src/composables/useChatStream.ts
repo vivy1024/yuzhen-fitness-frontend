@@ -379,7 +379,7 @@ export function useChatStream() {
           payload: {
             url,
             body: {
-              user_id: String(params.userId),
+              user_id: Number(params.userId),
               query: params.query,
               session_id: sessionId,
               topic_id: params.topicId || null,  // 传递话题ID用于多轮对话

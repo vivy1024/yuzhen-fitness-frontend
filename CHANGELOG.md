@@ -5,6 +5,55 @@
 
 ---
 
+## #21 (fix) AI对话全栈审计修复 — 积分API类型+SSE user_id+计算器类型 — 2026-02-26
+
+对应产品版本：v1.5.0
+
+- api/credit.ts: CreditBalance.last_reset_date → last_reset（匹配后端字段名）
+- api/credit.ts: PaginatedResponse<T> → CreditHistoryResponse（匹配后端 transactions/pagination/summary 结构）
+- api/credit.ts: CreditStats 重写（匹配后端 summary/by_mode/by_template/daily_trend）
+- api/credit.ts: CreditTransaction 添加 mode_label 字段
+- stores/credit.ts: fetchHistory 字段映射修复（data.data→data.transactions, page→pagination.current_page 等）
+- stores/credit.ts: lastResetDate computed 改为读取 last_reset
+- composables/useChatStream.ts: Worker模式 user_id 从 String() → Number()（修复PHP integer验证失败）
+- workers/sse-worker.ts: WorkerMessage body.user_id 类型 string → number
+- stores/user.ts: FFMIAssessment 映射添加 BMIStatus 类型断言
+- types/user-profile.ts: FFMIAssessment.natural_potential 改为对象类型，calculated_at 改为可选
+
+---
+
+## #20 (feat) 计算器卡片前端 — 7个Vue计算器组件 + API模块 + 路由 — 2026-02-25
+
+对应产品版本：v1.5.0
+
+- 新增 `api/calculators.ts`: 7个API调用函数 + 完整TypeScript类型定义
+- 新增 `views/tools/CalculatorsPage.vue`: 计算器卡片列表页
+- 新增 `views/tools/CalculatorDetail.vue`: 计算器详情页（动态组件加载）
+- 新增7个计算器Vue组件（`components/calculators/`）：
+  - TDEECalculator / FFMICalculator / OneRMCalculator
+  - IntensityConverter / WeightRecommender
+  - CarbCyclingCalculator / MacroCalculator
+- 路由: `/tools/calculators` + `/tools/calculators/:id`
+- 删除前端 `utils/ffmi-calculator.ts`，FFMI计算统一走后端API
+- stores/user.ts FFMI相关调用改为API
+
+---
+
+## #19 (fix) 前端数据一致性+体验优化 — 时间戳/去重/状态/字段/工具动态化/开始训练 — 2026-02-25
+
+对应产品版本：v1.5.0
+
+- utils/timestamp.ts（新建）: normalizeTimestamp() 统一处理 ISO字符串/毫秒/秒级时间戳
+- stores/chat.ts: IndexedDB 和 API 两条消息加载路径统一使用 normalizeTimestamp
+- stores/chat.ts: 三级消息去重（client_id → 后端id → role+内容前50字+时间±2秒模糊匹配）
+- api/training-session.ts: 状态类型补全 pending | in_progress | completed | skipped
+- views/training/history.vue: 新增 pending（待开始）和 skipped（已跳过）状态标签样式
+- api/training-plan.ts: TrainingPlanImportData 字段名统一 weeks→duration_weeks, frequency→workouts_per_week
+- views/ai/chat.vue: 工具名称动态化，启动时从 /api/ai/health 获取工具列表缓存到 localStorage
+- views/training/plan-detail.vue: "开始训练"按钮跳转到 /training/session?planId=xxx 创建训练会话
+
+---
+
 ## #18 (feat) 前端 API 缺口修复 — 降级处理 — 2026-02-24
 
 对应产品版本：v1.4.0

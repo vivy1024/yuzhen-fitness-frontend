@@ -132,8 +132,8 @@ async function handleStartTraining() {
       title: '开始训练',
       description: '训练计划已开始，祝您训练愉快！',
     })
-    // 跳转到训练记录页面（待实现）
-    // router.push(`/training/session/${plan.value.id}`)
+    // 跳转到训练记录页面，session.vue 会通过 planId 自动创建会话
+    router.push({ path: '/training/session', query: { planId: String(plan.value.id) } })
   } catch (error: any) {
     toast({
       title: '操作失败',

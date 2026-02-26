@@ -20,6 +20,7 @@ import { useChatStream } from '@/composables/useChatStream'
 import { useToast } from '@/components/ui/toast'
 import { importTrainingPlan as importPlanAPI } from '@/api/training-plan'
 import { submitRating as submitRatingAPI } from '@/api/rating'
+import { normalizeTimestamp } from '@/utils/timestamp'
 import * as chatHistoryDB from '@/utils/chat-history-db'
 import * as topicApi from '@/api/topic'
 import { useTopicStore } from '@/stores/topic'
@@ -50,16 +51,16 @@ export interface AIResponse {
 
 export const useChatStore = defineStore('chat', () => {
   const { toast } = useToast()
-  
+
   // State
   const messages = ref<Message[]>([])
   const loading = ref(false)
   const streaming = ref(false)
   const error = ref<string | null>(null)
-  
+
   // 流式响应composable
   const chatStream = useChatStream()
-  
+
   // 当前流式消息ID
   let currentStreamingMessageId: string | null = null
 
@@ -70,6 +71,24 @@ export const useChatStore = defineStore('chat', () => {
   const currentPersonaId = ref<string>(
     localStorage.getItem('yuzhen_persona_id') || 'coach_professional'
   )
+
+  /** 三级消息去重 */
+  function isDuplicateMessage(existing: typeof messages.value, newMsg: { client_id?: string; id?: number | string; role?: string; content?: string; timestamp?: number }): boolean {
+    // Level 1: client_id 精确匹配
+    if (newMsg.client_id) {
+      return existing.some(m => (m as any).client_id === newMsg.client_id)
+    }
+    // Level 2: 后端 id 精确匹配
+    if (newMsg.id && typeof newMsg.id === 'number') {
+      return existing.some(m => m.id === newMsg.id)
+    }
+    // Level 3: 模糊匹配（role + 内容前50字 + 时间±2秒）
+    return existing.some(m =>
+      m.role === newMsg.role &&
+      m.content?.slice(0, 50) === newMsg.content?.slice(0, 50) &&
+      Math.abs((m.timestamp || 0) - (newMsg.timestamp || 0)) < 2000
+    )
+  }
 
   function setPersonaId(id: string) {
     currentPersonaId.value = id
@@ -118,16 +137,24 @@ export const useChatStore = defineStore('chat', () => {
       const dbMessages = await chatHistoryDB.getTopicMessages(topicId)
       
       if (dbMessages.length > 0) {
-        messages.value = dbMessages.map(msg => ({
+        const mapped = dbMessages.map(msg => ({
           id: msg.id,
           topicId: msg.topicId,
           role: msg.role as 'user' | 'assistant',
           content: msg.content,
-          timestamp: typeof msg.createdAt === 'string' ? new Date(msg.createdAt).getTime() : msg.createdAt,
+          timestamp: normalizeTimestamp(msg.createdAt),
           streaming: false,
           metadata: msg.metadata
         }))
-        console.log('[ChatStore] 从IndexedDB加载了', dbMessages.length, '条消息')
+        // 去重：过滤掉重复消息
+        const unique: typeof mapped = []
+        for (const msg of mapped) {
+          if (!isDuplicateMessage(unique, msg)) {
+            unique.push(msg)
+          }
+        }
+        messages.value = unique
+        console.log('[ChatStore] 从IndexedDB加载了', unique.length, '条消息（去重前', dbMessages.length, '条）')
         return { success: true }
       }
       
@@ -136,17 +163,25 @@ export const useChatStore = defineStore('chat', () => {
         try {
           const response = await topicApi.getTopicMessages(topicId)
           if (response.code === 200 && response.data && response.data.length > 0) {
-            messages.value = response.data.map(msg => ({
+            const mapped = response.data.map(msg => ({
               id: msg.id,
               topicId: msg.topicId,
               role: msg.role as 'user' | 'assistant',
               content: msg.content,
-              timestamp: msg.timestamp,
+              timestamp: normalizeTimestamp(msg.timestamp),
               streaming: false,
               toolCalls: msg.toolCalls,
               trainingPlan: msg.trainingPlan
             }))
-            console.log('[ChatStore] 从后端API加载了', response.data.length, '条消息')
+            // 去重：过滤掉重复消息
+            const unique: typeof mapped = []
+            for (const msg of mapped) {
+              if (!isDuplicateMessage(unique, msg)) {
+                unique.push(msg)
+              }
+            }
+            messages.value = unique
+            console.log('[ChatStore] 从后端API加载了', unique.length, '条消息（去重前', response.data.length, '条）')
             return { success: true }
           }
         } catch (apiErr) {
@@ -563,9 +598,11 @@ export const useChatStore = defineStore('chat', () => {
       // 映射难度等级
       const difficultyMap: Record<string, 'beginner' | 'intermediate' | 'advanced'> = {
         'beginner': 'beginner',
+        'novice': 'beginner',
         'intermediate': 'intermediate',
         'advanced': 'advanced',
         '初级': 'beginner',
+        '入门': 'beginner',
         '中级': 'intermediate',
         '高级': 'advanced'
       }
@@ -575,8 +612,8 @@ export const useChatStore = defineStore('chat', () => {
       const importData = {
         name: planName,
         description: `目标: ${overview.training_goal || '综合健身'} | 每星期${overview.training_days_per_week || 3}天`,
-        weeks: 12, // 默认12周计划
-        frequency: overview.training_days_per_week || 3,
+        duration_weeks: 12, // 默认12周计划
+        workouts_per_week: overview.training_days_per_week || 3,
         exercises: exercises,
         target_muscles: targetMuscles,
         safety_notes: safetyAssessment.safety_recommendations || [],

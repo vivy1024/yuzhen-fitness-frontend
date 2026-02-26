@@ -8,8 +8,8 @@ import api from './auth'
 export interface TrainingPlanImportData {
   name: string
   description?: string
-  weeks: number
-  frequency: number
+  duration_weeks: number
+  workouts_per_week: number
   exercises: any[]
   target_muscles?: string[]
   safety_notes?: string[]

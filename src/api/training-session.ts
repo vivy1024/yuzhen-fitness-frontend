@@ -44,7 +44,7 @@ export interface TrainingSession {
   averageRPE: number
   feeling: 'excellent' | 'good' | 'fair' | 'poor'
   notes?: string
-  status: 'in_progress' | 'completed'
+  status: 'pending' | 'in_progress' | 'completed' | 'skipped'
   createdAt: string
   updatedAt: string
 }
