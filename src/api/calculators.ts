@@ -24,13 +24,19 @@ export interface TDEEResult {
   tdee: number
   target_calories: number
   deficit_or_surplus: number
+  activity_level: string
   fitness_goal: string
   formula_used: string
   macros: {
     protein_g: number
+    protein_cal: number
     fat_g: number
+    fat_cal: number
     carbs_g: number
-    ratios: { protein: number; fat: number; carbs: number }
+    carbs_cal: number
+    protein_ratio: number
+    fat_ratio: number
+    carbs_ratio: number
   }
 }
 
@@ -45,13 +51,13 @@ export interface FFMIParams {
 export interface FFMIResult {
   bmi: number
   bmi_status: string
-  body_fat_used: number
+  body_fat: number
   used_estimated_bf: boolean
   lean_body_mass: number
   ffmi: number
   normalized_ffmi: number
   assessment: string
-  natural_potential: { percentage: number; description: string }
+  natural_potential: { percentage: number; limit: number; description: string }
   training_recommendation: { focus: string; suggestions: string[] }
 }
 
@@ -63,9 +69,11 @@ export interface OneRMParams {
 
 export interface OneRMResult {
   estimated_1rm: number
+  epley_1rm: number
+  brzycki_1rm: number
+  input_reps: number
   formula_used: string
-  formulas: { epley: number; brzycki: number; average: number }
-  percentage_table: Array<{ percentage: number; weight: number; typical_reps: string }>
+  percentage_table: Array<{ percentage: number; weight: number; reps: string }>
 }
 
 export interface IntensityParams {
@@ -76,8 +84,10 @@ export interface IntensityParams {
 export interface IntensityResult {
   rpe: number
   rir: number
-  percentage_1rm: number
+  percentage_low: number
+  percentage_high: number
   description: string
+  input_percentage?: number
 }
 
 export interface WeightParams {
@@ -90,9 +100,12 @@ export interface WeightParams {
 export interface WeightResult {
   recommended_weight: number
   weight_range: { min: number; max: number }
-  percentage_range: { min: number; max: number }
+  estimated_1rm: number
+  percentage_of_1rm: number
   training_goal: string
-  rep_range: { min: number; max: number }
+  rep_range: [number, number]
+  rest_seconds: [number, number]
+  description: string
 }
 
 export interface CarbCyclingParams {

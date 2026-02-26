@@ -34,7 +34,7 @@ async function submit() {
       input_type: form.value.input_type,
       value: form.value.value,
     })
-    result.value = res.data.data
+    result.value = res.data
   } catch (e: any) {
     error.value = e.response?.data?.msg || '转换失败'
   } finally {
@@ -85,7 +85,7 @@ async function submit() {
           </div>
           <div class="bg-green-50 rounded-lg p-3">
             <div class="text-xs text-green-600">%1RM</div>
-            <div class="text-xl font-bold text-green-700">{{ result.percentage_1rm }}%</div>
+            <div class="text-xl font-bold text-green-700">{{ result.percentage_low }}–{{ result.percentage_high }}%</div>
           </div>
         </div>
 

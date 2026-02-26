@@ -106,7 +106,7 @@ export const useCreditStore = defineStore('credit', () => {
   /**
    * 最后重置日期
    */
-  const lastResetDate = computed(() => balance.value?.last_reset_date ?? '')
+  const lastResetDate = computed(() => balance.value?.last_reset ?? '')
   
   /**
    * 使用进度百分比（0-100）
@@ -174,10 +174,10 @@ export const useCreditStore = defineStore('credit', () => {
       const response = await getHistory(page, 20, mode)
       
       if (response.code === 200 && response.data) {
-        transactions.value = response.data.data
-        transactionPage.value = response.data.page
-        transactionTotal.value = response.data.total
-        transactionLastPage.value = response.data.last_page
+        transactions.value = response.data.transactions
+        transactionPage.value = response.data.pagination.current_page
+        transactionTotal.value = response.data.pagination.total_count
+        transactionLastPage.value = response.data.pagination.total_pages
         return { success: true }
       }
       

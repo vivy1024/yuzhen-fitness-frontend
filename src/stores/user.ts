@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserProfile, FFMIAssessment, BasicInfo, FitnessGoals, TrainingPreferences, StrengthData, HealthStatus, NutritionProfile } from '@/types/user-profile'
+import type { UserProfile, FFMIAssessment, BMIStatus, BasicInfo, FitnessGoals, TrainingPreferences, StrengthData, HealthStatus, NutritionProfile } from '@/types/user-profile'
 import { userProfileApi, type FFMIHistory } from '@/api/user'
 import { calculateFFMI as calculateFFMIApi } from '@/api/calculators'
 import { warmupUser } from '@/api/warmup'
@@ -406,10 +406,10 @@ export const useUserStore = defineStore('user', () => {
       save_to_profile: true,
     })
 
-    const d = res.data.data
+    const d = res.data
     const result: FFMIAssessment = {
       bmi: d.bmi,
-      bmi_status: d.bmi_status,
+      bmi_status: d.bmi_status as BMIStatus,
       lean_body_mass: d.lean_body_mass,
       ffmi: d.ffmi,
       normalized_ffmi: d.normalized_ffmi,
@@ -417,7 +417,7 @@ export const useUserStore = defineStore('user', () => {
       natural_potential: d.natural_potential,
       training_recommendation: d.training_recommendation,
       used_estimated_bf: d.used_estimated_bf,
-      calculated_at: d.calculated_at ?? new Date().toISOString(),
+      calculated_at: new Date().toISOString(),
     }
 
     ffmiData.value = result

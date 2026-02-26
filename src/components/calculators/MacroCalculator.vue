@@ -47,7 +47,7 @@ async function submit() {
       fitness_goal: form.value.fitness_goal,
       method: form.value.method,
     })
-    result.value = res.data.data
+    result.value = res.data
   } catch (e: any) {
     error.value = e.response?.data?.msg || '计算失败'
   } finally {

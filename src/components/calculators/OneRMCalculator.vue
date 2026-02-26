@@ -39,7 +39,7 @@ async function handleSubmit() {
       reps: reps.value!,
       formula: formula.value,
     })
-    result.value = res.data.data
+    result.value = res.data
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : '计算失败，请稍后重试'
     result.value = null
@@ -131,14 +131,14 @@ async function handleSubmit() {
       <Card>
         <CardContent class="pt-6">
           <p class="text-sm font-medium mb-3">公式对比</p>
-          <div class="grid grid-cols-3 gap-3 text-center">
-            <div
-              v-for="(val, key) in result.formulas"
-              :key="key"
-              class="rounded-lg bg-muted/50 p-3"
-            >
-              <p class="text-xs text-muted-foreground capitalize">{{ key }}</p>
-              <p class="text-lg font-semibold mt-1">{{ val }} kg</p>
+          <div class="grid grid-cols-2 gap-3 text-center">
+            <div class="rounded-lg bg-muted/50 p-3">
+              <p class="text-xs text-muted-foreground">Epley</p>
+              <p class="text-lg font-semibold mt-1">{{ result.epley_1rm }} kg</p>
+            </div>
+            <div class="rounded-lg bg-muted/50 p-3">
+              <p class="text-xs text-muted-foreground">Brzycki</p>
+              <p class="text-lg font-semibold mt-1">{{ result.brzycki_1rm }} kg</p>
             </div>
           </div>
         </CardContent>
@@ -164,7 +164,7 @@ async function handleSubmit() {
                 >
                   <TableCell class="font-medium">{{ row.percentage }}%</TableCell>
                   <TableCell>{{ row.weight }} kg</TableCell>
-                  <TableCell class="text-muted-foreground">{{ row.typical_reps }}</TableCell>
+                  <TableCell class="text-muted-foreground">{{ row.reps }}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

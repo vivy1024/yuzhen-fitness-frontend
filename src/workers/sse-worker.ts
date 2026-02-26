@@ -30,7 +30,7 @@ export interface WorkerMessage {
   payload?: {
     url: string
     body: {
-      user_id: string
+      user_id: number
       query: string
       session_id?: string
       domain?: string
