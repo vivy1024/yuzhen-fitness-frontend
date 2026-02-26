@@ -598,9 +598,11 @@ export const useChatStore = defineStore('chat', () => {
       // 映射难度等级
       const difficultyMap: Record<string, 'beginner' | 'intermediate' | 'advanced'> = {
         'beginner': 'beginner',
+        'novice': 'beginner',
         'intermediate': 'intermediate',
         'advanced': 'advanced',
         '初级': 'beginner',
+        '入门': 'beginner',
         '中级': 'intermediate',
         '高级': 'advanced'
       }

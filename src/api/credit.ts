@@ -21,7 +21,7 @@ export interface CreditBalance {
   membership_tier: 'free' | 'warmheart' | 'energy'
   is_mvp_phase: boolean
   low_balance_warning: boolean
-  last_reset_date: string
+  last_reset: string
 }
 
 /**
@@ -32,6 +32,7 @@ export interface CreditTransaction {
   credits: number
   tokens: number
   mode: 'dag' | 'agent'
+  mode_label: string
   template_name: string | null
   conversation_id: string | null
   input_tokens: number
@@ -44,28 +45,32 @@ export interface CreditTransaction {
  * 积分统计数据
  */
 export interface CreditStats {
-  period_days: number
-  total_credits: number
-  total_tokens: number
-  dag_credits: number
-  agent_credits: number
-  avg_credits_per_day: number
-  daily_stats: Array<{
-    date: string
-    credits: number
-    tokens: number
-  }>
+  summary: {
+    today: number
+    this_week: number
+    this_month: number
+  }
+  by_mode: Record<string, { count: number; credits: number; tokens: number }>
+  by_template: Array<{ template_name: string; count: number; credits: number }>
+  daily_trend: Array<{ date: string; credits: number; count: number }>
 }
 
 /**
- * 分页响应
+ * 积分流水历史响应
  */
-export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
-  page: number
-  per_page: number
-  last_page: number
+export interface CreditHistoryResponse {
+  transactions: CreditTransaction[]
+  pagination: {
+    current_page: number
+    total_pages: number
+    total_count: number
+    per_page: number
+  }
+  summary: {
+    today: number
+    this_week: number
+    this_month: number
+  }
 }
 
 export interface ApiResponse<T = any> {
@@ -97,7 +102,7 @@ export const getHistory = (
   page: number = 1,
   perPage: number = 20,
   mode?: 'dag' | 'agent'
-): Promise<ApiResponse<PaginatedResponse<CreditTransaction>>> => {
+): Promise<ApiResponse<CreditHistoryResponse>> => {
   const params: Record<string, any> = { page, per_page: perPage }
   if (mode) params.mode = mode
   return api.get('/credits/history', { params })

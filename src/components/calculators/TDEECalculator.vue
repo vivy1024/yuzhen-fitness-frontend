@@ -171,17 +171,17 @@ async function onSubmit() {
           <div class="rounded-lg border p-3">
             <p class="text-xs text-muted-foreground">蛋白质</p>
             <p class="text-lg font-bold">{{ Math.round(result.macros.protein_g) }}g</p>
-            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.ratios.protein) }}%</p>
+            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.protein_ratio) }}%</p>
           </div>
           <div class="rounded-lg border p-3">
             <p class="text-xs text-muted-foreground">脂肪</p>
             <p class="text-lg font-bold">{{ Math.round(result.macros.fat_g) }}g</p>
-            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.ratios.fat) }}%</p>
+            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.fat_ratio) }}%</p>
           </div>
           <div class="rounded-lg border p-3">
             <p class="text-xs text-muted-foreground">碳水</p>
             <p class="text-lg font-bold">{{ Math.round(result.macros.carbs_g) }}g</p>
-            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.ratios.carbs) }}%</p>
+            <p class="text-xs text-muted-foreground">{{ Math.round(result.macros.carbs_ratio) }}%</p>
           </div>
         </div>
 

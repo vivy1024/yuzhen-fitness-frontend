@@ -5,6 +5,23 @@
 
 ---
 
+## #21 (fix) AI对话全栈审计修复 — 积分API类型+SSE user_id+计算器类型 — 2026-02-26
+
+对应产品版本：v1.5.0
+
+- api/credit.ts: CreditBalance.last_reset_date → last_reset（匹配后端字段名）
+- api/credit.ts: PaginatedResponse<T> → CreditHistoryResponse（匹配后端 transactions/pagination/summary 结构）
+- api/credit.ts: CreditStats 重写（匹配后端 summary/by_mode/by_template/daily_trend）
+- api/credit.ts: CreditTransaction 添加 mode_label 字段
+- stores/credit.ts: fetchHistory 字段映射修复（data.data→data.transactions, page→pagination.current_page 等）
+- stores/credit.ts: lastResetDate computed 改为读取 last_reset
+- composables/useChatStream.ts: Worker模式 user_id 从 String() → Number()（修复PHP integer验证失败）
+- workers/sse-worker.ts: WorkerMessage body.user_id 类型 string → number
+- stores/user.ts: FFMIAssessment 映射添加 BMIStatus 类型断言
+- types/user-profile.ts: FFMIAssessment.natural_potential 改为对象类型，calculated_at 改为可选
+
+---
+
 ## #20 (feat) 计算器卡片前端 — 7个Vue计算器组件 + API模块 + 路由 — 2026-02-25
 
 对应产品版本：v1.5.0

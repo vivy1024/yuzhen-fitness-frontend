@@ -121,10 +121,10 @@ export interface FFMIAssessment {
   ffmi: number
   normalized_ffmi: number
   assessment: string
-  natural_potential: string
+  natural_potential: { percentage: number; limit: number; description: string }
   training_recommendation: TrainingRecommendation
   used_estimated_bf: boolean
-  calculated_at: string
+  calculated_at?: string
 }
 
 // ==================== 完整用户档案 ====================

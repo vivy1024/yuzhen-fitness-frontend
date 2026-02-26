@@ -22,7 +22,7 @@ const error = ref('')
 function getBmiBadgeVariant(status: string) {
   const map: Record<string, string> = {
     '偏瘦': 'secondary', '正常': 'default', '超重': 'warning', '肥胖': 'destructive',
-    'Underweight': 'secondary', 'Normal': 'default', 'Overweight': 'warning', 'Obese': 'destructive',
+    'underweight': 'secondary', 'normal': 'default', 'overweight': 'warning', 'obese': 'destructive',
   }
   return (map[status] ?? 'outline') as 'default' | 'secondary' | 'destructive' | 'outline'
 }
@@ -119,7 +119,7 @@ async function handleSubmit() {
 
         <!-- 体脂估算提示 -->
         <p v-if="result.used_estimated_bf" class="text-xs text-muted-foreground text-center bg-muted/50 rounded-md py-2 px-3">
-          未提供体脂率，使用估算值 {{ result.body_fat_used.toFixed(1) }}%。输入实际体脂率可获得更准确结果。
+          未提供体脂率，使用估算值 {{ result.body_fat.toFixed(1) }}%。输入实际体脂率可获得更准确结果。
         </p>
 
         <!-- 瘦体重 -->

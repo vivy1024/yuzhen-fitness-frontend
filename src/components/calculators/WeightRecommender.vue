@@ -41,7 +41,7 @@ async function submit() {
     if (form.value.target_rpe) params.target_rpe = form.value.target_rpe
 
     const res = await recommendWeight(params as any)
-    result.value = res.data.data
+    result.value = res.data
   } catch (e: any) {
     error.value = e.response?.data?.msg || '推荐失败'
   } finally {
@@ -106,15 +106,15 @@ async function submit() {
             </div>
           </div>
           <div class="bg-green-50 rounded-lg p-3">
-            <div class="text-xs text-green-600">%1RM 范围</div>
+            <div class="text-xs text-green-600">%1RM</div>
             <div class="font-semibold text-green-700">
-              {{ result.percentage_range.min }}–{{ result.percentage_range.max }}%
+              {{ result.percentage_of_1rm }}%
             </div>
           </div>
           <div class="bg-amber-50 rounded-lg p-3">
             <div class="text-xs text-amber-600">次数范围</div>
             <div class="font-semibold text-amber-700">
-              {{ result.rep_range.min }}–{{ result.rep_range.max }} 次
+              {{ result.rep_range[0] }}–{{ result.rep_range[1] }} 次
             </div>
           </div>
         </div>
