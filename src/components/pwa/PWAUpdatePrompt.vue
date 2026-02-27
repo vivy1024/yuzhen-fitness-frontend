@@ -1,13 +1,23 @@
 <script setup lang="ts">
+import { onBeforeUnmount, ref } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+
+const swIntervalId = ref<ReturnType<typeof setInterval> | null>(null)
 
 const { needRefresh, updateServiceWorker } = useRegisterSW({
   onRegisteredSW(_swUrl, registration) {
     // 每小时检查一次 SW 更新
     if (registration) {
-      setInterval(() => registration.update(), 60 * 60 * 1000)
+      swIntervalId.value = setInterval(() => registration.update(), 60 * 60 * 1000)
     }
   },
+})
+
+onBeforeUnmount(() => {
+  if (swIntervalId.value) {
+    clearInterval(swIntervalId.value)
+    swIntervalId.value = null
+  }
 })
 
 function onUpdate() {

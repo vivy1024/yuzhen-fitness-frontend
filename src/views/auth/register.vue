@@ -18,7 +18,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 // 注册类型切换
-const registerType = ref<'email' | 'phone'>('email')
+const registerType = ref<'email' | 'phone'>('phone')
 
 // 通用状态
 const loading = ref(false)
