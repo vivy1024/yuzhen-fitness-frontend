@@ -167,12 +167,15 @@ async function handleExport(format: 'json' | 'pdf') {
   exporting.value = true
   try {
     const result = await trainingStore.exportPlan(plan.value.id, format)
-    
-    // 下载文件
+
+    // 使用 Blob 下载
+    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = result.url
-    link.download = result.filename
+    link.href = url
+    link.download = `${plan.value?.name || 'training-plan'}.json`
     link.click()
+    URL.revokeObjectURL(url)
     
     toast({
       title: '导出成功',

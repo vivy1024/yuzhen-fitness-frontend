@@ -341,7 +341,8 @@ export function useChatStream() {
       resetState()
       isStreaming.value = true
       
-      const baseUrl = import.meta.env.VITE_DAML_RAG_API_URL || 'http://localhost:8001'
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+      const baseUrl = import.meta.env.VITE_DAML_RAG_API_URL || `${apiBase}/ai`
       
       // 兼容性检测
       if (!isStreamingSupportedRef.value) {
@@ -539,9 +540,13 @@ export function useChatStream() {
       const url = `${baseUrl}/v1/chat`
       toast({ title: '使用标准模式生成回答...', duration: 2000 })
       
+      const token = localStorage.getItem('access_token')
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           user_id: Number(params.userId),
           query: params.query,
@@ -584,9 +589,14 @@ export function useChatStream() {
     
     async function connect(): Promise<void> {
       try {
+        const token = localStorage.getItem('access_token')
         const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify(body)
         })
         
