@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { sendSmsCode as sendSmsCodeApi, smsLogin } from '@/api/sms'
+import { sendSmsCode as sendSmsCodeApi } from '@/api/sms'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +19,12 @@ const loginType = ref<'email' | 'phone'>('email')
 const showPassword = ref(false)
 const loading = ref(false)
 const smsCountdown = ref(0)
+const smsTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
+
+// REQ-H3: 组件卸载时清理定时器
+onBeforeUnmount(() => {
+  if (smsTimerRef.value) clearInterval(smsTimerRef.value)
+})
 
 // 邮箱登录表单
 const emailForm = ref({
@@ -71,58 +77,24 @@ async function handleEmailLogin() {
   }
 }
 
-// 手机号登录
+// 手机号登录（REQ-C2: 统一走 authStore）
 async function handlePhoneLogin() {
   if (!phoneForm.value.phone || !phoneForm.value.code) {
     showError('请填写手机号和验证码')
     return
   }
-  
-  if (loading.value) return // 防抖：防止重复提交
-  
+
+  if (loading.value) return
+
   loading.value = true
   try {
-    const response = await smsLogin(phoneForm.value.phone, phoneForm.value.code)
-    
-    if (response.code === 200 && response.data) {
-      // 使用统一的 Token 管理（与邮箱登录保持一致）
-      const { setToken } = await import('@/utils/token')
-      const { getTokenManager } = await import('@/utils/token-manager')
-      
-      // 保存 Token 到 localStorage
-      setToken(
-        response.data.access_token,
-        response.data.refresh_token,
-        response.data.expires_in
-      )
-      
-      // 同步 Token 到 TokenManager 并启动自动刷新
-      const tokenManager = getTokenManager()
-      tokenManager.setTokens(
-        response.data.access_token,
-        response.data.refresh_token,
-        response.data.expires_in
-      )
-      tokenManager.startAutoRefresh()
-      
-      // 更新 authStore 状态
-      authStore.user = response.data.user
-      authStore.isAuthenticated = true
-      localStorage.setItem('user_info', JSON.stringify(response.data.user))
-      
-      if (response.data.user.id) {
-        localStorage.setItem('current_user_id', response.data.user.id.toString())
-      }
-      
-      showSuccess('登录成功')
+    const result = await authStore.loginByPhone(phoneForm.value.phone, phoneForm.value.code)
+
+    if (result.success) {
       setTimeout(() => {
         router.push('/')
       }, 1000)
-    } else {
-      showError(response.msg || '登录失败')
     }
-  } catch (error: any) {
-    showError(error.message || '登录失败')
   } finally {
     loading.value = false
   }
@@ -141,10 +113,11 @@ async function sendSmsCode() {
     if (response.code === 200) {
       showSuccess('验证码已发送')
       smsCountdown.value = 60
-      const timer = setInterval(() => {
+      smsTimerRef.value = setInterval(() => {
         smsCountdown.value--
         if (smsCountdown.value <= 0) {
-          clearInterval(timer)
+          clearInterval(smsTimerRef.value!)
+          smsTimerRef.value = null
         }
       }, 1000)
     } else {

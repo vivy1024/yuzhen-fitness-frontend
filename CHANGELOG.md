@@ -5,6 +5,20 @@
 
 ---
 
+## #22 (fix) 认证系统审计修复 — 2026-02-28
+
+对应产品版本：v1.6.1
+
+- stores/auth.ts: 新增 handleAuthSuccess() 统一认证成功流程
+- stores/auth.ts: 新增 registerByPhone()/loginByPhone() actions（REQ-C2）
+- views/auth/register.vue: 手机号注册改用authStore（REQ-C2）
+- views/auth/login.vue: 手机号登录改用authStore（REQ-C2）
+- api/auth.ts: 移除拦截器独立刷新机制，统一委托TokenManager（REQ-C4）
+- views/auth/forgot-password.vue: 统一API响应格式检查 code===200（REQ-C5）
+- views/auth/forgot-password.vue: 移除checkEmailExists()调用（REQ-H6）
+- utils/auth.ts: validatePasswordStrength()最低要求统一为6位（REQ-H2）
+- register.vue/login.vue/forgot-password.vue: 定时器onBeforeUnmount清理（REQ-H3）
+
 ## #21 (fix) AI对话全栈审计修复 — 积分API类型+SSE user_id+计算器类型 — 2026-02-26
 
 对应产品版本：v1.5.0

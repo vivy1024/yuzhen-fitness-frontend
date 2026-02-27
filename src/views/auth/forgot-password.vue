@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Lock, Loader2, Dumbbell, ArrowLeft, CheckCircle } from 'lucide-vue-next'
-import { sendEmailCode, resetPassword, checkEmailExists } from '@/api/email'
+import { sendEmailCode, resetPassword } from '@/api/email'
 
 const router = useRouter()
 
@@ -15,8 +15,14 @@ const router = useRouter()
 const step = ref(1)
 const loading = ref(false)
 const emailCountdown = ref(0)
+const countdownTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+
+// REQ-H3: 组件卸载时清理定时器
+onBeforeUnmount(() => {
+  if (countdownTimerRef.value) clearInterval(countdownTimerRef.value)
+})
 
 // 表单数据
 const form = ref({
@@ -49,32 +55,25 @@ const passwordStrength = computed(() => {
   return { level: 3, text: '强', color: 'bg-green-500' }
 })
 
-// 发送验证码
+// 发送验证码（REQ-H6: 移除邮箱存在性检查，REQ-C5: 统一响应格式）
 async function handleSendCode() {
   if (!isEmailValid.value) {
     showError('请输入正确的邮箱地址')
     return
   }
 
-  if (loading.value) return // 防抖
+  if (loading.value) return
   loading.value = true
   try {
-    // 先检查邮箱是否已注册
-    const checkRes = await checkEmailExists(form.value.email)
-    if (!checkRes.data?.exists) {
-      showError('该邮箱未注册，请先注册账号')
-      loading.value = false
-      return
-    }
-
-    // 发送验证码
+    // 直接发送验证码，不检查邮箱是否存在（REQ-H6: 防止邮箱枚举攻击）
     const res = await sendEmailCode(form.value.email)
-    if (res.success) {
-      showSuccess('验证码已发送到您的邮箱')
+    // REQ-C5: 统一检查 code === 200（后端返回 { code, msg, data }）
+    if (res.code === 200) {
+      showSuccess('如果该邮箱已注册，验证码已发送到您的邮箱')
       step.value = 2
       startCountdown()
     } else {
-      showError(res.message || '发送失败')
+      showError(res.msg || '发送失败')
     }
   } catch (error: any) {
     showError(error.message || '发送失败')
@@ -90,11 +89,11 @@ async function handleResendCode() {
   loading.value = true
   try {
     const res = await sendEmailCode(form.value.email)
-    if (res.success) {
+    if (res.code === 200) {
       showSuccess('验证码已重新发送')
       startCountdown()
     } else {
-      showError(res.message || '发送失败')
+      showError(res.msg || '发送失败')
     }
   } catch (error: any) {
     showError(error.message || '发送失败')
@@ -106,10 +105,11 @@ async function handleResendCode() {
 // 开始倒计时
 function startCountdown() {
   emailCountdown.value = 60
-  const timer = setInterval(() => {
+  countdownTimerRef.value = setInterval(() => {
     emailCountdown.value--
     if (emailCountdown.value <= 0) {
-      clearInterval(timer)
+      clearInterval(countdownTimerRef.value!)
+      countdownTimerRef.value = null
     }
   }, 1000)
 }
@@ -138,11 +138,11 @@ async function handleResetPassword() {
       password_confirmation: form.value.password_confirmation
     })
     
-    if (res.success) {
+    if (res.code === 200) {
       showSuccess('密码重置成功')
       step.value = 3
     } else {
-      showError(res.message || '重置失败')
+      showError(res.msg || '重置失败')
     }
   } catch (error: any) {
     showError(error.message || '重置失败')
