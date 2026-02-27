@@ -15,7 +15,7 @@ import { Eye, EyeOff, Mail, Phone, Lock, Loader2, Dumbbell } from 'lucide-vue-ne
 const router = useRouter()
 const authStore = useAuthStore()
 
-const loginType = ref<'email' | 'phone'>('email')
+const loginType = ref<'email' | 'phone'>('phone')
 const showPassword = ref(false)
 const loading = ref(false)
 const smsCountdown = ref(0)

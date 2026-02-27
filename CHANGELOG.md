@@ -5,6 +5,14 @@
 
 ---
 
+## #24 (fix) 上线前安全加固 + 默认手机号注册 — 2026-02-28
+
+对应产品版本：v1.6.4
+
+- login.vue: 默认登录方式从邮箱切换为手机号
+- register.vue: 默认注册方式从邮箱切换为手机号
+- PWAUpdatePrompt.vue: 修复 setInterval 内存泄漏（添加 onBeforeUnmount 清理）
+
 ## #23 (fix) 核心功能审计修复 — SSE+导出+降级模式 — 2026-02-28
 
 对应产品版本：v1.6.2
