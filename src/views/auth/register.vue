@@ -4,24 +4,34 @@ import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { sendEmailCode as sendEmailCodeApi } from '@/api/email'
+import { sendSmsCode as sendSmsCodeApi } from '@/api/sms'
+import { registerByPhone } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { showSuccess, showError } from '@/components/ui/toast'
-import { Eye, EyeOff, Mail, Lock, User, Loader2, Dumbbell, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, Dumbbell, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { setToken } from '@/utils/token'
+import { getTokenManager } from '@/utils/token-manager'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+// 注册类型切换
+const registerType = ref<'email' | 'phone'>('email')
+
+// 通用状态
 const loading = ref(false)
-const emailCountdown = ref(0)
-const sendingCode = ref(false) // 发送验证码加载状态
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
-const form = ref({
+// 邮箱注册状态
+const emailCountdown = ref(0)
+const sendingEmailCode = ref(false)
+const emailForm = ref({
   nickname: '',
   email: '',
   emailCode: '',
@@ -30,10 +40,26 @@ const form = ref({
   agree: false
 })
 
-const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email))
+// 手机号注册状态
+const phoneCountdown = ref(0)
+const sendingPhoneCode = ref(false)
+const phoneForm = ref({
+  nickname: '',
+  phone: '',
+  phoneCode: '',
+  password: '',
+  password_confirmation: '',
+  agree: false
+})
 
-const passwordStrength = computed(() => {
-  const password = form.value.password
+// 邮箱验证
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailForm.value.email))
+
+// 手机号验证
+const isPhoneValid = computed(() => /^1[3-9]\d{9}$/.test(phoneForm.value.phone))
+
+// 密码强度计算（共用）
+function getPasswordStrength(password: string) {
   if (!password) return { score: 0, text: '', color: '' }
   let score = 0
   if (password.length >= 6) score++
@@ -45,27 +71,44 @@ const passwordStrength = computed(() => {
   const texts = ['', '弱', '中', '强']
   const colors = ['', 'bg-red-500', 'bg-yellow-500', 'bg-green-500']
   return { score: level, text: texts[level], color: colors[level] }
+}
+
+const emailPasswordStrength = computed(() => getPasswordStrength(emailForm.value.password))
+const phonePasswordStrength = computed(() => getPasswordStrength(phoneForm.value.password))
+
+// 密码匹配验证
+const emailPasswordMatch = computed(() => {
+  if (!emailForm.value.password_confirmation) return null
+  return emailForm.value.password === emailForm.value.password_confirmation
 })
 
-const passwordMatch = computed(() => {
-  if (!form.value.password_confirmation) return null
-  return form.value.password === form.value.password_confirmation
+const phonePasswordMatch = computed(() => {
+  if (!phoneForm.value.password_confirmation) return null
+  return phoneForm.value.password === phoneForm.value.password_confirmation
 })
 
-const isFormValid = computed(() => {
-  return form.value.nickname.length >= 2 && form.value.nickname.length <= 20 &&
-    isEmailValid.value && form.value.emailCode.length === 6 &&
-    form.value.password.length >= 6 && form.value.password === form.value.password_confirmation &&
-    form.value.agree
+// 表单完整性验证
+const isEmailFormValid = computed(() => {
+  return emailForm.value.nickname.length >= 2 && emailForm.value.nickname.length <= 20 &&
+    isEmailValid.value && emailForm.value.emailCode.length === 6 &&
+    emailForm.value.password.length >= 6 && emailForm.value.password === emailForm.value.password_confirmation &&
+    emailForm.value.agree
 })
 
-// 使用防抖包装发送验证码逻辑（300ms内多次点击只触发一次）
-const debouncedSendCode = useDebounceFn(async () => {
-  if (sendingCode.value || emailCountdown.value > 0) return
-  
-  sendingCode.value = true
+const isPhoneFormValid = computed(() => {
+  return phoneForm.value.nickname.length >= 2 && phoneForm.value.nickname.length <= 20 &&
+    isPhoneValid.value && phoneForm.value.phoneCode.length === 6 &&
+    phoneForm.value.password.length >= 6 && phoneForm.value.password === phoneForm.value.password_confirmation &&
+    phoneForm.value.agree
+})
+
+// 发送邮箱验证码（防抖）
+const debouncedSendEmailCode = useDebounceFn(async () => {
+  if (sendingEmailCode.value || emailCountdown.value > 0) return
+
+  sendingEmailCode.value = true
   try {
-    const response = await sendEmailCodeApi(form.value.email, 'register')
+    const response = await sendEmailCodeApi(emailForm.value.email, 'register')
     if (response.success) {
       showSuccess('验证码已发送到您的邮箱')
       emailCountdown.value = 60
@@ -79,7 +122,7 @@ const debouncedSendCode = useDebounceFn(async () => {
   } catch (error: any) {
     showError(error.message || '发送失败')
   } finally {
-    sendingCode.value = false
+    sendingEmailCode.value = false
   }
 }, 300)
 
@@ -88,29 +131,112 @@ async function sendEmailCode() {
     showError('请输入正确的邮箱地址')
     return
   }
-  debouncedSendCode()
+  debouncedSendEmailCode()
 }
 
-async function handleRegister() {
-  if (!isFormValid.value) {
+// 发送手机验证码
+async function sendPhoneCode() {
+  if (!isPhoneValid.value) {
+    showError('请输入正确的手机号')
+    return
+  }
+
+  if (sendingPhoneCode.value || phoneCountdown.value > 0) return
+
+  sendingPhoneCode.value = true
+  try {
+    const response = await sendSmsCodeApi(phoneForm.value.phone)
+    if (response.code === 200) {
+      showSuccess('验证码已发送')
+      phoneCountdown.value = 60
+      const timer = setInterval(() => {
+        phoneCountdown.value--
+        if (phoneCountdown.value <= 0) clearInterval(timer)
+      }, 1000)
+    } else {
+      showError(response.msg || '发送失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '发送失败')
+  } finally {
+    sendingPhoneCode.value = false
+  }
+}
+
+// 邮箱注册
+async function handleEmailRegister() {
+  if (!isEmailFormValid.value) {
     showError('请完整填写表单')
     return
   }
-  if (loading.value) return // 防抖：防止重复提交
+  if (loading.value) return
   loading.value = true
   try {
     const result = await authStore.register({
-      nickname: form.value.nickname,
-      email: form.value.email,
-      email_code: form.value.emailCode,
-      password: form.value.password,
-      password_confirmation: form.value.password_confirmation,
+      nickname: emailForm.value.nickname,
+      email: emailForm.value.email,
+      email_code: emailForm.value.emailCode,
+      password: emailForm.value.password,
+      password_confirmation: emailForm.value.password_confirmation,
     })
     if (result.success) {
-      // auth store已显示成功Toast，不重复
       setTimeout(() => router.push('/'), 1000)
     }
-    // 失败时auth store或拦截器已显示错误Toast，不重复
+  } finally {
+    loading.value = false
+  }
+}
+
+// 手机号注册
+async function handlePhoneRegister() {
+  if (!isPhoneFormValid.value) {
+    showError('请完整填写表单')
+    return
+  }
+  if (loading.value) return
+  loading.value = true
+  try {
+    const response = await registerByPhone({
+      nickname: phoneForm.value.nickname,
+      phone: phoneForm.value.phone,
+      phone_code: phoneForm.value.phoneCode,
+      password: phoneForm.value.password,
+      password_confirmation: phoneForm.value.password_confirmation,
+    })
+
+    if (response.code === 200 && response.data) {
+      // 保存 Token
+      setToken(
+        response.data.access_token,
+        response.data.refresh_token,
+        response.data.expires_in
+      )
+
+      // 同步到 TokenManager
+      const tokenManager = getTokenManager()
+      tokenManager.setTokens(
+        response.data.access_token,
+        response.data.refresh_token,
+        response.data.expires_in
+      )
+      tokenManager.startAutoRefresh()
+
+      // 更新 authStore 状态
+      authStore.user = response.data.user
+      authStore.isAuthenticated = true
+      localStorage.setItem('user_info', JSON.stringify(response.data.user))
+
+      if (response.data.user.id) {
+        localStorage.setItem('current_user_id', response.data.user.id.toString())
+      }
+
+      showSuccess('注册成功')
+      setTimeout(() => router.push('/'), 1000)
+    } else {
+      showError(response.msg || '注册失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '注册失败')
   } finally {
     loading.value = false
   }
@@ -132,174 +258,346 @@ async function handleRegister() {
       <Card class="border-0 shadow-xl">
         <CardHeader class="space-y-1 pb-4">
           <CardTitle class="text-xl text-center">注册新账号</CardTitle>
-          <CardDescription class="text-center">填写以下信息完成注册</CardDescription>
+          <CardDescription class="text-center">选择注册方式</CardDescription>
         </CardHeader>
         <CardContent>
-          <form @submit.prevent="handleRegister" class="space-y-4">
-            <!-- 昵称 -->
-            <div class="space-y-2">
-              <Label for="nickname">昵称</Label>
-              <div class="relative">
-                <User class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="nickname"
-                  v-model="form.nickname"
-                  type="text"
-                  placeholder="请输入昵称（2-20个字符）"
-                  class="pl-10"
-                  minlength="2"
-                  maxlength="20"
-                  required
-                />
-              </div>
-            </div>
+          <Tabs v-model="registerType" class="w-full">
+            <TabsList class="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="email">邮箱注册</TabsTrigger>
+              <TabsTrigger value="phone">手机号注册</TabsTrigger>
+            </TabsList>
 
-            <!-- 邮箱 -->
-            <div class="space-y-2">
-              <Label for="email">邮箱地址</Label>
-              <div class="relative">
-                <Mail class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  v-model="form.email"
-                  type="email"
-                  placeholder="请输入邮箱地址"
-                  class="pl-10 pr-10"
-                  required
-                />
-                <!-- 邮箱格式验证图标 -->
-                <div v-if="form.email" class="absolute right-3 top-1/2 -translate-y-1/2">
-                  <CheckCircle2 v-if="isEmailValid" class="h-4 w-4 text-green-600" />
-                  <XCircle v-else class="h-4 w-4 text-red-600" />
+            <!-- 邮箱注册 -->
+            <TabsContent value="email">
+              <form @submit.prevent="handleEmailRegister" class="space-y-4">
+                <!-- 昵称 -->
+                <div class="space-y-2">
+                  <Label for="email-nickname">昵称</Label>
+                  <div class="relative">
+                    <User class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email-nickname"
+                      v-model="emailForm.nickname"
+                      type="text"
+                      placeholder="请输入昵称（2-20个字符）"
+                      class="pl-10"
+                      minlength="2"
+                      maxlength="20"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-              <!-- 邮箱格式提示 -->
-              <p v-if="form.email && !isEmailValid" class="text-xs text-red-600">
-                请输入有效的邮箱地址
-              </p>
-            </div>
 
-            <!-- 邮箱验证码 -->
-            <div class="space-y-2">
-              <Label for="emailCode">邮箱验证码</Label>
-              <div class="flex gap-2">
-                <Input
-                  id="emailCode"
-                  v-model="form.emailCode"
-                  type="text"
-                  placeholder="请输入6位验证码"
-                  maxlength="6"
-                  class="flex-1"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  @click="sendEmailCode"
-                  :disabled="emailCountdown > 0 || !isEmailValid || sendingCode"
-                  class="shrink-0"
-                >
-                  <Loader2 v-if="sendingCode" class="mr-1 h-4 w-4 animate-spin" />
-                  {{ sendingCode ? '发送中' : emailCountdown > 0 ? `${emailCountdown}秒` : '获取验证码' }}
-                </Button>
-              </div>
-            </div>
+                <!-- 邮箱 -->
+                <div class="space-y-2">
+                  <Label for="email">邮箱地址</Label>
+                  <div class="relative">
+                    <Mail class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      v-model="emailForm.email"
+                      type="email"
+                      placeholder="请输入邮箱地址"
+                      class="pl-10 pr-10"
+                      required
+                    />
+                    <div v-if="emailForm.email" class="absolute right-3 top-1/2 -translate-y-1/2">
+                      <CheckCircle2 v-if="isEmailValid" class="h-4 w-4 text-green-600" />
+                      <XCircle v-else class="h-4 w-4 text-red-600" />
+                    </div>
+                  </div>
+                  <p v-if="emailForm.email && !isEmailValid" class="text-xs text-red-600">
+                    请输入有效的邮箱地址
+                  </p>
+                </div>
 
-            <!-- 密码 -->
-            <div class="space-y-2">
-              <Label for="password">密码</Label>
-              <div class="relative">
-                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  v-model="form.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  placeholder="请输入密码（至少6位）"
-                  class="pl-10 pr-10"
-                  minlength="6"
-                  required
-                />
-                <button
-                  type="button"
-                  @click="showPassword = !showPassword"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <EyeOff v-if="showPassword" class="h-4 w-4" />
-                  <Eye v-else class="h-4 w-4" />
-                </button>
-              </div>
-              <!-- 密码强度指示器 -->
-              <div v-if="form.password" class="space-y-1">
-                <div class="flex gap-1">
-                  <div
-                    v-for="i in 3"
-                    :key="i"
-                    class="h-1 flex-1 rounded-full transition-colors"
-                    :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'"
+                <!-- 邮箱验证码 -->
+                <div class="space-y-2">
+                  <Label for="emailCode">邮箱验证码</Label>
+                  <div class="flex gap-2">
+                    <Input
+                      id="emailCode"
+                      v-model="emailForm.emailCode"
+                      type="text"
+                      placeholder="请输入6位验证码"
+                      maxlength="6"
+                      class="flex-1"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      @click="sendEmailCode"
+                      :disabled="emailCountdown > 0 || !isEmailValid || sendingEmailCode"
+                      class="shrink-0"
+                    >
+                      <Loader2 v-if="sendingEmailCode" class="mr-1 h-4 w-4 animate-spin" />
+                      {{ sendingEmailCode ? '发送中' : emailCountdown > 0 ? `${emailCountdown}秒` : '获取验证码' }}
+                    </Button>
+                  </div>
+                </div>
+
+                <!-- 密码 -->
+                <div class="space-y-2">
+                  <Label for="email-password">密码</Label>
+                  <div class="relative">
+                    <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email-password"
+                      v-model="emailForm.password"
+                      :type="showPassword ? 'text' : 'password'"
+                      placeholder="请输入密码（至少6位）"
+                      class="pl-10 pr-10"
+                      minlength="6"
+                      required
+                    />
+                    <button
+                      type="button"
+                      @click="showPassword = !showPassword"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <EyeOff v-if="showPassword" class="h-4 w-4" />
+                      <Eye v-else class="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div v-if="emailForm.password" class="space-y-1">
+                    <div class="flex gap-1">
+                      <div
+                        v-for="i in 3"
+                        :key="i"
+                        class="h-1 flex-1 rounded-full transition-colors"
+                        :class="i <= emailPasswordStrength.score ? emailPasswordStrength.color : 'bg-gray-200'"
+                      />
+                    </div>
+                    <p class="text-xs" :class="{
+                      'text-red-600': emailPasswordStrength.score === 1,
+                      'text-yellow-600': emailPasswordStrength.score === 2,
+                      'text-green-600': emailPasswordStrength.score === 3,
+                    }">
+                      密码强度：{{ emailPasswordStrength.text }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 确认密码 -->
+                <div class="space-y-2">
+                  <Label for="email-confirm-password">确认密码</Label>
+                  <div class="relative">
+                    <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email-confirm-password"
+                      v-model="emailForm.password_confirmation"
+                      :type="showConfirmPassword ? 'text' : 'password'"
+                      placeholder="请再次输入密码"
+                      class="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      @click="showConfirmPassword = !showConfirmPassword"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <EyeOff v-if="showConfirmPassword" class="h-4 w-4" />
+                      <Eye v-else class="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div v-if="emailPasswordMatch !== null" class="flex items-center gap-1 text-xs">
+                    <CheckCircle2 v-if="emailPasswordMatch" class="h-3 w-3 text-green-600" />
+                    <XCircle v-else class="h-3 w-3 text-red-600" />
+                    <span :class="emailPasswordMatch ? 'text-green-600' : 'text-red-600'">
+                      {{ emailPasswordMatch ? '密码一致' : '密码不一致' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 用户协议 -->
+                <div class="flex items-start space-x-2">
+                  <Checkbox
+                    id="email-agree"
+                    v-model="emailForm.agree"
+                    class="mt-1"
                   />
+                  <label for="email-agree" class="text-sm text-muted-foreground cursor-pointer leading-relaxed">
+                    我已阅读并同意
+                    <router-link to="/legal/terms" class="text-primary hover:underline">用户协议</router-link>
+                    和
+                    <router-link to="/legal/privacy" class="text-primary hover:underline">隐私政策</router-link>
+                  </label>
                 </div>
-                <p class="text-xs" :class="{
-                  'text-red-600': passwordStrength.score === 1,
-                  'text-yellow-600': passwordStrength.score === 2,
-                  'text-green-600': passwordStrength.score === 3,
-                }">
-                  密码强度：{{ passwordStrength.text }}
-                </p>
-              </div>
-            </div>
 
-            <!-- 确认密码 -->
-            <div class="space-y-2">
-              <Label for="confirmPassword">确认密码</Label>
-              <div class="relative">
-                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  v-model="form.password_confirmation"
-                  :type="showConfirmPassword ? 'text' : 'password'"
-                  placeholder="请再次输入密码"
-                  class="pl-10 pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  @click="showConfirmPassword = !showConfirmPassword"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <EyeOff v-if="showConfirmPassword" class="h-4 w-4" />
-                  <Eye v-else class="h-4 w-4" />
-                </button>
-              </div>
-              <!-- 密码匹配提示 -->
-              <div v-if="passwordMatch !== null" class="flex items-center gap-1 text-xs">
-                <CheckCircle2 v-if="passwordMatch" class="h-3 w-3 text-green-600" />
-                <XCircle v-else class="h-3 w-3 text-red-600" />
-                <span :class="passwordMatch ? 'text-green-600' : 'text-red-600'">
-                  {{ passwordMatch ? '密码一致' : '密码不一致' }}
-                </span>
-              </div>
-            </div>
+                <Button type="submit" class="w-full" :disabled="!isEmailFormValid || loading">
+                  <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+                  {{ loading ? '注册中...' : '立即注册' }}
+                </Button>
+              </form>
+            </TabsContent>
 
-            <!-- 用户协议 -->
-            <div class="flex items-start space-x-2">
-              <Checkbox 
-                id="agree" 
-                v-model="form.agree" 
-                class="mt-1" 
-              />
-              <label for="agree" class="text-sm text-muted-foreground cursor-pointer leading-relaxed">
-                我已阅读并同意
-                <router-link to="/legal/terms" class="text-primary hover:underline">用户协议</router-link>
-                和
-                <router-link to="/legal/privacy" class="text-primary hover:underline">隐私政策</router-link>
-              </label>
-            </div>
+            <!-- 手机号注册 -->
+            <TabsContent value="phone">
+              <form @submit.prevent="handlePhoneRegister" class="space-y-4">
+                <!-- 昵称 -->
+                <div class="space-y-2">
+                  <Label for="phone-nickname">昵称</Label>
+                  <div class="relative">
+                    <User class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone-nickname"
+                      v-model="phoneForm.nickname"
+                      type="text"
+                      placeholder="请输入昵称（2-20个字符）"
+                      class="pl-10"
+                      minlength="2"
+                      maxlength="20"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <Button type="submit" class="w-full" :disabled="!isFormValid || loading">
-              <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-              {{ loading ? '注册中...' : '立即注册' }}
-            </Button>
-          </form>
+                <!-- 手机号 -->
+                <div class="space-y-2">
+                  <Label for="phone">手机号</Label>
+                  <div class="relative">
+                    <Phone class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      v-model="phoneForm.phone"
+                      type="tel"
+                      placeholder="请输入手机号"
+                      class="pl-10 pr-10"
+                      maxlength="11"
+                      required
+                    />
+                    <div v-if="phoneForm.phone" class="absolute right-3 top-1/2 -translate-y-1/2">
+                      <CheckCircle2 v-if="isPhoneValid" class="h-4 w-4 text-green-600" />
+                      <XCircle v-else class="h-4 w-4 text-red-600" />
+                    </div>
+                  </div>
+                  <p v-if="phoneForm.phone && !isPhoneValid" class="text-xs text-red-600">
+                    请输入正确的手机号格式
+                  </p>
+                </div>
+
+                <!-- 手机验证码 -->
+                <div class="space-y-2">
+                  <Label for="phoneCode">验证码</Label>
+                  <div class="flex gap-2">
+                    <Input
+                      id="phoneCode"
+                      v-model="phoneForm.phoneCode"
+                      type="text"
+                      placeholder="请输入6位验证码"
+                      maxlength="6"
+                      class="flex-1"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      @click="sendPhoneCode"
+                      :disabled="phoneCountdown > 0 || !isPhoneValid || sendingPhoneCode"
+                      class="shrink-0"
+                    >
+                      <Loader2 v-if="sendingPhoneCode" class="mr-1 h-4 w-4 animate-spin" />
+                      {{ sendingPhoneCode ? '发送中' : phoneCountdown > 0 ? `${phoneCountdown}秒` : '获取验证码' }}
+                    </Button>
+                  </div>
+                </div>
+
+                <!-- 密码 -->
+                <div class="space-y-2">
+                  <Label for="phone-password">密码</Label>
+                  <div class="relative">
+                    <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone-password"
+                      v-model="phoneForm.password"
+                      :type="showPassword ? 'text' : 'password'"
+                      placeholder="请输入密码（至少6位）"
+                      class="pl-10 pr-10"
+                      minlength="6"
+                      required
+                    />
+                    <button
+                      type="button"
+                      @click="showPassword = !showPassword"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <EyeOff v-if="showPassword" class="h-4 w-4" />
+                      <Eye v-else class="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div v-if="phoneForm.password" class="space-y-1">
+                    <div class="flex gap-1">
+                      <div
+                        v-for="i in 3"
+                        :key="i"
+                        class="h-1 flex-1 rounded-full transition-colors"
+                        :class="i <= phonePasswordStrength.score ? phonePasswordStrength.color : 'bg-gray-200'"
+                      />
+                    </div>
+                    <p class="text-xs" :class="{
+                      'text-red-600': phonePasswordStrength.score === 1,
+                      'text-yellow-600': phonePasswordStrength.score === 2,
+                      'text-green-600': phonePasswordStrength.score === 3,
+                    }">
+                      密码强度：{{ phonePasswordStrength.text }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 确认密码 -->
+                <div class="space-y-2">
+                  <Label for="phone-confirm-password">确认密码</Label>
+                  <div class="relative">
+                    <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone-confirm-password"
+                      v-model="phoneForm.password_confirmation"
+                      :type="showConfirmPassword ? 'text' : 'password'"
+                      placeholder="请再次输入密码"
+                      class="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      @click="showConfirmPassword = !showConfirmPassword"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <EyeOff v-if="showConfirmPassword" class="h-4 w-4" />
+                      <Eye v-else class="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div v-if="phonePasswordMatch !== null" class="flex items-center gap-1 text-xs">
+                    <CheckCircle2 v-if="phonePasswordMatch" class="h-3 w-3 text-green-600" />
+                    <XCircle v-else class="h-3 w-3 text-red-600" />
+                    <span :class="phonePasswordMatch ? 'text-green-600' : 'text-red-600'">
+                      {{ phonePasswordMatch ? '密码一致' : '密码不一致' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 用户协议 -->
+                <div class="flex items-start space-x-2">
+                  <Checkbox
+                    id="phone-agree"
+                    v-model="phoneForm.agree"
+                    class="mt-1"
+                  />
+                  <label for="phone-agree" class="text-sm text-muted-foreground cursor-pointer leading-relaxed">
+                    我已阅读并同意
+                    <router-link to="/legal/terms" class="text-primary hover:underline">用户协议</router-link>
+                    和
+                    <router-link to="/legal/privacy" class="text-primary hover:underline">隐私政策</router-link>
+                  </label>
+                </div>
+
+                <Button type="submit" class="w-full" :disabled="!isPhoneFormValid || loading">
+                  <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+                  {{ loading ? '注册中...' : '立即注册' }}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           <!-- 登录链接 -->
           <div class="mt-6 text-center text-sm text-muted-foreground">

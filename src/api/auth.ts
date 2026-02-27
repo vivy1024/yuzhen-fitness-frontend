@@ -299,6 +299,19 @@ export const register = (data: RegisterData): Promise<AuthResponse> => {
 }
 
 /**
+ * 手机号注册
+ */
+export const registerByPhone = (data: {
+  nickname: string
+  phone: string
+  phone_code: string
+  password: string
+  password_confirmation: string
+}): Promise<AuthResponse> => {
+  return api.post('/auth/register/phone', data)
+}
+
+/**
  * 刷新 Token
  * 使用refresh_token获取新的access_token
  */
