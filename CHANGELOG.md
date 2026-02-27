@@ -5,6 +5,15 @@
 
 ---
 
+## #23 (fix) 核心功能审计修复 — SSE+导出+降级模式 — 2026-02-28
+
+对应产品版本：v1.6.2
+
+- useChatStream.ts: SSE fallback URL 从 localhost:8001 改为基于 VITE_API_BASE_URL 推导
+- useChatStream.ts: sendNonStreamMessage() 添加 Authorization header
+- useChatStream.ts: connectWithFetch() 添加 Authorization header
+- plan-detail.vue: 导出改为 Blob + URL.createObjectURL 客户端下载
+
 ## #22 (fix) 认证系统审计修复 — 2026-02-28
 
 对应产品版本：v1.6.1
