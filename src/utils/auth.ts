@@ -96,14 +96,11 @@ export function validatePasswordStrength(password: string): {
   valid: boolean
   message: string
 } {
-  if (password.length < 8) {
-    return { valid: false, message: '密码长度不能少于8个字符' }
+  if (password.length < 6) {
+    return { valid: false, message: '密码长度不能少于6个字符' }
   }
   if (password.length > 32) {
     return { valid: false, message: '密码长度不能超过32个字符' }
-  }
-  if (!/^(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
-    return { valid: false, message: '密码必须包含至少一个字母和一个数字' }
   }
   return { valid: true, message: '密码强度符合要求' }
 }

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { sendEmailCode as sendEmailCodeApi } from '@/api/email'
 import { sendSmsCode as sendSmsCodeApi } from '@/api/sms'
-import { registerByPhone } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,8 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, Dumbbell, CheckCircle2, XCircle } from 'lucide-vue-next'
-import { setToken } from '@/utils/token'
-import { getTokenManager } from '@/utils/token-manager'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -50,6 +47,15 @@ const phoneForm = ref({
   password: '',
   password_confirmation: '',
   agree: false
+})
+
+// REQ-H3: 定时器引用，用于组件卸载时清理
+const emailTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
+const phoneTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
+
+onBeforeUnmount(() => {
+  if (emailTimerRef.value) clearInterval(emailTimerRef.value)
+  if (phoneTimerRef.value) clearInterval(phoneTimerRef.value)
 })
 
 // 邮箱验证
@@ -109,15 +115,18 @@ const debouncedSendEmailCode = useDebounceFn(async () => {
   sendingEmailCode.value = true
   try {
     const response = await sendEmailCodeApi(emailForm.value.email, 'register')
-    if (response.success) {
+    if (response.code === 200) {
       showSuccess('验证码已发送到您的邮箱')
       emailCountdown.value = 60
-      const timer = setInterval(() => {
+      emailTimerRef.value = setInterval(() => {
         emailCountdown.value--
-        if (emailCountdown.value <= 0) clearInterval(timer)
+        if (emailCountdown.value <= 0) {
+          clearInterval(emailTimerRef.value!)
+          emailTimerRef.value = null
+        }
       }, 1000)
     } else {
-      showError(response.message || (response as any).msg || '发送失败')
+      showError(response.msg || '发送失败')
     }
   } catch (error: any) {
     showError(error.message || '发送失败')
@@ -149,9 +158,12 @@ async function sendPhoneCode() {
     if (response.code === 200) {
       showSuccess('验证码已发送')
       phoneCountdown.value = 60
-      const timer = setInterval(() => {
+      phoneTimerRef.value = setInterval(() => {
         phoneCountdown.value--
-        if (phoneCountdown.value <= 0) clearInterval(timer)
+        if (phoneCountdown.value <= 0) {
+          clearInterval(phoneTimerRef.value!)
+          phoneTimerRef.value = null
+        }
       }, 1000)
     } else {
       showError(response.msg || '发送失败')
@@ -187,7 +199,7 @@ async function handleEmailRegister() {
   }
 }
 
-// 手机号注册
+// 手机号注册（REQ-C2: 统一走 authStore）
 async function handlePhoneRegister() {
   if (!isPhoneFormValid.value) {
     showError('请完整填写表单')
@@ -196,47 +208,16 @@ async function handlePhoneRegister() {
   if (loading.value) return
   loading.value = true
   try {
-    const response = await registerByPhone({
+    const result = await authStore.registerByPhone({
       nickname: phoneForm.value.nickname,
       phone: phoneForm.value.phone,
       phone_code: phoneForm.value.phoneCode,
       password: phoneForm.value.password,
       password_confirmation: phoneForm.value.password_confirmation,
     })
-
-    if (response.code === 200 && response.data) {
-      // 保存 Token
-      setToken(
-        response.data.access_token,
-        response.data.refresh_token,
-        response.data.expires_in
-      )
-
-      // 同步到 TokenManager
-      const tokenManager = getTokenManager()
-      tokenManager.setTokens(
-        response.data.access_token,
-        response.data.refresh_token,
-        response.data.expires_in
-      )
-      tokenManager.startAutoRefresh()
-
-      // 更新 authStore 状态
-      authStore.user = response.data.user
-      authStore.isAuthenticated = true
-      localStorage.setItem('user_info', JSON.stringify(response.data.user))
-
-      if (response.data.user.id) {
-        localStorage.setItem('current_user_id', response.data.user.id.toString())
-      }
-
-      showSuccess('注册成功')
+    if (result.success) {
       setTimeout(() => router.push('/'), 1000)
-    } else {
-      showError(response.msg || '注册失败')
     }
-  } catch (error: any) {
-    showError(error.message || '注册失败')
   } finally {
     loading.value = false
   }
