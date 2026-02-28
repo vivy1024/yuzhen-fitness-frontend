@@ -170,6 +170,84 @@ data: {"type":"end","timestamp":1704182450000}
 
 ---
 
+### 4. 用户预热
+
+**端点**: `POST /api/ai/v1/user/warmup`
+
+**认证**: 需要JWT Token
+
+**说明**: 在登录成功后调用，预热用户档案和会员数据到DAML-RAG缓存，提升首次AI交互的响应速度
+
+**请求参数**:
+```json
+{
+  "user_id": 1,
+  "force_refresh": false
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| user_id | integer | 是 | 用户ID |
+| force_refresh | boolean | 否 | 是否强制刷新缓存（用户档案更新时设为true），默认false |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "预热成功",
+  "data": {
+    "success": true,
+    "message": "用户数据已预热",
+    "user_id": "1",
+    "preload_status": {
+      "user_profile": "success",
+      "membership": "success"
+    }
+  }
+}
+```
+
+**预热内容**:
+| 项目 | 说明 |
+|------|------|
+| user_profile | 用户档案（年龄、性别、健身目标、体型数据等） |
+| membership | 会员等级和权益信息 |
+
+---
+
+### 5. 获取预热状态
+
+**端点**: `GET /api/ai/v1/user/warmup/status/{userId}`
+
+**认证**: 需要JWT Token
+
+**说明**: 查询用户数据在DAML-RAG缓存中的预热状态
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "获取成功",
+  "data": {
+    "user_id": "1",
+    "user_profile_cached": true,
+    "membership_preloaded": true,
+    "user_profile_access_count": 5
+  }
+}
+```
+
+**状态说明**:
+| 字段 | 说明 |
+|------|------|
+| user_profile_cached | 用户档案是否已缓存 |
+| membership_preloaded | 会员信息是否已预加载 |
+| user_profile_access_count | 用户档案被访问的次数 |
+
+---
+
 ## 🔄 工作流程
 
 ### 流式聊天流程
