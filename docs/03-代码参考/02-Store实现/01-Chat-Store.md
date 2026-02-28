@@ -360,9 +360,9 @@ finishStreamingMessage()
 
 ## 🔗 相关文档
 
-- [useChatStream实现](../03-Composables/01-useChatStream.md)
-- [Topic Store实现](./02-Topic-Store.md)
-- [Streaming Store实现](./03-Streaming-Store.md)
+- [useChatStream实现](../03-Composable实现/01-useChatStream.md)
+- [Topic Store实现](./07-Topic-Store.md)
+- [Streaming Store实现](./08-Streaming-Store.md)
 - [话题管理API](../../05-API文档/02-话题管理API.md)
 
 ---

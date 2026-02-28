@@ -624,6 +624,49 @@ export const useMembershipStore = defineStore('membership', () => {
   }
 
   /**
+   * 刷新权限（权限变更后调用）
+   * 从服务器获取最新权限并刷新Token
+   */
+  async function refreshPermissions(): Promise<{ success: boolean; message?: string }> {
+    try {
+      // 动态导入避免循环依赖
+      const { default: api } = await import('@/api/auth')
+      const { setToken } = await import('@/utils/token')
+      const { getTokenManager } = await import('@/utils/token-manager')
+
+      // 1. 获取最新权限状态
+      const permResponse = await api.get('/auth/permissions')
+      if (permResponse.code === 200 && permResponse.data) {
+        jwtTier.value = permResponse.data.tier
+        jwtPermissions.value = permResponse.data.permissions
+      }
+
+      // 2. 刷新Token以获取新Claims
+      const tokenResponse = await api.post('/auth/permissions/refresh-token')
+      if (tokenResponse.code === 200 && tokenResponse.data) {
+        setToken(
+          tokenResponse.data.access_token,
+          tokenResponse.data.refresh_token,
+          tokenResponse.data.expires_in
+        )
+
+        // 更新TokenManager
+        const tokenManager = getTokenManager()
+        tokenManager.setTokens(
+          tokenResponse.data.access_token,
+          tokenResponse.data.refresh_token,
+          tokenResponse.data.expires_in
+        )
+      }
+
+      return { success: true }
+    } catch (err: any) {
+      console.error('[Membership] 刷新权限失败:', err)
+      return { success: false, message: err.message }
+    }
+  }
+
+  /**
    * 重新初始化（登录后调用）
    */
   async function reinit() {
@@ -685,6 +728,7 @@ export const useMembershipStore = defineStore('membership', () => {
     toggleAutoRenew,
     clearMembership,
     updatePermissionsFromJwt,
+    refreshPermissions,
     reinit,
   }
 })

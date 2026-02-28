@@ -5,6 +5,37 @@
 
 ---
 
+## #24 (fix) 上线前安全加固 + 默认手机号注册 — 2026-02-28
+
+对应产品版本：v1.6.4
+
+- login.vue: 默认登录方式从邮箱切换为手机号
+- register.vue: 默认注册方式从邮箱切换为手机号
+- PWAUpdatePrompt.vue: 修复 setInterval 内存泄漏（添加 onBeforeUnmount 清理）
+
+## #23 (fix) 核心功能审计修复 — SSE+导出+降级模式 — 2026-02-28
+
+对应产品版本：v1.6.2
+
+- useChatStream.ts: SSE fallback URL 从 localhost:8001 改为基于 VITE_API_BASE_URL 推导
+- useChatStream.ts: sendNonStreamMessage() 添加 Authorization header
+- useChatStream.ts: connectWithFetch() 添加 Authorization header
+- plan-detail.vue: 导出改为 Blob + URL.createObjectURL 客户端下载
+
+## #22 (fix) 认证系统审计修复 — 2026-02-28
+
+对应产品版本：v1.6.1
+
+- stores/auth.ts: 新增 handleAuthSuccess() 统一认证成功流程
+- stores/auth.ts: 新增 registerByPhone()/loginByPhone() actions（REQ-C2）
+- views/auth/register.vue: 手机号注册改用authStore（REQ-C2）
+- views/auth/login.vue: 手机号登录改用authStore（REQ-C2）
+- api/auth.ts: 移除拦截器独立刷新机制，统一委托TokenManager（REQ-C4）
+- views/auth/forgot-password.vue: 统一API响应格式检查 code===200（REQ-C5）
+- views/auth/forgot-password.vue: 移除checkEmailExists()调用（REQ-H6）
+- utils/auth.ts: validatePasswordStrength()最低要求统一为6位（REQ-H2）
+- register.vue/login.vue/forgot-password.vue: 定时器onBeforeUnmount清理（REQ-H3）
+
 ## #21 (fix) AI对话全栈审计修复 — 积分API类型+SSE user_id+计算器类型 — 2026-02-26
 
 对应产品版本：v1.5.0

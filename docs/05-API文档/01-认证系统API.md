@@ -95,6 +95,501 @@ isTokenExpired()                           // 检查是否过期
 - `smsLogin(phone, code)` - 手机号登录
 - `checkPhone(phone)` - 检查手机号是否注册
 
+### 5. 手机绑定 (`src/api/phone-binding.ts`)
+
+**API方法**:
+- `getPhoneStatus()` - 获取手机号绑定状态
+- `bindPhone(phone, code)` - 绑定手机号
+- `unbindPhone(password)` - 解绑手机号
+- `changePhone(newPhone, newCode, oldCode?)` - 更换手机号
+- `sendBindCode(phone)` - 发送绑定验证码
+
+### 6. 邮箱验证码 (`src/api/email.ts`)
+
+**API方法**:
+- `sendEmailCode(email, type)` - 发送邮箱验证码
+- `verifyEmailCode(email, code)` - 验证邮箱验证码
+- `emailLogin(email, code)` - 邮箱验证码登录
+- `checkEmailExists(email)` - 检查邮箱是否已注册
+- `resetPassword(params)` - 重置密码
+
+---
+
+## 📡 手机绑定API
+
+### 1. 获取手机号绑定状态
+
+**端点**: `GET /api/user/phone/status`
+
+**认证**: 需要JWT Token
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "获取成功",
+  "data": {
+    "has_phone": true,
+    "phone": "13800138000",
+    "phone_verified": true,
+    "phone_bound_at": "2026-01-15T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 2. 发送绑定验证码
+
+**端点**: `POST /api/user/phone/send-bind-code`
+
+**认证**: 需要JWT Token
+
+**请求参数**:
+```json
+{
+  "phone": "13800138000"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号（中国大陆格式） |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "验证码已发送",
+  "data": {
+    "expires_at": "2026-01-15T10:05:00.000Z"
+  }
+}
+```
+
+---
+
+### 3. 绑定手机号
+
+**端点**: `POST /api/user/phone/bind`
+
+**认证**: 需要JWT Token
+
+**请求参数**:
+```json
+{
+  "phone": "13800138000",
+  "code": "123456"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号 |
+| code | string | 是 | 验证码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "绑定成功",
+  "data": {
+    "phone": "13800138000",
+    "phone_verified": true,
+    "phone_bound_at": "2026-01-15T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 4. 解绑手机号
+
+**端点**: `POST /api/user/phone/unbind`
+
+**认证**: 需要JWT Token
+
+**说明**: 需要提供密码验证身份
+
+**请求参数**:
+```json
+{
+  "password": "your_password"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| password | string | 是 | 登录密码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "解绑成功"
+}
+```
+
+---
+
+### 5. 更换手机号
+
+**端点**: `POST /api/user/phone/change`
+
+**认证**: 需要JWT Token
+
+**说明**: 需要先验证新手机号的验证码，旧手机号可选验证
+
+**请求参数**:
+```json
+{
+  "new_phone": "13900139000",
+  "new_code": "123456",
+  "old_code": "654321"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| new_phone | string | 是 | 新手机号 |
+| new_code | string | 是 | 新手机号验证码 |
+| old_code | string | 否 | 旧手机号验证码（如有绑定） |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "更换成功",
+  "data": {
+    "phone": "13900139000",
+    "phone_verified": true
+  }
+}
+```
+
+---
+
+## 📡 短信验证码API
+
+### 1. 发送手机验证码
+
+**端点**: `POST /api/auth/sms/send`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "phone": "13800138000"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号（中国大陆格式） |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "验证码已发送",
+  "data": {
+    "expires_at": "2026-01-15T10:05:00.000Z"
+  }
+}
+```
+
+**常见错误码**:
+| 错误码 | 说明 |
+|-------|------|
+| SMS_RATE_LIMITED | 发送过于频繁，请稍后再试 |
+| INVALID_PHONE | 手机号格式不正确 |
+
+---
+
+### 2. 验证手机验证码
+
+**端点**: `POST /api/auth/sms/verify`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "phone": "13800138000",
+  "code": "123456"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号 |
+| code | string | 是 | 验证码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "验证成功",
+  "data": {
+    "valid": true
+  }
+}
+```
+
+---
+
+### 3. 手机号验证码登录
+
+**端点**: `POST /api/auth/sms/login`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "phone": "13800138000",
+  "code": "123456"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号 |
+| code | string | 是 | 验证码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "登录成功",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "张三",
+      "email": "user@example.com",
+      "phone": "13800138000"
+    },
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  }
+}
+```
+
+---
+
+### 4. 检查手机号是否已注册
+
+**端点**: `GET /api/auth/sms/check-phone`
+
+**认证**: 不需要
+
+**查询参数**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | 是 | 手机号 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "检查成功",
+  "data": {
+    "exists": true,
+    "registered": true
+  }
+}
+```
+
+---
+
+## 📡 邮箱验证码API
+
+### 1. 发送邮箱验证码
+
+**端点**: `POST /api/auth/email/send`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "email": "user@example.com",
+  "type": "login"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| email | string | 是 | 邮箱地址 |
+| type | string | 否 | 验证码类型：register(注册)、login(登录)、reset(重置密码)，默认login |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "验证码已发送",
+  "data": {
+    "expires_at": "2026-01-15T10:05:00.000Z",
+    "wait_seconds": 60
+  }
+}
+```
+
+**常见错误码**:
+| 错误码 | 说明 |
+|-------|------|
+| EMAIL_RATE_LIMITED | 发送过于频繁，请稍后再试 |
+| EMAIL_NOT_FOUND | 邮箱未注册 |
+| EMAIL_ALREADY_EXISTS | 邮箱已注册 |
+
+---
+
+### 2. 验证邮箱验证码
+
+**端点**: `POST /api/auth/email/verify`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| email | string | 是 | 邮箱地址 |
+| code | string | 是 | 验证码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "验证成功",
+  "data": {
+    "valid": true,
+    "verified": true
+  }
+}
+```
+
+---
+
+### 3. 邮箱验证码登录
+
+**端点**: `POST /api/auth/email/login`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| email | string | 是 | 邮箱地址 |
+| code | string | 是 | 验证码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "登录成功",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "张三",
+      "email": "user@example.com"
+    },
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  }
+}
+```
+
+---
+
+### 4. 检查邮箱是否已注册
+
+**端点**: `GET /api/auth/email/check`
+
+**认证**: 不需要
+
+**查询参数**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| email | string | 是 | 邮箱地址 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "检查成功",
+  "data": {
+    "exists": true,
+    "verified": true
+  }
+}
+```
+
+---
+
+### 5. 重置密码
+
+**端点**: `POST /api/auth/email/reset-password`
+
+**认证**: 不需要
+
+**请求参数**:
+```json
+{
+  "email": "user@example.com",
+  "code": "123456",
+  "password": "new_password123",
+  "password_confirmation": "new_password123"
+}
+```
+
+**参数说明**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| email | string | 是 | 邮箱地址 |
+| code | string | 是 | 验证码 |
+| password | string | 是 | 新密码（至少6位） |
+| password_confirmation | string | 是 | 确认密码 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "msg": "密码重置成功",
+  "data": {
+    "success": true
+  }
+}
+```
+
 ---
 
 ## 📱 页面实现

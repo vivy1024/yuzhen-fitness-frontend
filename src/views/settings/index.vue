@@ -2,10 +2,10 @@
 /**
  * 设置页面
  * 包含主题、通知、离线数据、账号管理等设置
- * 
+ *
  * @author 玉珍健身 v3.0
  * @created 2026-01-06
- * @updated 2026-01-06
+ * @updated 2026-02-27
  */
 import { ref, computed, onMounted } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
@@ -57,11 +57,21 @@ import {
   ChevronRight,
   LogOut,
   RefreshCw,
-  MessageSquare
+  MessageSquare,
+  Smartphone
 } from 'lucide-vue-next'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { changePassword, deleteAccount, clearCache } from '@/api/settings'
 import { usePushNotification } from '@/composables/usePushNotification'
+import {
+  getPhoneStatus,
+  bindPhone,
+  unbindPhone,
+  changePhone,
+  sendBindCode,
+  type PhoneStatus
+} from '@/api/phone-binding'
+import { sendSmsCode } from '@/api/sms'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -114,6 +124,36 @@ const deleteLoading = ref(false)
 const showClearCacheDialog = ref(false)
 const clearCacheLoading = ref(false)
 
+// ========== 手机号绑定相关 ==========
+const phoneStatus = ref<PhoneStatus | null>(null)
+const phoneLoading = ref(false)
+
+// 绑定手机号对话框
+const showBindPhoneDialog = ref(false)
+const bindPhoneForm = ref({
+  phone: '',
+  code: ''
+})
+const bindPhoneCountdown = ref(0)
+const bindPhoneSendingCode = ref(false)
+
+// 解绑手机号对话框
+const showUnbindPhoneDialog = ref(false)
+const unbindPassword = ref('')
+const unbindLoading = ref(false)
+
+// 更换手机号对话框
+const showChangePhoneDialog = ref(false)
+const changePhoneForm = ref({
+  newPhone: '',
+  newCode: '',
+  oldCode: ''
+})
+const newPhoneCountdown = ref(0)
+const oldPhoneCountdown = ref(0)
+const sendingNewCode = ref(false)
+const sendingOldCode = ref(false)
+
 // 密码强度计算（与register.vue保持一致）
 const passwordStrength = computed(() => {
   const password = passwordForm.value.new
@@ -137,7 +177,21 @@ const passwordStrength = computed(() => {
 onMounted(() => {
   // 计算缓存大小
   calculateCacheSize()
+  // 获取手机号绑定状态
+  fetchPhoneStatus()
 })
+
+// 获取手机号绑定状态
+async function fetchPhoneStatus() {
+  try {
+    const response = await getPhoneStatus()
+    if (response.code === 200) {
+      phoneStatus.value = response.data
+    }
+  } catch (error) {
+    console.error('获取手机号状态失败:', error)
+  }
+}
 
 // 计算缓存大小
 function calculateCacheSize() {
@@ -333,6 +387,177 @@ async function handleLogout() {
 function goToAbout() {
   router.push('/settings/about')
 }
+
+// ========== 手机号绑定相关函数 ==========
+
+// 手机号验证
+const isPhoneValid = computed(() => /^1[3-9]\d{9}$/.test(bindPhoneForm.value.phone))
+const isNewPhoneValid = computed(() => /^1[3-9]\d{9}$/.test(changePhoneForm.value.newPhone))
+
+// 发送绑定验证码
+async function handleSendBindCode() {
+  if (!isPhoneValid.value) {
+    showError('请输入正确的手机号')
+    return
+  }
+  if (bindPhoneCountdown.value > 0) return
+
+  bindPhoneSendingCode.value = true
+  try {
+    const response = await sendSmsCode(bindPhoneForm.value.phone)
+    if (response.code === 200) {
+      showSuccess('验证码已发送')
+      bindPhoneCountdown.value = 60
+      const timer = setInterval(() => {
+        bindPhoneCountdown.value--
+        if (bindPhoneCountdown.value <= 0) clearInterval(timer)
+      }, 1000)
+    } else {
+      showError(response.msg || '发送失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '发送失败')
+  } finally {
+    bindPhoneSendingCode.value = false
+  }
+}
+
+// 绑定手机号
+async function handleBindPhone() {
+  if (!isPhoneValid.value || !bindPhoneForm.value.code) {
+    showError('请填写完整信息')
+    return
+  }
+
+  phoneLoading.value = true
+  try {
+    const response = await bindPhone(bindPhoneForm.value.phone, bindPhoneForm.value.code)
+    if (response.code === 200) {
+      showSuccess('手机号绑定成功')
+      showBindPhoneDialog.value = false
+      bindPhoneForm.value = { phone: '', code: '' }
+      await fetchPhoneStatus()
+    } else {
+      showError(response.msg || '绑定失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '绑定失败')
+  } finally {
+    phoneLoading.value = false
+  }
+}
+
+// 解绑手机号
+async function handleUnbindPhone() {
+  if (!unbindPassword.value) {
+    showError('请输入密码')
+    return
+  }
+
+  unbindLoading.value = true
+  try {
+    const response = await unbindPhone(unbindPassword.value)
+    if (response.code === 200) {
+      showSuccess('手机号已解绑')
+      showUnbindPhoneDialog.value = false
+      unbindPassword.value = ''
+      await fetchPhoneStatus()
+    } else {
+      showError(response.msg || '解绑失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '解绑失败')
+  } finally {
+    unbindLoading.value = false
+  }
+}
+
+// 发送新手机验证码
+async function handleSendNewCode() {
+  if (!isNewPhoneValid.value) {
+    showError('请输入正确的新手机号')
+    return
+  }
+  if (newPhoneCountdown.value > 0) return
+
+  sendingNewCode.value = true
+  try {
+    const response = await sendSmsCode(changePhoneForm.value.newPhone)
+    if (response.code === 200) {
+      showSuccess('验证码已发送到新手机')
+      newPhoneCountdown.value = 60
+      const timer = setInterval(() => {
+        newPhoneCountdown.value--
+        if (newPhoneCountdown.value <= 0) clearInterval(timer)
+      }, 1000)
+    } else {
+      showError(response.msg || '发送失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '发送失败')
+  } finally {
+    sendingNewCode.value = false
+  }
+}
+
+// 发送原手机验证码
+async function handleSendOldCode() {
+  if (!phoneStatus.value?.phone) {
+    showError('未找到原手机号')
+    return
+  }
+  if (oldPhoneCountdown.value > 0) return
+
+  sendingOldCode.value = true
+  try {
+    // 从脱敏的手机号中提取真实手机号需要后端支持
+    // 这里使用发送绑定验证码接口，后端会自动识别当前用户
+    const response = await sendBindCode(phoneStatus.value.phone?.replace(/\*/g, '') || '')
+    if (response.code === 200) {
+      showSuccess('验证码已发送到原手机')
+      oldPhoneCountdown.value = 60
+      const timer = setInterval(() => {
+        oldPhoneCountdown.value--
+        if (oldPhoneCountdown.value <= 0) clearInterval(timer)
+      }, 1000)
+    } else {
+      showError(response.msg || '发送失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '发送失败')
+  } finally {
+    sendingOldCode.value = false
+  }
+}
+
+// 更换手机号
+async function handleChangePhone() {
+  if (!isNewPhoneValid.value || !changePhoneForm.value.newCode) {
+    showError('请填写完整信息')
+    return
+  }
+
+  phoneLoading.value = true
+  try {
+    const response = await changePhone(
+      changePhoneForm.value.newPhone,
+      changePhoneForm.value.newCode,
+      changePhoneForm.value.oldCode || undefined
+    )
+    if (response.code === 200) {
+      showSuccess('手机号更换成功')
+      showChangePhoneDialog.value = false
+      changePhoneForm.value = { newPhone: '', newCode: '', oldCode: '' }
+      await fetchPhoneStatus()
+    } else {
+      showError(response.msg || '更换失败')
+    }
+  } catch (error: any) {
+    showError(error.message || '更换失败')
+  } finally {
+    phoneLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -516,21 +741,53 @@ function goToAbout() {
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-1">
-          <div 
+          <!-- 手机号绑定 -->
+          <div
+            class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
+            @click="phoneStatus?.has_phone ? showChangePhoneDialog = true : showBindPhoneDialog = true"
+          >
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Smartphone class="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <span class="font-medium">手机号</span>
+                <p class="text-xs text-muted-foreground">
+                  {{ phoneStatus?.has_phone ? phoneStatus.phone : '未绑定' }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span v-if="phoneStatus?.has_phone" class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">已绑定</span>
+              <ChevronRight class="h-5 w-5 text-muted-foreground" />
+            </div>
+          </div>
+
+          <!-- 解绑手机号（已绑定时显示） -->
+          <div
+            v-if="phoneStatus?.has_phone"
+            class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
+            @click="showUnbindPhoneDialog = true"
+          >
+            <span class="font-medium text-orange-600">解绑手机号</span>
+            <ChevronRight class="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <div
             class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
             @click="showPasswordDialog = true"
           >
             <span class="font-medium">修改密码</span>
             <ChevronRight class="h-5 w-5 text-muted-foreground" />
           </div>
-          <div 
+          <div
             class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
             @click="handleLogout"
           >
             <span class="font-medium text-orange-600">退出登录</span>
             <LogOut class="h-5 w-5 text-orange-600" />
           </div>
-          <div 
+          <div
             class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
             @click="showDeleteDialog = true"
           >
@@ -652,5 +909,122 @@ function goToAbout() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <!-- 绑定手机号对话框 -->
+    <Dialog v-model:open="showBindPhoneDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>绑定手机号</DialogTitle>
+          <DialogDescription>绑定后可使用手机号登录和找回密码</DialogDescription>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>手机号</Label>
+            <Input v-model="bindPhoneForm.phone" type="tel" placeholder="请输入手机号" maxlength="11" />
+          </div>
+          <div class="space-y-2">
+            <Label>验证码</Label>
+            <div class="flex gap-2">
+              <Input v-model="bindPhoneForm.code" type="text" placeholder="请输入验证码" maxlength="6" class="flex-1" />
+              <Button
+                type="button"
+                variant="outline"
+                @click="handleSendBindCode"
+                :disabled="bindPhoneCountdown > 0 || !isPhoneValid || bindPhoneSendingCode"
+                class="shrink-0"
+              >
+                {{ bindPhoneSendingCode ? '发送中' : bindPhoneCountdown > 0 ? `${bindPhoneCountdown}秒` : '获取验证码' }}
+              </Button>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showBindPhoneDialog = false">取消</Button>
+          <Button @click="handleBindPhone" :disabled="phoneLoading">
+            {{ phoneLoading ? '绑定中...' : '确认绑定' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 解绑手机号对话框 -->
+    <Dialog v-model:open="showUnbindPhoneDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle class="text-orange-600">解绑手机号</DialogTitle>
+          <DialogDescription>
+            解绑后将无法使用手机号登录。请确保已绑定邮箱。
+          </DialogDescription>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>请输入密码确认</Label>
+            <Input v-model="unbindPassword" type="password" placeholder="请输入您的密码" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showUnbindPhoneDialog = false">取消</Button>
+          <Button variant="destructive" @click="handleUnbindPhone" :disabled="unbindLoading">
+            {{ unbindLoading ? '解绑中...' : '确认解绑' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 更换手机号对话框 -->
+    <Dialog v-model:open="showChangePhoneDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>更换手机号</DialogTitle>
+          <DialogDescription>需要验证新手机号</DialogDescription>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <!-- 原手机号验证（如果已绑定） -->
+          <div v-if="phoneStatus?.has_phone" class="space-y-2">
+            <Label>原手机号验证码</Label>
+            <div class="flex gap-2">
+              <Input v-model="changePhoneForm.oldCode" type="text" placeholder="原手机验证码" maxlength="6" class="flex-1" />
+              <Button
+                type="button"
+                variant="outline"
+                @click="handleSendOldCode"
+                :disabled="oldPhoneCountdown > 0 || sendingOldCode"
+                class="shrink-0"
+              >
+                {{ sendingOldCode ? '发送中' : oldPhoneCountdown > 0 ? `${oldPhoneCountdown}秒` : '发送' }}
+              </Button>
+            </div>
+            <p class="text-xs text-muted-foreground">验证码将发送到 {{ phoneStatus.phone }}</p>
+          </div>
+
+          <div class="space-y-2">
+            <Label>新手机号</Label>
+            <Input v-model="changePhoneForm.newPhone" type="tel" placeholder="请输入新手机号" maxlength="11" />
+          </div>
+
+          <div class="space-y-2">
+            <Label>新手机验证码</Label>
+            <div class="flex gap-2">
+              <Input v-model="changePhoneForm.newCode" type="text" placeholder="新手机验证码" maxlength="6" class="flex-1" />
+              <Button
+                type="button"
+                variant="outline"
+                @click="handleSendNewCode"
+                :disabled="newPhoneCountdown > 0 || !isNewPhoneValid || sendingNewCode"
+                class="shrink-0"
+              >
+                {{ sendingNewCode ? '发送中' : newPhoneCountdown > 0 ? `${newPhoneCountdown}秒` : '获取验证码' }}
+              </Button>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showChangePhoneDialog = false">取消</Button>
+          <Button @click="handleChangePhone" :disabled="phoneLoading">
+            {{ phoneLoading ? '更换中...' : '确认更换' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

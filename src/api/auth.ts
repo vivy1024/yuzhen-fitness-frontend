@@ -43,24 +43,6 @@ function showApiError(message: string) {
   showError(message)
 }
 
-// 401自动刷新状态
-let isRefreshing = false
-let failedQueue: Array<{
-  resolve: (token: string) => void
-  reject: (error: any) => void
-}> = []
-
-function processQueue(error: any, token: string | null = null) {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (token) {
-      resolve(token)
-    } else {
-      reject(error)
-    }
-  })
-  failedQueue = []
-}
-
 // 创建 axios 实例
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -121,67 +103,34 @@ api.interceptors.response.use(
             }
             return Promise.reject(new Error(message || '未授权，请先登录'))
           }
-          
-          // 尝试刷新Token
-          if (isRefreshing) {
-            // 已有刷新请求在进行中，排队等待
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject })
-            }).then((token) => {
-              if (originalRequest) {
-                originalRequest.headers.Authorization = `Bearer ${token}`
-                originalRequest._retry = true
-                return api(originalRequest)
-              }
-              return Promise.reject(new Error('无法重试请求'))
-            })
-          }
-          
-          isRefreshing = true
-          
+
+          // REQ-C4: 统一委托给 TokenManager 刷新（TokenManager 内部已有并发保护）
           try {
             const tokenManager = getTokenManager()
             const refreshed = await tokenManager.refreshToken()
-            
+
             if (refreshed) {
               const newToken = tokenManager.getAccessToken()
-              if (newToken) {
-                processQueue(null, newToken)
-                
-                // 重试原始请求
-                if (originalRequest) {
-                  originalRequest.headers.Authorization = `Bearer ${newToken}`
-                  originalRequest._retry = true
-                  return api(originalRequest)
-                }
+              if (newToken && originalRequest) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`
+                originalRequest._retry = true
+                return api(originalRequest)
               }
             }
-            
-            // 刷新失败
-            processQueue(new Error('Token刷新失败'), null)
-            showApiError(message || '登录已过期，请重新登录')
-            clearToken()
-            localStorage.removeItem('user_info')
-            localStorage.removeItem('current_user_id')
-            const currentPath = window.location.pathname
-            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
-            }
-            return Promise.reject(new Error(message || '未授权，请先登录'))
-          } catch (refreshError) {
-            processQueue(refreshError, null)
-            showApiError('登录已过期，请重新登录')
-            clearToken()
-            localStorage.removeItem('user_info')
-            localStorage.removeItem('current_user_id')
-            const currentPath = window.location.pathname
-            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
-            }
-            return Promise.reject(new Error('未授权，请先登录'))
-          } finally {
-            isRefreshing = false
+          } catch {
+            // 刷新异常，走下面的登出逻辑
           }
+
+          // 刷新失败，登出
+          showApiError(message || '登录已过期，请重新登录')
+          clearToken()
+          localStorage.removeItem('user_info')
+          localStorage.removeItem('current_user_id')
+          const currentPath = window.location.pathname
+          if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+            setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+          }
+          return Promise.reject(new Error(message || '未授权，请先登录'))
         }
         
         case 403:
@@ -296,6 +245,19 @@ export const login = (credentials: LoginCredentials): Promise<AuthResponse> => {
  */
 export const register = (data: RegisterData): Promise<AuthResponse> => {
   return api.post('/auth/register', data)
+}
+
+/**
+ * 手机号注册
+ */
+export const registerByPhone = (data: {
+  nickname: string
+  phone: string
+  phone_code: string
+  password: string
+  password_confirmation: string
+}): Promise<AuthResponse> => {
+  return api.post('/auth/register/phone', data)
 }
 
 /**

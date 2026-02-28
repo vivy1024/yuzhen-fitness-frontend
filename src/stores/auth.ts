@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { login as loginApi, register as registerApi, logout as logoutApi, refreshToken as refreshTokenApi, type LoginCredentials, type RegisterData } from '@/api/auth'
+import { login as loginApi, register as registerApi, registerByPhone as registerByPhoneApi, logout as logoutApi, refreshToken as refreshTokenApi, type LoginCredentials, type RegisterData } from '@/api/auth'
 import { setToken, clearToken, getRefreshToken, getToken } from '@/utils/token'
 import { getTokenManager } from '@/utils/token-manager'
 import { parseJWTPayload } from '@/utils/auth'
@@ -13,6 +13,7 @@ import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
 import { useTopicStore } from '@/stores/topic'
 import { warmupUser } from '@/api/warmup'
+import { smsLogin as smsLoginApi } from '@/api/sms'
 import { showSuccess, showError } from '@/components/ui/toast'
 
 export interface UserInfo {
@@ -185,70 +186,65 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 认证成功后的统一处理流程
+   * 所有登录/注册路径共享：Token保存 → store初始化 → JWT解析 → DAML-RAG预热
+   */
+  async function handleAuthSuccess(data: { user: any; access_token: string; refresh_token?: string; expires_in: number }, options?: { skipWarmup?: boolean }) {
+    const refreshToken = data.refresh_token || ''
+    // 保存Token到localStorage
+    setToken(data.access_token, refreshToken, data.expires_in)
+
+    // 同步Token到TokenManager
+    const tokenManager = getTokenManager()
+    tokenManager.setTokens(data.access_token, refreshToken, data.expires_in)
+    tokenManager.startAutoRefresh()
+
+    // 保存用户信息
+    user.value = data.user
+    isAuthenticated.value = true
+    localStorage.setItem('user_info', JSON.stringify(data.user))
+
+    if (data.user.id) {
+      localStorage.setItem('current_user_id', data.user.id.toString())
+    }
+
+    // 初始化关联stores
+    await initRelatedStores()
+
+    // 解析JWT中的权限Claims
+    try {
+      const payload = parseJWTPayload(data.access_token)
+      if (payload?.tier || payload?.permissions) {
+        const membershipStore = useMembershipStore()
+        membershipStore.updatePermissionsFromJwt(payload)
+      }
+    } catch (parseError) {
+      console.warn('[Auth] 解析JWT权限Claims失败:', parseError)
+    }
+
+    // 异步预热DAML-RAG（不阻塞流程）
+    if (!options?.skipWarmup && data.user.id) {
+      warmupDamlRag(data.user.id)
+    }
+  }
+
+  /**
    * 登录
    */
   async function login(credentials: LoginCredentials) {
     try {
       loading.value = true
       const response = await loginApi(credentials)
-      
+
       if (response.code === 200 && response.data) {
-        // 保存Token到localStorage
-        setToken(
-          response.data.access_token,
-          response.data.refresh_token,
-          response.data.expires_in
-        )
-        
-        // 同步Token到TokenManager
-        const tokenManager = getTokenManager()
-        tokenManager.setTokens(
-          response.data.access_token,
-          response.data.refresh_token,
-          response.data.expires_in
-        )
-        tokenManager.startAutoRefresh()
-        
-        // 保存用户信息
-        user.value = response.data.user
-        isAuthenticated.value = true
-        localStorage.setItem('user_info', JSON.stringify(response.data.user))
-        
-        if (response.data.user.id) {
-          localStorage.setItem('current_user_id', response.data.user.id.toString())
-        }
-        
-        // 登录成功后初始化关联stores
-        await initRelatedStores()
-        
-        // 解析JWT中的权限Claims
-        try {
-          const payload = parseJWTPayload(response.data.access_token)
-          if (payload?.tier || payload?.permissions) {
-            const membershipStore = useMembershipStore()
-            membershipStore.updatePermissionsFromJwt(payload)
-          }
-        } catch (parseError) {
-          console.warn('[Auth] 解析JWT权限Claims失败:', parseError)
-        }
-        
-        // 异步预热DAML-RAG（不阻塞登录流程）
-        if (response.data.user.id) {
-          warmupDamlRag(response.data.user.id)
-        }
-        
-        // ✅ 显示成功Toast
+        await handleAuthSuccess(response.data)
         showSuccess(response.msg || '登录成功')
-        
         return { success: true, message: response.msg || '登录成功' }
       } else {
-        // ✅ 显示失败Toast
         showError(response.msg || '登录失败')
         return { success: false, message: response.msg || '登录失败' }
       }
     } catch (error: any) {
-      // 拦截器已处理所有API错误的Toast显示，这里只记录日志
-      // 不再调用showError，避免与拦截器的showApiError重复弹出
       const msg = error.message || '登录失败，请稍后重试'
       console.error('[Auth] 登录异常:', msg, error)
       return { success: false, message: msg }
@@ -264,52 +260,68 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true
       const response = await registerApi(data)
-      
+
       if (response.code === 200 && response.data) {
-        // 保存Token到localStorage
-        setToken(
-          response.data.access_token,
-          response.data.refresh_token,
-          response.data.expires_in
-        )
-        
-        // 同步Token到TokenManager
-        const tokenManager = getTokenManager()
-        tokenManager.setTokens(
-          response.data.access_token,
-          response.data.refresh_token,
-          response.data.expires_in
-        )
-        tokenManager.startAutoRefresh()
-        
-        // 保存用户信息
-        user.value = response.data.user
-        isAuthenticated.value = true
-        localStorage.setItem('user_info', JSON.stringify(response.data.user))
-        
-        if (response.data.user.id) {
-          localStorage.setItem('current_user_id', response.data.user.id.toString())
-        }
-        
-        // 注册成功后初始化关联stores
-        await initRelatedStores()
-        
-        // 注意：注册时不预热DAML-RAG，因为新用户还没有档案
-        // 预热会在用户首次创建档案后触发
-        
-        // ✅ 显示成功Toast
+        await handleAuthSuccess(response.data, { skipWarmup: true })
         showSuccess(response.msg || '注册成功')
-        
         return { success: true, message: response.msg || '注册成功' }
       } else {
-        // ✅ 显示失败Toast
         showError(response.msg || '注册失败')
         return { success: false, message: response.msg || '注册失败' }
       }
     } catch (error: any) {
-      // 拦截器已处理所有API错误的Toast显示，这里只记录日志
       const msg = error.message || '注册失败，请稍后重试'
       console.error('[Auth] 注册异常:', msg, error)
+      return { success: false, message: msg }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 手机号注册（REQ-C2: 统一走 authStore）
+   */
+  async function registerByPhone(data: { nickname: string; phone: string; phone_code: string; password: string; password_confirmation: string }) {
+    try {
+      loading.value = true
+      const response = await registerByPhoneApi(data)
+
+      if (response.code === 200 && response.data) {
+        await handleAuthSuccess(response.data, { skipWarmup: true })
+        showSuccess(response.msg || '注册成功')
+        return { success: true, message: response.msg || '注册成功' }
+      } else {
+        showError(response.msg || '注册失败')
+        return { success: false, message: response.msg || '注册失败' }
+      }
+    } catch (error: any) {
+      const msg = error.message || '注册失败，请稍后重试'
+      console.error('[Auth] 手机号注册异常:', msg, error)
+      return { success: false, message: msg }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 手机号验证码登录（REQ-C2: 统一走 authStore）
+   */
+  async function loginByPhone(phone: string, code: string) {
+    try {
+      loading.value = true
+      const response = await smsLoginApi(phone, code)
+
+      if (response.code === 200 && response.data) {
+        await handleAuthSuccess(response.data)
+        showSuccess('登录成功')
+        return { success: true, message: '登录成功' }
+      } else {
+        showError(response.msg || '登录失败')
+        return { success: false, message: response.msg || '登录失败' }
+      }
+    } catch (error: any) {
+      const msg = error.message || '登录失败，请稍后重试'
+      console.error('[Auth] 手机号登录异常:', msg, error)
       return { success: false, message: msg }
     } finally {
       loading.value = false
@@ -372,7 +384,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Actions
     init,
     login,
+    loginByPhone,
     register,
+    registerByPhone,
     logout,
   }
 })
