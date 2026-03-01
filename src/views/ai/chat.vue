@@ -622,6 +622,10 @@ onUnmounted(() => {
             训练技巧
           </Button>
         </div>
+        <!-- 医疗免责提示 -->
+        <p class="mt-4 text-xs text-muted-foreground max-w-sm">
+          ⚠️ AI 建议仅供参考，不构成医疗建议。如有健康问题、慢性疾病或运动损伤史，请先咨询专业医生。
+        </p>
       </div>
 
       <!-- 消息列表 -->
@@ -726,7 +730,7 @@ onUnmounted(() => {
 
       <!-- 免责声明 -->
       <p class="mt-2 text-xs text-muted-foreground text-center">
-        本内容由智能系统辅助生成，仅供参考
+        AI 建议仅供参考，不能替代专业医疗诊断。如有健康问题请咨询医生。
       </p>
     </div>
 
