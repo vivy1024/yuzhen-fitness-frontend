@@ -69,7 +69,7 @@ const damlRagMetrics = ref<any>(null)
 const streamingStats = ref<any>(null)
 
 // DAML-RAG API基础URL
-const DAML_RAG_URL = 'http://localhost:8001'
+const DAML_RAG_URL = import.meta.env.VITE_DAML_RAG_URL || '/api/ai'
 
 onMounted(async () => {
   await loadAllStats()
@@ -481,7 +481,7 @@ const dbConnections = computed(() => {
               <div v-if="!damlRagHealth" class="text-center py-4 text-muted-foreground">
                 <AlertTriangle class="h-8 w-8 mx-auto mb-2 text-amber-500" />
                 <p>无法连接DAML-RAG服务</p>
-                <p class="text-xs">请确保服务运行在 localhost:8001</p>
+                <p class="text-xs">请确保 DAML-RAG 服务正常运行</p>
               </div>
             </CardContent>
           </Card>

@@ -1,15 +1,19 @@
 import api from './auth'
+import type { ApiResponse } from './auth'
 
+export interface EmailData {
+  expires_at?: string
+  wait_seconds?: number
+  verified?: boolean
+  exists?: boolean
+}
+
+/** @deprecated 使用 ApiResponse<EmailData> 替代 */
 export interface EmailResponse {
   success: boolean
   message: string
-  code?: string  // 错误码，如 EMAIL_RATE_LIMITED
-  data?: {
-    expires_at?: string
-    wait_seconds?: number
-    verified?: boolean
-    exists?: boolean
-  }
+  code?: string
+  data?: EmailData
 }
 
 /**
@@ -17,29 +21,22 @@ export interface EmailResponse {
  * @param email 邮箱地址
  * @param type 验证码类型：register(注册), login(登录), reset(重置密码)
  */
-export const sendEmailCode = (email: string, type: 'register' | 'login' | 'reset' = 'login'): Promise<any> => {
+export const sendEmailCode = (email: string, type: 'register' | 'login' | 'reset' = 'login'): Promise<ApiResponse<EmailData>> => {
   return api.post('/auth/email/send', { email, type })
 }
 
 /**
  * 验证邮箱验证码
  */
-export const verifyEmailCode = (email: string, code: string): Promise<any> => {
+export const verifyEmailCode = (email: string, code: string): Promise<ApiResponse<EmailData>> => {
   return api.post('/auth/email/verify', { email, code })
 }
 
 /**
  * 邮箱验证码登录
  */
-export const emailLogin = (email: string, code: string): Promise<any> => {
+export const emailLogin = (email: string, code: string): Promise<ApiResponse<EmailData>> => {
   return api.post('/auth/email/login', { email, code })
-}
-
-/**
- * 检查邮箱是否已注册
- */
-export const checkEmailExists = (email: string): Promise<any> => {
-  return api.get('/auth/email/check', { params: { email } })
 }
 
 /**
@@ -52,6 +49,6 @@ export interface ResetPasswordParams {
   password_confirmation: string
 }
 
-export const resetPassword = (params: ResetPasswordParams): Promise<any> => {
+export const resetPassword = (params: ResetPasswordParams): Promise<ApiResponse<EmailData>> => {
   return api.post('/auth/email/reset-password', params)
 }

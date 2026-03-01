@@ -9,7 +9,7 @@ import { convertIntensity, type IntensityResult } from '@/api/calculators'
 
 const form = ref({
   input_type: 'rpe' as 'rpe' | 'rir' | 'percentage',
-  value: null as number | null,
+  value: undefined as number | undefined,
 })
 
 const loading = ref(false)
@@ -24,7 +24,7 @@ const typeOptions = [
 
 async function submit() {
   error.value = ''
-  if (form.value.value === null || form.value.value === undefined) {
+  if (form.value.value === undefined) {
     error.value = '请输入数值'
     return
   }

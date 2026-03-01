@@ -31,15 +31,20 @@ export interface SSEEvent {
   message?: string
   content?: string
   data_type?: string
-  data?: any
+  data?: Record<string, unknown>
   error?: string
   retry_after?: number
+}
+
+export interface StructuredDataItem {
+  type: string
+  data: Record<string, unknown>
 }
 
 export interface StreamState {
   isStreaming: boolean
   streamedContent: string
-  structuredData: any[]
+  structuredData: StructuredDataItem[]
   error: string | null
   currentStep: number
   currentStepMessage: string
@@ -137,7 +142,7 @@ export function useChatStream() {
   // ===== 状态管理 =====
   const isStreaming = ref(false)
   const streamedContent = ref('')
-  const structuredData = ref<any[]>([])
+  const structuredData = ref<StructuredDataItem[]>([])
   const error = ref<string | null>(null)
   const currentStep = ref(0)
   const currentStepMessage = ref('')
@@ -323,7 +328,7 @@ export function useChatStream() {
         break
       
       default:
-        console.warn('[useChatStream] 未知Worker响应类型:', (response as any).type)
+        console.warn('[useChatStream] 未知Worker响应类型:', response.type)
     }
   }
 
@@ -412,9 +417,10 @@ export function useChatStream() {
           ...(params.personaId ? { persona_id: params.personaId } : {}),
         })
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '发送消息失败'
       console.error('[useChatStream] 发送消息失败:', err)
-      error.value = err.message || '发送消息失败'
+      error.value = msg
       isStreaming.value = false
       toast({ title: '发送失败', description: error.value ?? undefined, variant: 'destructive' })
     }
@@ -491,7 +497,7 @@ export function useChatStream() {
       })
       
       return true
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[useChatStream] 恢复会话失败:', err)
       return false
     }
@@ -519,7 +525,7 @@ export function useChatStream() {
       }
       
       return false
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[useChatStream] 尝试恢复活跃会话失败:', err)
       return false
     }
@@ -571,9 +577,10 @@ export function useChatStream() {
       isStreaming.value = false
       totalLength.value = content.length
       toast({ title: '回答生成完成', duration: 1000 })
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '请求失败'
       console.error('[useChatStream] 非流式请求失败:', err)
-      error.value = err.message || '请求失败'
+      error.value = msg
       isStreaming.value = false
       toast({ title: '请求失败', description: error.value ?? undefined, variant: 'destructive' })
     }
@@ -582,7 +589,7 @@ export function useChatStream() {
   /**
    * 使用fetch + ReadableStream连接SSE（降级方案）
    */
-  async function connectWithFetch(url: string, body: any): Promise<void> {
+  async function connectWithFetch(url: string, body: Record<string, unknown>): Promise<void> {
     let reconnectCount = 0
     const MAX_RECONNECT_ATTEMPTS = 3
     const RECONNECT_DELAY = 2000
@@ -631,16 +638,17 @@ export function useChatStream() {
         }
         
         isStreaming.value = false
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : '连接失败'
         console.error('[useChatStream] Fetch连接失败:', err)
-        
+
         if (reconnectCount < MAX_RECONNECT_ATTEMPTS) {
           reconnectCount++
           toast({ title: `尝试重连 (${reconnectCount}/${MAX_RECONNECT_ATTEMPTS})...`, duration: 2000 })
           await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY))
           await connect()
         } else {
-          error.value = `连接失败: ${err.message}`
+          error.value = `连接失败: ${msg}`
           isStreaming.value = false
           toast({ title: '连接失败', description: `已重试${MAX_RECONNECT_ATTEMPTS}次`, variant: 'destructive' })
         }
