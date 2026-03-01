@@ -355,10 +355,11 @@ async function handleImportPlan(plan: TrainingPlan) {
 }
 
 /**
- * 处理查看训练计划详情
+ * 处理查看训练计划详情 — AI生成的计划无ID，先导入再跳转
  */
-function handleViewPlanDetail(plan: TrainingPlan) {
-  router.push(`/training/plans/${plan.id}`)
+async function handleViewPlanDetail(plan: TrainingPlan) {
+  await chatStore.importTrainingPlan(plan)
+  router.push('/training/plans')
 }
 
 /**

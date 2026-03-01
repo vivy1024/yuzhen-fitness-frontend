@@ -354,7 +354,10 @@ export const useChatStore = defineStore('chat', () => {
         metadata: {
           tools_used: chatStream.structuredData.value
             .filter(d => d.type === 'dag_execution')
-            .flatMap(d => d.data?.tools?.map((t: any) => t.name) || [])
+            .flatMap(d => {
+              const tools = d.data?.tools
+              return Array.isArray(tools) ? tools.map((t: Record<string, unknown>) => String(t.name)) : []
+            })
         }
       })
       
@@ -368,7 +371,10 @@ export const useChatStore = defineStore('chat', () => {
             metadata: {
               tools_used: chatStream.structuredData.value
                 .filter(d => d.type === 'dag_execution')
-                .flatMap(d => d.data?.tools?.map((t: any) => t.name) || [])
+                .flatMap(d => {
+                  const tools = d.data?.tools
+                  return Array.isArray(tools) ? tools.map((t: Record<string, unknown>) => String(t.name)) : []
+                })
             }
           })
         } catch (err) {
