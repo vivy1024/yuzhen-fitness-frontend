@@ -5,6 +5,18 @@
 
 ---
 
+## #25 (fix) 前端功能校验修复 — 2026-03-01
+
+- 计算器组件: 修复 5 个组件 vue-tsc 类型错误（`number | null` → `number | undefined`）
+- CarbCyclingCalculator: 删除未使用的 Checkbox import
+- chat.vue: 实现 handleViewPlanDetail 跳转到训练计划详情页
+- settings: 通知设置变更保存到后端
+- settings: 修复 3 个手机号倒计时定时器泄漏（添加 onBeforeUnmount 清理）
+- ai-monitor: 移除硬编码 localhost:8001，改为环境变量
+- admin/settings.vue: 删除无路由死页面
+- email.ts: 删除死代码 checkEmailExists，补全 4 个函数返回类型
+- 删除 exercise/library.vue、progress/dashboard.vue 调试 console.log
+
 ## #24 (fix) 上线前安全加固 + 默认手机号注册 — 2026-02-28
 
 对应产品版本：v1.6.4

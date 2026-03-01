@@ -69,7 +69,7 @@ const damlRagMetrics = ref<any>(null)
 const streamingStats = ref<any>(null)
 
 // DAML-RAG API基础URL
-const DAML_RAG_URL = 'http://localhost:8001'
+const DAML_RAG_URL = import.meta.env.VITE_DAML_RAG_URL || '/api/ai'
 
 onMounted(async () => {
   await loadAllStats()
