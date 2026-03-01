@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { calculateMacros, type MacroResult } from '@/api/calculators'
 
 const form = ref({
-  target_calories: null as number | null,
-  weight_kg: null as number | null,
+  target_calories: undefined as number | undefined,
+  weight_kg: undefined as number | undefined,
   fitness_goal: 'maintenance' as 'fat_loss' | 'mild_fat_loss' | 'maintenance' | 'lean_bulk' | 'hypertrophy' | 'recomp',
   method: 'balanced' as 'balanced' | 'body_weight' | 'ratio',
 })

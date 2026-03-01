@@ -437,8 +437,6 @@ function toggleFilter(type: keyof FilterConditions, value: string, checked: bool
   } else {
     ;(currentFilters.value as any)[type] = arr.filter(v => v !== value)
   }
-  
-  console.log(`[Filter] ${type}: ${value} -> ${isChecked}`, currentFilters.value)
 }
 
 async function handleFilterApply() {

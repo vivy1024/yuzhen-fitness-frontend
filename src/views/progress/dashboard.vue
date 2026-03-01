@@ -504,8 +504,8 @@ async function handleMonthChange(year: number, month: number) {
   }
 }
 
-function handleDayClick(date: string) {
-  console.log('[ProgressDashboard] Day clicked:', date)
+function handleDayClick(_date: string) {
+  // 预留：点击日期后展示当日训练详情
 }
 
 function handleViewDetail(date: string) {

@@ -358,8 +358,7 @@ async function handleImportPlan(plan: TrainingPlan) {
  * 处理查看训练计划详情
  */
 function handleViewPlanDetail(plan: TrainingPlan) {
-  // TODO: 跳转到训练计划详情页
-  console.log('查看训练计划详情:', plan)
+  router.push(`/training/plans/${plan.id}`)
 }
 
 /**

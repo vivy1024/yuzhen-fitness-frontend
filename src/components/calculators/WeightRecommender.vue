@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { recommendWeight, type WeightResult } from '@/api/calculators'
 
 const form = ref({
-  estimated_1rm: null as number | null,
+  estimated_1rm: undefined as number | undefined,
   training_goal: 'hypertrophy' as 'strength' | 'hypertrophy' | 'endurance' | 'power',
-  target_reps: null as number | null,
-  target_rpe: null as number | null,
+  target_reps: undefined as number | undefined,
+  target_rpe: undefined as number | undefined,
 })
 
 const loading = ref(false)

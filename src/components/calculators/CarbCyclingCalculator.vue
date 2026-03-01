@@ -5,12 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { calculateCarbCycling, type CarbCyclingResult } from '@/api/calculators'
 
 const form = ref({
-  tdee: null as number | null,
-  weight_kg: null as number | null,
+  tdee: undefined as number | undefined,
+  weight_kg: undefined as number | undefined,
   fitness_goal: 'maintenance' as 'fat_loss' | 'mild_fat_loss' | 'maintenance' | 'lean_bulk' | 'hypertrophy' | 'recomp',
   training_days: [] as number[],
 })

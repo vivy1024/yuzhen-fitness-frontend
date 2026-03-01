@@ -7,7 +7,7 @@
  * @created 2026-01-06
  * @updated 2026-02-27
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -61,7 +61,7 @@ import {
   Smartphone
 } from 'lucide-vue-next'
 import { showSuccess, showError } from '@/components/ui/toast'
-import { changePassword, deleteAccount, clearCache } from '@/api/settings'
+import { changePassword, deleteAccount, clearCache, updateSettings } from '@/api/settings'
 import { usePushNotification } from '@/composables/usePushNotification'
 import {
   getPhoneStatus,
@@ -173,12 +173,19 @@ const passwordStrength = computed(() => {
   return { score: level, text: texts[level], color: colors[level] }
 })
 
+// 定时器收集（用于组件卸载时清理）
+const activeTimers: ReturnType<typeof setInterval>[] = []
+
 // 初始化
 onMounted(() => {
   // 计算缓存大小
   calculateCacheSize()
   // 获取手机号绑定状态
   fetchPhoneStatus()
+})
+
+onBeforeUnmount(() => {
+  activeTimers.forEach(t => clearInterval(t))
 })
 
 // 获取手机号绑定状态
@@ -254,9 +261,13 @@ function handleThemeChange(value: AcceptableValue) {
 }
 
 // 处理通知设置变更
-function handleNotificationChange(type: keyof typeof notifications.value, value: boolean) {
+async function handleNotificationChange(type: keyof typeof notifications.value, value: boolean) {
   notifications.value[type] = value
-  // TODO: 保存到后端
+  try {
+    await updateSettings({ notifications: { ...notifications.value } })
+  } catch {
+    notifications.value[type] = !value
+  }
 }
 
 // 处理推送开关
@@ -412,6 +423,7 @@ async function handleSendBindCode() {
         bindPhoneCountdown.value--
         if (bindPhoneCountdown.value <= 0) clearInterval(timer)
       }, 1000)
+      activeTimers.push(timer)
     } else {
       showError(response.msg || '发送失败')
     }
@@ -490,6 +502,7 @@ async function handleSendNewCode() {
         newPhoneCountdown.value--
         if (newPhoneCountdown.value <= 0) clearInterval(timer)
       }, 1000)
+      activeTimers.push(timer)
     } else {
       showError(response.msg || '发送失败')
     }
@@ -520,6 +533,7 @@ async function handleSendOldCode() {
         oldPhoneCountdown.value--
         if (oldPhoneCountdown.value <= 0) clearInterval(timer)
       }, 1000)
+      activeTimers.push(timer)
     } else {
       showError(response.msg || '发送失败')
     }
