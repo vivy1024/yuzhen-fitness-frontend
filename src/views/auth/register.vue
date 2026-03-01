@@ -13,6 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, Dumbbell, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { recordConsent } from '@/api/consent'
+
+const CONSENT_VERSION = '2026-03-01'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -192,6 +195,9 @@ async function handleEmailRegister() {
       password_confirmation: emailForm.value.password_confirmation,
     })
     if (result.success) {
+      // 静默记录协议同意
+      recordConsent('terms', CONSENT_VERSION).catch(() => {})
+      recordConsent('privacy', CONSENT_VERSION).catch(() => {})
       setTimeout(() => router.push('/'), 1000)
     }
   } finally {
@@ -216,6 +222,9 @@ async function handlePhoneRegister() {
       password_confirmation: phoneForm.value.password_confirmation,
     })
     if (result.success) {
+      // 静默记录协议同意
+      recordConsent('terms', CONSENT_VERSION).catch(() => {})
+      recordConsent('privacy', CONSENT_VERSION).catch(() => {})
       setTimeout(() => router.push('/'), 1000)
     }
   } finally {

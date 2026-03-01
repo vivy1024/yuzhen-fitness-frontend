@@ -3,12 +3,24 @@ import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, FileText, AlertTriangle, Scale, Ban, RefreshCw, Mail } from 'lucide-vue-next'
+import { recordConsent } from '@/api/consent'
 
 const router = useRouter()
 
+const CONSENT_VERSION = '2026-03-01'
+
 /** 同意协议并进入应用 */
-function agreeAndContinue() {
+async function agreeAndContinue() {
   localStorage.setItem('yuzhen_terms_agreed', 'true')
+  // 服务端记录同意（静默失败，不阻塞用户）
+  try {
+    await Promise.all([
+      recordConsent('terms', CONSENT_VERSION),
+      recordConsent('privacy', CONSENT_VERSION),
+    ])
+  } catch {
+    // 网络异常时不阻塞，localStorage 已记录
+  }
   router.replace('/')
 }
 </script>
@@ -41,7 +53,7 @@ function agreeAndContinue() {
             注册或使用我们的服务即表示您同意本协议的所有条款。
           </p>
           <p class="text-sm">
-            更新日期：2026年1月1日 | 生效日期：2026年1月1日
+            更新日期：2026年3月1日 | 生效日期：2026年3月1日
           </p>
         </CardContent>
       </Card>

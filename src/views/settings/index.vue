@@ -805,7 +805,7 @@ async function handleChangePhone() {
             class="flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
             @click="showDeleteDialog = true"
           >
-            <span class="font-medium text-destructive">删除账号</span>
+            <span class="font-medium text-destructive">注销账号</span>
             <Trash2 class="h-5 w-5 text-destructive" />
           </div>
         </CardContent>
@@ -886,9 +886,9 @@ async function handleChangePhone() {
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle class="text-destructive">删除账号</DialogTitle>
+          <DialogTitle class="text-destructive">注销账号</DialogTitle>
           <DialogDescription>
-            此操作不可撤销！删除后您的所有数据将被永久删除。
+            注销后，您的账号数据将在30天内被永久删除，包括训练记录、AI对话历史和个人档案。30天内重新登录可撤销注销。
           </DialogDescription>
         </DialogHeader>
         <div class="space-y-4 py-4">
@@ -900,7 +900,7 @@ async function handleChangePhone() {
         <DialogFooter>
           <Button variant="outline" @click="showDeleteDialog = false">取消</Button>
           <Button variant="destructive" @click="handleDeleteAccount" :disabled="deleteLoading">
-            {{ deleteLoading ? '删除中...' : '确认删除' }}
+            {{ deleteLoading ? '注销中...' : '确认注销' }}
           </Button>
         </DialogFooter>
       </DialogContent>

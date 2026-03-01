@@ -35,7 +35,7 @@ const router = useRouter()
             采取相应安全保护措施，尽力保护您的个人信息安全可控。
           </p>
           <p class="text-sm">
-            更新日期：2026年1月1日 | 生效日期：2026年1月1日
+            更新日期：2026年3月1日 | 生效日期：2026年3月1日
           </p>
         </CardContent>
       </Card>
@@ -111,6 +111,50 @@ const router = useRouter()
             <li>定期进行安全审计和漏洞扫描</li>
             <li>严格限制员工访问用户数据的权限</li>
           </ul>
+        </CardContent>
+      </Card>
+
+      <!-- 第三方数据共享 -->
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Database class="h-5 w-5 text-amber-500" />
+            第三方数据共享
+          </CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <p class="text-muted-foreground text-sm">
+            为提供AI健身顾问服务，您的对话内容可能会发送至以下第三方大语言模型服务提供商进行处理：
+          </p>
+          <ul class="list-disc list-inside text-muted-foreground text-sm space-y-2">
+            <li>硅基流动（SiliconFlow）— AI推理服务</li>
+            <li>月之暗面（Moonshot / Kimi）— AI推理服务</li>
+            <li>通义千问（Qwen）— AI推理服务</li>
+            <li>智谱AI（GLM）— AI推理服务</li>
+          </ul>
+          <p class="text-muted-foreground text-sm">
+            我们仅向上述服务商发送对话所需的最少信息，不会发送您的账号密码、支付信息等敏感数据。
+            除法律要求或获得您的明确同意外，我们不会将您的个人信息提供给其他第三方。
+          </p>
+        </CardContent>
+      </Card>
+
+      <!-- 未成年人保护 -->
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Shield class="h-5 w-5 text-green-500" />
+            未成年人保护
+          </CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <p class="text-muted-foreground text-sm">
+            我们的服务主要面向成年用户。我们不会主动收集不满14周岁未成年人的个人信息。
+          </p>
+          <p class="text-muted-foreground text-sm">
+            如果您是不满14周岁的未成年人，请在监护人的陪同和同意下使用我们的服务。
+            如果我们发现在未获得监护人同意的情况下收集了不满14周岁未成年人的个人信息，我们将尽快删除相关信息。
+          </p>
         </CardContent>
       </Card>
 

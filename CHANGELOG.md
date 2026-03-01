@@ -5,6 +5,15 @@
 
 ---
 
+## #26 (feat) 法律合规增强 — 2026-03-01
+
+- chat.vue: AI 免责声明从"仅供参考"增强为"不能替代专业医疗诊断"，空状态添加医疗免责提示
+- privacy.vue: 新增第三方数据共享说明（硅基流动/Moonshot/Qwen/GLM）+ 未成年人保护条款，更新日期至 2026-03-01
+- terms.vue: 更新日期至 2026-03-01，agreeAndContinue 调用后端 consent API 记录同意
+- settings/index.vue: "删除账号"改为"注销账号"，添加 30 天冷静期说明
+- 新增 api/consent.ts：协议同意记录 API（recordConsent + getLatestConsent）
+- register.vue: 注册成功后静默记录协议同意
+
 ## #25 (fix) 前端功能校验修复 — 2026-03-01
 
 - 计算器组件: 修复 5 个组件 vue-tsc 类型错误（`number | null` → `number | undefined`）
