@@ -5,6 +5,18 @@
 
 ---
 
+## #27 (security) XSS 修复 — knowledge/detail.vue DOMPurify 消毒 — 2026-03-05
+
+对应产品版本：v1.6.8
+
+- knowledge/detail.vue: `renderedContent` 添加 DOMPurify 消毒
+  - 导入 `DOMPurify` + 配置 `purifyConfig`（扩展白名单含 h1-h6/code/pre/img/table 等 Markdown 输出标签）
+  - `marked()` 输出传入 `DOMPurify.sanitize(rawHtml, purifyConfig)` 后再渲染
+  - 严格禁止 script/style/iframe/form/input/object/embed 标签
+  - 参考 help/detail.vue 已有实现
+
+---
+
 ## #26 (feat) 法律合规增强 — 2026-03-01
 
 - chat.vue: AI 免责声明从"仅供参考"增强为"不能替代专业医疗诊断"，空状态添加医疗免责提示

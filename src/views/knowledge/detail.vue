@@ -109,6 +109,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -117,6 +118,19 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-vue-next'
 import { useToast } from '@/components/ui/toast'
 import { getKnowledgeDetail, type KnowledgeDetail } from '@/api/knowledge'
+
+// DOMPurify配置 - 知识库文章允许Markdown渲染的常用标签
+const purifyConfig = {
+  ALLOWED_TAGS: [
+    'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'span', 'b', 'i',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
+    'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'div',
+    'del', 'sup', 'sub',
+  ],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'alt', 'title', 'width', 'height'],
+  FORBID_TAGS: ['script', 'style', 'iframe', 'form', 'input', 'object', 'embed'],
+  FORBID_ATTR: ['onclick', 'onerror', 'onload', 'onmouseover', 'onfocus', 'onblur'],
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -128,7 +142,8 @@ const article = ref<KnowledgeDetail | null>(null)
 
 const renderedContent = computed(() => {
   if (!article.value?.content) return ''
-  return marked(article.value.content) as string
+  const rawHtml = marked(article.value.content) as string
+  return DOMPurify.sanitize(rawHtml, purifyConfig)
 })
 
 const fetchDetail = async () => {
