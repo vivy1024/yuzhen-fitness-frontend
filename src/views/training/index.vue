@@ -20,6 +20,7 @@ import {
   Clock,
   Flame
 } from 'lucide-vue-next'
+import { getTrainingStats } from '@/api/training-session'
 
 const router = useRouter()
 
@@ -73,8 +74,19 @@ function startQuickTraining() {
   router.push('/training/session')
 }
 
-onMounted(() => {
-  // 加载统计数据
+onMounted(async () => {
+  try {
+    const response = await getTrainingStats()
+    if (response.code === 200 && response.data) {
+      const data = response.data as any
+      stats.value.todayWorkouts = data.today_count ?? 0
+      stats.value.weekWorkouts = data.week_count ?? 0
+      stats.value.monthWorkouts = data.month_count ?? 0
+      stats.value.streak = data.streak_days ?? 0
+    }
+  } catch (e) {
+    console.error('Failed to load training stats:', e)
+  }
 })
 </script>
 
