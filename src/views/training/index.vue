@@ -21,6 +21,7 @@ import {
   Flame
 } from 'lucide-vue-next'
 import { getTrainingStats } from '@/api/training-session'
+import MiniCalendarWidget from '@/components/training/MiniCalendarWidget.vue'
 
 const router = useRouter()
 
@@ -158,6 +159,9 @@ onMounted(async () => {
           </Card>
         </div>
       </div>
+
+      <!-- 打卡日历 -->
+      <MiniCalendarWidget :streak-days="stats.streak" />
 
       <!-- 本星期概览 -->
       <Card>

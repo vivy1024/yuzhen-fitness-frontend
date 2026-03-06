@@ -5,7 +5,7 @@
 
 ---
 
-## #28 (feat) 训练完成汇总页 — 2026-03-06
+## #28 (feat) 训练完成汇总页 + 打卡日历 — 2026-03-06
 
 - 新增 `views/training/session-summary.vue`：训练完成汇总页
   - 核心数据：时长/组数/容量/平均RPE/完成率
@@ -14,6 +14,11 @@
 - 路由：添加 `/training/session/:id/summary` → `training-summary`
 - `session.vue`：完成训练→分享卡片关闭后跳转汇总页（原跳历史记录）
 - `history.vue`：已完成记录添加"查看汇总"入口按钮
+- `index.vue`：onMounted 调用 stats API 替换硬编码 0（今日/本周/连续天数）
+- 新增 `components/training/MiniCalendarWidget.vue`：小日历预览组件
+  - 当月 7×5 方格日历，绿色=已打卡，蓝框=今天
+  - 底部"本月 X/Y 天 · 连续 N 天"统计
+  - streak ≥ 3 时火焰脉冲 CSS 动画
 
 ---
 
