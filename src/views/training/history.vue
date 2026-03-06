@@ -115,7 +115,19 @@
 
           <!-- 动作列表 -->
           <div class="mt-3 pt-3 border-t">
-            <div class="text-xs text-muted-foreground mb-1">训练动作</div>
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-xs text-muted-foreground">训练动作</div>
+              <Button
+                v-if="session.status === 'completed'"
+                variant="ghost"
+                size="sm"
+                class="h-6 text-xs px-2"
+                @click.stop="router.push({ name: 'training-summary', params: { id: session.id } })"
+              >
+                <BarChart3 class="w-3 h-3 mr-1" />
+                查看汇总
+              </Button>
+            </div>
             <div class="flex flex-wrap gap-1">
               <Badge
                 v-for="(exercise, index) in session.exercises.slice(0, 3)"
@@ -296,7 +308,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { ArrowLeft, Plus, ChevronLeft, ChevronRight, BarChart3 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

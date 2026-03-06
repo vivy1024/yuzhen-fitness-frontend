@@ -5,6 +5,18 @@
 
 ---
 
+## #28 (feat) 训练完成汇总页 — 2026-03-06
+
+- 新增 `views/training/session-summary.vue`：训练完成汇总页
+  - 核心数据：时长/组数/容量/平均RPE/完成率
+  - 动作列表：每个动作的组数×次数和重量
+  - 完成率颜色指示（≥80%绿/≥50%黄/<50%红）
+- 路由：添加 `/training/session/:id/summary` → `training-summary`
+- `session.vue`：完成训练→分享卡片关闭后跳转汇总页（原跳历史记录）
+- `history.vue`：已完成记录添加"查看汇总"入口按钮
+
+---
+
 ## #27 (security) XSS 修复 — knowledge/detail.vue DOMPurify 消毒 — 2026-03-05
 
 对应产品版本：v1.6.8

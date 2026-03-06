@@ -241,10 +241,9 @@ const session = ref({
 const saving = ref(false)
 const showShareCard = ref(false)
 
-// 分享弹窗关闭后跳转到历史记录
 watch(showShareCard, (isOpen) => {
-  if (!isOpen && session.value.status === 'completed') {
-    router.push('/training/history')
+  if (!isOpen && session.value.status === 'completed' && session.value.id) {
+    router.push({ name: 'training-summary', params: { id: session.value.id } })
   }
 })
 
