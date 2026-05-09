@@ -31,8 +31,7 @@ import { useTopicStore } from '@/stores/topic'
 export interface SendMessageData {
   content: string
   topicId?: string
-  strategy?: 'dag' | 'agent'  // 执行策略
-  templateId?: string  // DAG模板ID（用户选择时强制使用）
+  threadId?: string  // Agent 线程ID
   attachments?: PendingAttachment[]  // 图片附件
   personaId?: string  // SystemPersona 风格ID
 }
@@ -57,6 +56,9 @@ export const useChatStore = defineStore('chat', () => {
   const loading = ref(false)
   const streaming = ref(false)
   const error = ref<string | null>(null)
+
+  // Agent 线程ID
+  const threadId = ref<string | null>(null)
 
   // 流式响应composable
   const chatStream = useChatStream()
@@ -316,8 +318,7 @@ export const useChatStore = defineStore('chat', () => {
         sessionId: chatStream.currentSessionId.value || undefined,
         topicId: actualTopicId,  // 传递话题ID用于多轮对话上下文
         domain: 'fitness',
-        strategy: data.strategy || 'dag',  // 传递执行策略
-        templateId: data.templateId,  // 传递用户选择的DAG模板ID
+        threadId: data.threadId,  // Agent 线程ID
         attachments: apiAttachments,
         personaId: data.personaId || currentPersonaId.value,  // Persona 风格
       })
@@ -730,12 +731,38 @@ export const useChatStore = defineStore('chat', () => {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
+  // ========== Thread 管理 ==========
+
+  /**
+   * 创建新线程
+   */
+  function createThread(): string {
+    const id = `thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    threadId.value = id
+    return id
+  }
+
+  /**
+   * 设置线程ID
+   */
+  function setThread(id: string) {
+    threadId.value = id
+  }
+
+  /**
+   * 清除线程
+   */
+  function clearThread() {
+    threadId.value = null
+  }
+
   return {
     // State
     messages,
     loading,
     streaming,
     error,
+    threadId,
     
     // Getters
     isLoggedIn,
@@ -751,6 +778,11 @@ export const useChatStore = defineStore('chat', () => {
     // Persona
     currentPersonaId,
     setPersonaId,
+
+    // Thread
+    createThread,
+    setThread,
+    clearThread,
 
     // Actions
     loadMessages,

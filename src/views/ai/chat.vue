@@ -13,15 +13,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import MessageItem from '@/components/chat/MessageItem.vue'
 import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
 import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
-import DAGTemplateSelector from '@/components/chat/DAGTemplateSelector.vue'
-import StrategySwitch from '@/components/chat/StrategySwitch.vue'
+import SkillProgress from '@/components/chat/SkillProgress.vue'
+import ApprovalDialog from '@/components/chat/ApprovalDialog.vue'
 import CreditDisplay from '@/components/chat/CreditDisplay.vue'
 import AttachmentButton from '@/components/chat/AttachmentButton.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
-import type { DAGTemplate } from '@/config/dag-templates'
-import { showInfo, showWarning } from '@/components/ui/toast'
-import { Send, Menu, Loader2, Home, Plus, Wrench, AlertCircle, X, Sparkles } from 'lucide-vue-next'
+import { showWarning } from '@/components/ui/toast'
+import { Send, Menu, Home, Plus, Wrench, AlertCircle, X } from 'lucide-vue-next'
 import * as topicApi from '@/api/topic'
 
 const router = useRouter()
@@ -36,12 +35,9 @@ const creditStore = useCreditStore()
 const messageInput = ref('')
 const showHistorySidebar = ref(false)
 const showToolCallDialog = ref(false)
-const showTemplateSelector = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const dismissedProfileAlert = ref(false)
 const currentSessionId = ref<string | null>(null)
-const currentStrategy = ref<'dag' | 'agent'>('dag')  // 当前执行策略
-const selectedTemplateId = ref<string | null>(null)  // 用户选择的DAG模板ID
 
 // 动态工具列表缓存（从后端 /api/ai/health 获取，localStorage 持久化）
 const cachedTools = ref<Record<string, { display_name: string; data_source: string }>>({})
@@ -227,19 +223,17 @@ async function sendMessage() {
     }
   }
   
-  // 发送消息（携带附件）
+  // 发送消息（携带附件和线程ID）
   const result = await chatStore.sendMessage({
     content,
     topicId: topicStore.currentTopicId!,
-    strategy: currentStrategy.value,  // 传递当前策略
-    templateId: selectedTemplateId.value || undefined,  // 传递用户选择的模板ID
+    threadId: chatStore.threadId || undefined,
     attachments: chatStore.pendingAttachments.length > 0
       ? [...chatStore.pendingAttachments]
       : undefined,
   })
 
-  // 发送后清除选择的模板ID和附件
-  selectedTemplateId.value = null
+  // 发送后清除附件
   chatStore.clearAttachments()
 
   if (result?.success) {
@@ -404,27 +398,19 @@ async function handleDeleteTopic(topicId: string) {
 }
 
 /**
- * 处理DAG模板选择（强制使用选择的模板）
+ * 处理 HITL 审批通过
  */
-function handleSelectTemplate(data: { templateId: string; prompt: string }) {
-  selectedTemplateId.value = data.templateId
-  messageInput.value = data.prompt
-  showTemplateSelector.value = false
+function handleApprovalApprove() {
+  // TODO: 发送审批通过事件到后端
+  streamingStore.dismissApproval()
 }
 
 /**
- * 处理需要升级会员的模板
+ * 处理 HITL 审批拒绝（使用保守方案）
  */
-function handleUpgradeRequired(template: DAGTemplate) {
-  showInfo(`"${template.name}"需要${template.membershipRequired === 'warmheart' ? '暖心会员' : '能量会员'}，点击升级解锁更多AI场景`)
-  router.push('/membership')
-}
-
-/**
- * 切换模板选择器显示
- */
-function toggleTemplateSelector() {
-  showTemplateSelector.value = !showTemplateSelector.value
+function handleApprovalDeny() {
+  // TODO: 发送审批拒绝事件到后端
+  streamingStore.dismissApproval()
 }
 
 // Lifecycle
@@ -524,11 +510,6 @@ onUnmounted(() => {
       <div class="flex items-center gap-2">
         <!-- 积分展示组件 -->
         <CreditDisplay compact />
-        <!-- 策略切换（能量会员可见） -->
-        <StrategySwitch 
-          v-model="currentStrategy"
-          :disabled="chatStore.loading || isStreaming"
-        />
         <!-- 工具调用历史按钮 -->
         <Button
           v-if="toolCallHistory.length > 0"
@@ -643,21 +624,15 @@ onUnmounted(() => {
 
     <!-- 输入区域 -->
     <div class="border-t p-4">
-      <!-- DAG模板选择器 -->
-      <div v-if="showTemplateSelector" class="mb-4">
-        <DAGTemplateSelector
-          @select-template="handleSelectTemplate"
-          @upgrade-required="handleUpgradeRequired"
+      <!-- Skill 执行进度 -->
+      <div v-if="isStreaming" class="mb-3">
+        <SkillProgress
+          :current-phase="streamingStore.skillPhase"
+          :skill-name="streamingStore.skillName"
+          :current-tool="streamingStore.currentTool"
+          :tools-completed="streamingStore.toolsCompleted"
+          :tools-total="streamingStore.toolsTotal"
         />
-      </div>
-
-      <!-- 流式状态提示 -->
-      <div
-        v-if="isStreaming"
-        class="mb-2 flex items-center gap-2 text-sm text-muted-foreground"
-      >
-        <Loader2 class="h-4 w-4 animate-spin" />
-        <span>正在分析您的需求...</span>
       </div>
       
       <!-- 附件预览区 -->
@@ -686,18 +661,6 @@ onUnmounted(() => {
         class="flex gap-2"
         @submit.prevent="sendMessage"
       >
-        <!-- AI场景按钮 -->
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          @click="toggleTemplateSelector"
-          :class="showTemplateSelector && 'bg-primary/10'"
-          title="选择AI场景"
-        >
-          <Sparkles class="h-4 w-4" />
-        </Button>
-
         <!-- 📎 附件按钮 -->
         <AttachmentButton
           :attachments="chatStore.pendingAttachments"
@@ -707,7 +670,7 @@ onUnmounted(() => {
 
         <Input
           v-model="messageInput"
-          placeholder="输入消息，或点击左侧选择AI场景..."
+          placeholder="输入您的健身问题..."
           class="flex-1"
           :disabled="chatStore.loading || isStreaming"
         />
@@ -752,6 +715,17 @@ onUnmounted(() => {
     <ToolCallDialog
       v-model:open="showToolCallDialog"
       :tool-calls="formattedToolCalls"
+    />
+
+    <!-- HITL 安全确认弹窗 -->
+    <ApprovalDialog
+      :visible="streamingStore.approvalRequest.visible"
+      :reason="streamingStore.approvalRequest.reason"
+      :skill-name="streamingStore.approvalRequest.skillName"
+      :suggestion="streamingStore.approvalRequest.suggestion"
+      @approve="handleApprovalApprove"
+      @deny="handleApprovalDeny"
+      @update:visible="(v) => { if (!v) streamingStore.dismissApproval() }"
     />
   </div>
 </template>

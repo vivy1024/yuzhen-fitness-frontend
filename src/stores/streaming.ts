@@ -16,6 +16,15 @@ import * as streamCache from '@/utils/streaming-cache'
 
 export type StreamingStatus = 'idle' | 'streaming' | 'completed' | 'error'
 
+export type SkillPhase = 'thinking' | 'checking' | 'executing' | 'generating' | 'idle'
+
+export interface ApprovalRequest {
+  visible: boolean
+  reason: string
+  skillName: string
+  suggestion?: string
+}
+
 export interface StreamingState {
   status: StreamingStatus
   sessionId: string | null
@@ -44,6 +53,21 @@ export const useStreamingStore = defineStore('streaming', () => {
   
   // 用于跟踪用户是否在聊天页面
   const isOnChatPage = ref(false)
+
+  // ========== Skill Progress State ==========
+  const skillPhase = ref<SkillPhase>('idle')
+  const skillName = ref('')
+  const currentTool = ref('')
+  const toolsCompleted = ref(0)
+  const toolsTotal = ref(0)
+
+  // ========== Approval State ==========
+  const approvalRequest = ref<ApprovalRequest>({
+    visible: false,
+    reason: '',
+    skillName: '',
+    suggestion: '',
+  })
 
   // ========== Computed ==========
   
@@ -158,6 +182,96 @@ export const useStreamingStore = defineStore('streaming', () => {
       hasNewContent.value = false
     }
   }
+
+  // ========== Skill Progress Actions ==========
+
+  /**
+   * 处理 SSE skill_started 事件
+   */
+  function handleSkillStarted(data: { skill_name?: string; tools_total?: number }) {
+    skillPhase.value = 'thinking'
+    skillName.value = data.skill_name || ''
+    toolsTotal.value = data.tools_total || 0
+    toolsCompleted.value = 0
+    currentTool.value = ''
+  }
+
+  /**
+   * 处理 SSE tool_executing 事件
+   */
+  function handleToolExecuting(data: { tool_name?: string; phase?: SkillPhase }) {
+    if (data.phase) {
+      skillPhase.value = data.phase
+    } else {
+      skillPhase.value = 'executing'
+    }
+    currentTool.value = data.tool_name || ''
+  }
+
+  /**
+   * 处理 SSE tool_completed 事件
+   */
+  function handleToolCompleted(data: { tools_completed?: number }) {
+    toolsCompleted.value = data.tools_completed || (toolsCompleted.value + 1)
+  }
+
+  /**
+   * 处理 SSE approval_required 事件
+   */
+  function handleApprovalRequired(data: { reason: string; skill_name: string; suggestion?: string }) {
+    approvalRequest.value = {
+      visible: true,
+      reason: data.reason,
+      skillName: data.skill_name,
+      suggestion: data.suggestion,
+    }
+  }
+
+  /**
+   * 关闭审批弹窗
+   */
+  function dismissApproval() {
+    approvalRequest.value.visible = false
+  }
+
+  /**
+   * 处理 SSE 事件分发
+   */
+  function handleSSEEvent(eventType: string, data: any) {
+    switch (eventType) {
+      case 'skill_started':
+        handleSkillStarted(data)
+        break
+      case 'tool_executing':
+        handleToolExecuting(data)
+        break
+      case 'tool_completed':
+        handleToolCompleted(data)
+        break
+      case 'approval_required':
+        handleApprovalRequired(data)
+        break
+      case 'phase_change':
+        if (data.phase) skillPhase.value = data.phase
+        break
+      case 'done':
+        skillPhase.value = 'idle'
+        currentTool.value = ''
+        markCompleted()
+        break
+    }
+  }
+
+  /**
+   * 重置 Skill 进度状态
+   */
+  function resetSkillProgress() {
+    skillPhase.value = 'idle'
+    skillName.value = ''
+    currentTool.value = ''
+    toolsCompleted.value = 0
+    toolsTotal.value = 0
+  }
   
   /**
    * 重置状态
@@ -171,6 +285,8 @@ export const useStreamingStore = defineStore('streaming', () => {
     startTime.value = null
     hasNewContent.value = false
     errorMessage.value = null
+    resetSkillProgress()
+    approvalRequest.value = { visible: false, reason: '', skillName: '', suggestion: '' }
   }
   
   /**
@@ -226,6 +342,14 @@ export const useStreamingStore = defineStore('streaming', () => {
     errorMessage,
     isOnChatPage,
     
+    // Skill Progress State
+    skillPhase,
+    skillName,
+    currentTool,
+    toolsCompleted,
+    toolsTotal,
+    approvalRequest,
+    
     // Computed
     isStreaming,
     hasActiveSession,
@@ -241,6 +365,15 @@ export const useStreamingStore = defineStore('streaming', () => {
     markContentViewed,
     setOnChatPage,
     reset,
-    restoreFromCache
+    restoreFromCache,
+    
+    // Skill Progress Actions
+    handleSkillStarted,
+    handleToolExecuting,
+    handleToolCompleted,
+    handleApprovalRequired,
+    dismissApproval,
+    handleSSEEvent,
+    resetSkillProgress
   }
 })

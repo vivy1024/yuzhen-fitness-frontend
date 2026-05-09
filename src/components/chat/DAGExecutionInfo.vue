@@ -11,7 +11,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { ChevronDown, Wrench, Clock, Cpu } from 'lucide-vue-next'
-import { DAG_TEMPLATES } from '@/config/dag-templates'
+// DAG_TEMPLATES 已移除，模板信息从 metadata 中获取
 
 interface Props {
   templateId?: string
@@ -22,10 +22,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 获取模板信息
-const template = computed(() => {
-  if (!props.templateId) return null
-  return DAG_TEMPLATES[props.templateId]
+// 获取模板信息（DAG_TEMPLATES 已移除，返回 null）
+const template = computed((): { icon: string; name: string; description: string } | null => {
+  return null
 })
 
 // 工具名称映射

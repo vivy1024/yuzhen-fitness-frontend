@@ -269,7 +269,7 @@ describe('useChatStream', () => {
           payload: expect.objectContaining({
             url: expect.stringContaining('/v1/chat/stream'),
             body: expect.objectContaining({
-              user_id: '1',
+              user_id: 1,
               query: '测试',
             }),
           }),
@@ -319,7 +319,7 @@ describe('useChatStream', () => {
       expect(mockWorkerInstance!.postMessage).toHaveBeenCalledWith(
         expect.objectContaining({
           payload: expect.objectContaining({
-            body: expect.objectContaining({ domain: 'fitness', strategy: 'dag' }),
+            body: expect.objectContaining({ domain: 'fitness' }),
           }),
         })
       )

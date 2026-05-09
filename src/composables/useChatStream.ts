@@ -63,8 +63,7 @@ export interface SendMessageParams {
   sessionId?: string
   topicId?: string  // 话题ID，用于多轮对话
   domain?: string
-  strategy?: 'dag' | 'agent'  // 执行策略：dag=预定义工作流，agent=智能代理
-  templateId?: string  // DAG模板ID（用户选择时强制使用，跳过LLM选择）
+  threadId?: string  // Agent 线程ID
   attachments?: { type: string; filename: string; mime_type: string; data: string; size: number }[]
   personaId?: string  // SystemPersona 风格ID
 }
@@ -390,8 +389,7 @@ export function useChatStream() {
               session_id: sessionId,
               topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
               domain: params.domain || 'fitness',
-              strategy: params.strategy || 'dag',  // 执行策略，默认DAG模式
-              template_id: params.templateId || null,  // DAG模板ID（强制使用）
+              thread_id: params.threadId || null,  // Agent 线程ID
               ...(params.attachments?.length ? { attachments: params.attachments } : {}),
               ...(params.personaId ? { persona_id: params.personaId } : {}),
             },
@@ -411,8 +409,7 @@ export function useChatStream() {
           session_id: sessionId,
           topic_id: params.topicId || null,  // 传递话题ID用于多轮对话
           domain: params.domain || 'fitness',
-          strategy: params.strategy || 'dag',  // 执行策略，默认DAG模式
-          template_id: params.templateId || null,  // DAG模板ID（强制使用）
+          thread_id: params.threadId || null,  // Agent 线程ID
           ...(params.attachments?.length ? { attachments: params.attachments } : {}),
           ...(params.personaId ? { persona_id: params.personaId } : {}),
         })

@@ -5,6 +5,25 @@
 
 ---
 
+## #57 (feat) Agent v2 前端适配 — Skills 进度 + HITL 弹窗 + 旧组件清理 — 2026-05-09
+
+**删除**:
+- `components/chat/DAGTemplateSelector.vue`
+- `components/chat/StrategySwitch.vue`
+- `config/dag-templates.ts`
+
+**新增**:
+- `components/chat/SkillProgress.vue`: 4 阶段进度指示器（分析→安全→执行→生成）
+- `components/chat/ApprovalDialog.vue`: HITL 安全确认弹窗
+
+**重构**:
+- `stores/chat.ts`: 新增 threadId + createThread/setThread/clearThread；移除 strategy/templateId
+- `stores/streaming.ts`: 新增 SSE 事件解析（skill_started/tool_executing/tool_completed/approval_required/phase_change）
+- `stores/useChatStream.ts` + `sse-worker.ts`: threadId 替代 strategy/templateId
+- `views/ai/chat.vue`: 集成 SkillProgress + ApprovalDialog，移除旧组件引用
+
+---
+
 ## #28 (feat) 训练完成汇总页 + 打卡日历 — 2026-03-06
 
 - 新增 `views/training/session-summary.vue`：训练完成汇总页

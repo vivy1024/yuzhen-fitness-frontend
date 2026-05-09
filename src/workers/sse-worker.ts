@@ -35,8 +35,7 @@ export interface WorkerMessage {
       session_id?: string
       domain?: string
       topic_id?: string | null
-      strategy?: string
-      template_id?: string | null
+      thread_id?: string | null
       attachments?: any[]
       persona_id?: string
     }
