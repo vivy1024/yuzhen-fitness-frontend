@@ -24,6 +24,10 @@ export type WorkerResponseType =
   | 'RECONNECTING'
   | 'TIMEOUT'
   | 'RATE_LIMIT'
+  // Agent v2 事件
+  | 'SKILL_STARTED'
+  | 'TOOL_COMPLETED'
+  | 'APPROVAL_REQUIRED'
 
 export interface WorkerMessage {
   type: WorkerMessageType
@@ -60,11 +64,20 @@ export interface WorkerResponse {
     durationMs?: number
     requestId?: string
     retryAfter?: number
+    // Agent v2 字段
+    skillId?: string
+    skillReason?: string
+    toolName?: string
+    toolSuccess?: boolean
+    toolDurationMs?: number
+    approvalReason?: string
   }
 }
 
 interface SSEEvent {
   type: 'step' | 'chunk' | 'structured_data' | 'done' | 'error' | 'fallback' | 'rate_limit'
+    // Agent v2 事件类型
+    | 'skill_started' | 'tool_completed' | 'approval_required' | 'content'
   step?: number
   message?: string
   content?: string
@@ -275,6 +288,55 @@ function handleSSEEvent(event: SSEEvent): void {
       
       cleanup()
       break
+
+    // ═══ Agent v2 事件 ═══
+    case 'skill_started':
+      postResponse({
+        type: 'SKILL_STARTED',
+        payload: {
+          sessionId: state.sessionId || undefined,
+          skillId: event.data?.skill_id,
+          skillReason: event.data?.reason
+        }
+      })
+      break
+
+    case 'tool_completed':
+      postResponse({
+        type: 'TOOL_COMPLETED',
+        payload: {
+          sessionId: state.sessionId || undefined,
+          toolName: event.data?.tool_name,
+          toolSuccess: event.data?.success,
+          toolDurationMs: event.data?.duration_ms
+        }
+      })
+      break
+
+    case 'approval_required':
+      log('warn', 'HITL 审批请求', event.data)
+      postResponse({
+        type: 'APPROVAL_REQUIRED',
+        payload: {
+          sessionId: state.sessionId || undefined,
+          approvalReason: event.data?.reason,
+          data: event.data
+        }
+      })
+      break
+
+    case 'content':
+      // Agent v2 的 content 事件等同于 chunk
+      if (event.data?.text) {
+        postResponse({
+          type: 'CHUNK',
+          payload: {
+            sessionId: state.sessionId || undefined,
+            content: event.data.text
+          }
+        })
+      }
+      break
   }
 }
 
@@ -376,6 +438,7 @@ async function startStream(params: WorkerMessage['payload']): Promise<void> {
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
+    let currentEventType: string | null = null  // Agent v2 SSE event type
     
     while (true) {
       const { done, value } = await reader.read()
@@ -400,11 +463,26 @@ async function startStream(params: WorkerMessage['payload']): Promise<void> {
           }
 
           try {
-            const event: SSEEvent = JSON.parse(data)
-            handleSSEEvent(event)
+            const parsed = JSON.parse(data)
+            // Agent v2 格式：SSE event 行已设置 currentEventType
+            // 旧格式：data 中包含 type 字段
+            if (currentEventType && !parsed.type) {
+              // Agent v2: 用 event 行的类型作为事件类型
+              const event: SSEEvent = { type: currentEventType as SSEEvent['type'], data: parsed }
+              handleSSEEvent(event)
+            } else {
+              // 旧格式：data 自带 type
+              const event: SSEEvent = parsed
+              handleSSEEvent(event)
+            }
+            currentEventType = null
           } catch (parseErr) {
             log('warn', '解析SSE事件失败', { data, error: parseErr })
+            currentEventType = null
           }
+        } else if (line.startsWith('event: ')) {
+          // Agent v2 SSE 格式：event 行指定事件类型
+          currentEventType = line.slice(7).trim()
         } else if (line.startsWith(':')) {
           // SSE 注释行（包括服务端 ping 心跳），重置超时计时器
           updateLastChunkTime()

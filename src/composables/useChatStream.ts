@@ -41,6 +41,21 @@ export interface StructuredDataItem {
   data: Record<string, unknown>
 }
 
+/** Agent v2 审批请求信息 */
+export interface ApprovalRequest {
+  reason: string
+  skillName?: string
+  suggestion?: string
+  threadId: string
+}
+
+/** Agent v2 Skill 执行状态 */
+export interface AgentSkillStatus {
+  skillId: string | null
+  reason: string | null
+  toolsCompleted: { name: string; success: boolean; durationMs: number }[]
+}
+
 export interface StreamState {
   isStreaming: boolean
   streamedContent: string
@@ -53,6 +68,9 @@ export interface StreamState {
   requestId: string
   workerStatus: WorkerStatus
   sessionId: string | null
+  // Agent v2 状态
+  approvalRequest: ApprovalRequest | null
+  agentSkillStatus: AgentSkillStatus | null
 }
 
 export type WorkerStatus = 'idle' | 'connected' | 'disconnected' | 'reconnecting' | 'error'
@@ -152,6 +170,9 @@ export function useChatStream() {
   const currentSessionId = ref<string | null>(null)
   const isStreamingSupportedRef = ref(true)
   const compatibilityWarning = ref<string | null>(null)
+  // Agent v2 状态
+  const approvalRequest = ref<ApprovalRequest | null>(null)
+  const agentSkillStatus = ref<AgentSkillStatus | null>(null)
   
   const subscribers: Set<StateSubscriber> = new Set()
   let workerMessageHandler: ((event: MessageEvent<WorkerResponse>) => void) | null = null
@@ -184,7 +205,9 @@ export function useChatStream() {
     duration: duration.value,
     requestId: requestId.value,
     workerStatus: workerStatus.value,
-    sessionId: currentSessionId.value
+    sessionId: currentSessionId.value,
+    approvalRequest: approvalRequest.value,
+    agentSkillStatus: agentSkillStatus.value
   }))
   
   const hasError = computed(() => error.value !== null)
@@ -324,6 +347,37 @@ export function useChatStream() {
         isStreaming.value = false
         workerStatus.value = 'error'
         toast({ title: '服务繁忙', description: error.value, variant: 'destructive', duration: 3000 })
+        break
+
+      // ═══ Agent v2 事件 ═══
+      case 'SKILL_STARTED':
+        agentSkillStatus.value = {
+          skillId: response.payload.skillId || null,
+          reason: response.payload.skillReason || null,
+          toolsCompleted: []
+        }
+        currentStepMessage.value = `正在执行: ${response.payload.skillId || '分析中'}`
+        break
+
+      case 'TOOL_COMPLETED':
+        if (agentSkillStatus.value && response.payload.toolName) {
+          agentSkillStatus.value.toolsCompleted.push({
+            name: response.payload.toolName,
+            success: response.payload.toolSuccess ?? true,
+            durationMs: response.payload.toolDurationMs ?? 0
+          })
+        }
+        break
+
+      case 'APPROVAL_REQUIRED':
+        approvalRequest.value = {
+          reason: response.payload.approvalReason || '需要确认',
+          skillName: agentSkillStatus.value?.skillId || undefined,
+          suggestion: response.payload.data?.suggestion as string | undefined,
+          threadId: currentSessionId.value || ''
+        }
+        // 暂停流式状态，等待用户响应
+        currentStepMessage.value = '⚠️ 等待确认...'
         break
       
       default:
@@ -731,6 +785,8 @@ export function useChatStream() {
     duration.value = 0
     requestId.value = ''
     workerStatus.value = 'idle'
+    approvalRequest.value = null
+    agentSkillStatus.value = null
   }
 
   /**
@@ -773,6 +829,9 @@ export function useChatStream() {
     currentSessionId,
     isStreamingSupported: isStreamingSupportedRef,
     compatibilityWarning,
+    // Agent v2 状态
+    approvalRequest,
+    agentSkillStatus,
     
     // 计算属性
     renderedContent,
