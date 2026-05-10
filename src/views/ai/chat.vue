@@ -20,7 +20,7 @@ import AttachmentButton from '@/components/chat/AttachmentButton.vue'
 import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
 import type { Rating } from '@/components/chat/RatingDialog.vue'
 import { showWarning } from '@/components/ui/toast'
-import { Send, Menu, Home, Plus, Wrench, AlertCircle, X } from 'lucide-vue-next'
+import { Send, Menu, Home, Plus, Wrench, AlertCircle, X, Square } from 'lucide-vue-next'
 import * as topicApi from '@/api/topic'
 
 const router = useRouter()
@@ -672,9 +672,21 @@ onUnmounted(() => {
           v-model="messageInput"
           placeholder="输入您的健身问题..."
           class="flex-1"
-          :disabled="chatStore.loading || isStreaming"
+          :disabled="chatStore.loading"
         />
+        <!-- 多态按钮：流式中显示停止，否则显示发送 -->
         <Button
+          v-if="isStreaming"
+          type="button"
+          variant="destructive"
+          size="icon"
+          @click="chatStore.stopGeneration()"
+          title="停止生成"
+        >
+          <Square class="h-4 w-4" />
+        </Button>
+        <Button
+          v-else
           type="submit"
           :disabled="!canSend"
         >

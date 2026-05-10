@@ -790,6 +790,7 @@ export const useChatStore = defineStore('chat', () => {
     // Actions
     loadMessages,
     sendMessage,
+    stopGeneration: chatStream.stopStream,
     updateStreamingMessage,
     finishStreamingMessage,
     parseToolCalls,

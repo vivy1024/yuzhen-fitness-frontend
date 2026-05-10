@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { User, Bot, Wrench, Star, BookOpen } from 'lucide-vue-next'
+import ToolCallCard from './ToolCallCard.vue'
 import ToolCallDialog from './ToolCallDialog.vue'
 import TrainingPlanCard from '../training/TrainingPlanCard.vue'
 import RatingDialog from './RatingDialog.vue'
@@ -173,14 +173,6 @@ const formatTime = (timestamp: number) => {
  */
 const hasToolCalls = computed(() => {
   return props.message.toolCalls && props.message.toolCalls.length > 0
-})
-
-/**
- * 成功的工具调用数量
- */
-const successfulToolCalls = computed(() => {
-  if (!props.message.toolCalls) return 0
-  return props.message.toolCalls.filter(t => t.status === 'success').length
 })
 
 /**
@@ -408,21 +400,22 @@ const renderedContent = computed(() => {
           </div>
         </div>
         
-        <!-- 工具调用标签 -->
-        <div v-if="showToolCalls && hasToolCalls && !message.streaming" class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            class="h-7 gap-1.5 text-xs"
-            :aria-label="ariaLabels.chat.toolCalls(message.toolCalls!.length)"
+        <!-- 工具调用内联卡片 -->
+        <div v-if="showToolCalls && hasToolCalls && !message.streaming" class="space-y-1.5">
+          <ToolCallCard
+            v-for="tc in message.toolCalls"
+            :key="tc.id"
+            :tool-call="tc"
+          />
+          <!-- 查看全部详情（保留弹窗入口，用于复杂场景） -->
+          <button
+            v-if="message.toolCalls!.length > 3"
+            class="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             @click="openToolCallDialog"
           >
-            <Wrench class="h-3.5 w-3.5" aria-hidden="true" />
-            <span>专业工具</span>
-            <Badge variant="secondary" class="ml-1 h-5 px-1.5 text-xs" aria-label="`${successfulToolCalls} 个成功，共 ${message.toolCalls!.length} 个`">
-              {{ successfulToolCalls }}/{{ message.toolCalls!.length }}
-            </Badge>
-          </Button>
+            <Wrench class="h-3 w-3" />
+            <span>查看全部 {{ message.toolCalls!.length }} 个工具调用</span>
+          </button>
         </div>
         
         <!-- 训练计划卡片 - 在消息气泡外部渲染（与V2一致） -->
