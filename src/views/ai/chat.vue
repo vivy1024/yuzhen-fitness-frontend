@@ -1,485 +1,187 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+/**
+ * AI 对话页面 — 基于 YuzhenFork Studio WebSocket 协议
+ * 
+ * 使用 useYuzhenChat composable 管理 WebSocket 连接
+ * 使用 yuzhenfork session API 管理会话生命周期
+ */
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChatStore } from '@/stores/chat'
-import { useTopicStore } from '@/stores/topic'
-import { useStreamingStore } from '@/stores/streaming'
-import { useUserStore } from '@/stores/user'
-import { useMembershipStore } from '@/stores/membership'
-import { useCreditStore } from '@/stores/credit'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import MessageItem from '@/components/chat/MessageItem.vue'
-import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar.vue'
-import ToolCallDialog from '@/components/chat/ToolCallDialog.vue'
+import { Badge } from '@/components/ui/badge'
+import MessageStream from '@/components/chat/MessageStream.vue'
+import ChatInput from '@/components/chat/ChatInput.vue'
 import SkillProgress from '@/components/chat/SkillProgress.vue'
 import ApprovalDialog from '@/components/chat/ApprovalDialog.vue'
-import CreditDisplay from '@/components/chat/CreditDisplay.vue'
-import AttachmentButton from '@/components/chat/AttachmentButton.vue'
-import type { TrainingPlan } from '@/components/training/TrainingPlanCard.vue'
-import type { Rating } from '@/components/chat/RatingDialog.vue'
-import { showWarning } from '@/components/ui/toast'
-import { Send, Menu, Home, Plus, Wrench, AlertCircle, X, Square } from 'lucide-vue-next'
-import * as topicApi from '@/api/topic'
+import { useYuzhenChat } from '@/composables/useYuzhenChat'
+import type { ToolCallInfo } from '@/composables/useYuzhenChat'
+import * as sessionApi from '@/api/yuzhenfork'
+import { Home, Plus, Wifi, WifiOff, RefreshCw } from 'lucide-vue-next'
 
 const router = useRouter()
-const chatStore = useChatStore()
-const topicStore = useTopicStore()
-const streamingStore = useStreamingStore()
-const userStore = useUserStore()
-const membershipStore = useMembershipStore()
-const creditStore = useCreditStore()
 
-// State
-const messageInput = ref('')
-const showHistorySidebar = ref(false)
-const showToolCallDialog = ref(false)
-const messagesContainer = ref<HTMLElement | null>(null)
-const dismissedProfileAlert = ref(false)
+// === WebSocket 对话 ===
+const {
+  messages,
+  session,
+  connectionState,
+  isConnected,
+  isWorking,
+  isStreaming,
+  streamingContent,
+  error,
+  connect,
+  disconnect,
+  sendMessage,
+  abort,
+} = useYuzhenChat(sessionApi.YUZHENFORK_BASE.replace(/^http/, 'ws'))
+
+// === 本地状态 ===
 const currentSessionId = ref<string | null>(null)
+const isInitializing = ref(true)
+const initError = ref<string | null>(null)
 
-// 动态工具列表缓存（从后端 /api/ai/health 获取，localStorage 持久化）
-const cachedTools = ref<Record<string, { display_name: string; data_source: string }>>({})
-
-// 检查用户档案是否完整（基础必填字段）
-const profileIncomplete = computed(() => {
-  const profile = userStore.userProfile
-  if (!profile) return true
-  
-  const basicInfo = profile.basic_info
-  // 检查关键字段：性别、年龄、身高、体重、健身水平
-  return !basicInfo?.gender || 
-         !basicInfo?.age || 
-         !basicInfo?.height || 
-         !basicInfo?.weight || 
-         !basicInfo?.fitness_level
-})
-
-// 获取缺失的字段列表
-const missingFields = computed(() => {
-  const profile = userStore.userProfile
-  const missing: string[] = []
-  
-  if (!profile?.basic_info?.gender) missing.push('性别')
-  if (!profile?.basic_info?.age) missing.push('年龄')
-  if (!profile?.basic_info?.height) missing.push('身高')
-  if (!profile?.basic_info?.weight) missing.push('体重')
-  if (!profile?.basic_info?.fitness_level) missing.push('健身水平')
-  
-  return missing
-})
-
-// 是否显示档案提醒
-const showProfileAlert = computed(() => {
-  return profileIncomplete.value && !dismissedProfileAlert.value
-})
-
-// 工具调用历史（从消息中提取）
-const toolCallHistory = computed(() => {
-  const history: any[] = []
-  currentMessages.value.forEach(msg => {
-    if (msg.metadata?.tools_used && msg.metadata.tools_used.length > 0) {
-      history.push({
-        messageId: msg.id,
-        timestamp: msg.timestamp,
-        tools: msg.metadata.tools_used,
-        executionTime: msg.metadata.execution_time,
-        model: msg.metadata.model_used
-      })
-    }
-  })
-  return history
-})
-
-// 格式化工具调用数据为ToolCallDialog需要的格式
-const formattedToolCalls = computed(() => {
-  const calls: any[] = []
-  let callIndex = 0
-  
-  toolCallHistory.value.forEach(history => {
-    history.tools.forEach((toolName: string) => {
-      calls.push({
-        id: `tool-${callIndex++}`,
-        name: toolName,
-        displayName: getToolDisplayName(toolName),
-        status: 'success' as const,
-        startTime: new Date(history.timestamp).getTime(),
-        endTime: new Date(history.timestamp).getTime() + (history.executionTime || 0),
-        duration: history.executionTime,
-        dataSource: getToolDataSource(toolName)
-      })
-    })
-  })
-  
-  return calls
-})
-
-// 获取工具的数据来源标识
-function getToolDataSource(toolName: string): string {
-  // 优先使用动态缓存
-  if (cachedTools.value[toolName]?.data_source) {
-    return cachedTools.value[toolName].data_source
-  }
-  // fallback 到硬编码
-  const dataSourceMap: Record<string, string> = {
-    'intelligent_exercise_selector': '基于1790个专业动作数据库',
-    'contraindications_checker': '基于专业医学禁忌症知识库',
-    'injury_risk_assessor': '基于运动损伤风险评估模型',
-    'muscle_group_volume_calculator': '基于肌群训练量科学研究',
-    'tdee_calculator': '基于Mifflin-St Jeor公式',
-    'professional_program_designer': '基于专业训练计划设计系统',
-    'exercise_alternative_finder': '基于1790个专业动作数据库',
-    'movement_pattern_balancer': '基于动作模式平衡理论',
-    'intelligent_weight_calculator': '基于渐进式超负荷原则',
-    'safe_exercise_modifier': '基于运动安全修改指南',
-    'nutrition_intake_analyzer': '基于1880个食物营养数据库',
-    'meal_plan_designer': '基于营养学膳食设计原则',
-    'exercise_nutrition_optimization': '基于运动营养优化研究',
-    'record_training_feedback': '用户训练反馈系统',
-    'periodized_program_designer': '基于周期化训练理论',
-    'training_split_designer': '基于训练分化设计原则',
-    'find_similar_training_cases': '基于相似案例匹配算法',
-    'get_user_profile': '用户个人档案数据'
-  }
-  return dataSourceMap[toolName] || 'DAML-RAG智能分析系统'
-}
-
-// 获取工具的中文显示名称
-function getToolDisplayName(toolName: string): string {
-  // 优先使用动态缓存
-  if (cachedTools.value[toolName]?.display_name) {
-    return cachedTools.value[toolName].display_name
-  }
-  // fallback 到硬编码
-  const toolNameMap: Record<string, string> = {
-    'intelligent_exercise_selector': '智能动作选择',
-    'contraindications_checker': '禁忌症检查',
-    'injury_risk_assessor': '损伤风险评估',
-    'muscle_group_volume_calculator': '肌群训练量计算',
-    'tdee_calculator': 'TDEE计算',
-    'professional_program_designer': '专业训练计划设计',
-    'exercise_alternative_finder': '动作替代查找',
-    'movement_pattern_balancer': '动作模式平衡',
-    'intelligent_weight_calculator': '智能负重计算',
-    'safe_exercise_modifier': '安全动作修改',
-    'nutrition_intake_analyzer': '营养摄入分析',
-    'meal_plan_designer': '膳食计划设计',
-    'exercise_nutrition_optimization': '运动营养优化',
-    'record_training_feedback': '记录训练反馈',
-    'periodized_program_designer': '周期化训练设计',
-    'training_split_designer': '训练分化设计',
-    'find_similar_training_cases': '查找相似训练案例',
-    'get_user_profile': '获取用户档案'
-  }
-  return toolNameMap[toolName] || toolName
-}
-
-// Computed
-const currentMessages = computed(() => {
-  if (!topicStore.currentTopicId) return []
-  return chatStore.getMessagesByTopic(topicStore.currentTopicId)
-})
-
-const canSend = computed(() => {
-  const hasContent = messageInput.value.trim().length > 0 || chatStore.pendingAttachments.length > 0
-  return hasContent && !chatStore.loading && !chatStore.streaming
-})
-
-const isStreaming = computed(() => chatStore.streaming)
-
-// Methods
-
-/**
- * 发送消息
- * 参考V2实现，直接调用DAML-RAG流式API
- * @requirements 6.1, 6.4 发送消息前检查用量
- */
-async function sendMessage() {
-  if (!canSend.value) return
-
-  const content = messageInput.value.trim()
-  
-  // 发送消息前检查积分
-  if (!creditStore.canSendQuery) {
-    // 积分不足，显示警告
-    showWarning('今日积分已用完，请升级会员或明日再试')
-    return
-  }
-  
-  messageInput.value = ''
-  
-  // 如果没有当前话题，创建一个新话题
-  if (!topicStore.currentTopicId) {
-    const result = await topicStore.createNewTopic({
-      name: content.slice(0, 20) + (content.length > 20 ? '...' : '')
-    })
-    
-    if (!result.success) {
-      console.error('创建话题失败:', result.message)
-      // 即使创建失败也继续，使用临时ID
-      const tempId = `temp_${Date.now()}`
-      topicStore.setCurrentTopic(tempId)
+// HITL 审批状态（从 toolCalls 中提取需要确认的）
+const pendingApproval = computed(() => {
+  // 遍历最新消息的 toolCalls，找到需要确认的
+  for (let i = messages.value.length - 1; i >= 0; i--) {
+    const msg = messages.value[i]
+    if (msg.toolCalls) {
+      const pending = msg.toolCalls.find(
+        (tc: ToolCallInfo) => tc.confirmationRequired && tc.confirmation
+      )
+      if (pending) return pending
     }
   }
-  
-  // 发送消息（携带附件和线程ID）
-  const result = await chatStore.sendMessage({
-    content,
-    topicId: topicStore.currentTopicId!,
-    threadId: chatStore.threadId || undefined,
-    attachments: chatStore.pendingAttachments.length > 0
-      ? [...chatStore.pendingAttachments]
-      : undefined,
-  })
+  return null
+})
 
-  // 发送后清除附件
-  chatStore.clearAttachments()
+const approvalVisible = computed(() => !!pendingApproval.value)
 
-  if (result?.success) {
-    // 滚动到底部
-    await nextTick()
-    scrollToBottom()
-    
-    // 刷新积分数据（消息发送成功后）
-    await creditStore.refresh()
+// SkillProgress 适配（从 isWorking 状态推断阶段）
+const skillPhase = computed(() => {
+  if (!isWorking.value) return 'idle'
+  if (isStreaming.value) return 'generating'
+  return 'thinking'
+})
+
+// 连接状态文本
+const connectionLabel = computed(() => {
+  switch (connectionState.value) {
+    case 'connected': return '已连接'
+    case 'connecting': return '连接中...'
+    case 'reconnecting': return '重连中...'
+    case 'disconnected': return '未连接'
+    default: return ''
   }
-}
+})
 
-/**
- * 滚动到底部
- */
-function scrollToBottom() {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}
+// === 方法 ===
 
-/**
- * 处理话题切换
- */
-async function handleTopicChange(topicId: string) {
-  topicStore.setCurrentTopic(topicId)
-  currentSessionId.value = null
-  await chatStore.loadMessages(topicId)
-  showHistorySidebar.value = false
-  
-  await nextTick()
-  scrollToBottom()
-}
+async function initSession() {
+  isInitializing.value = true
+  initError.value = null
 
-/**
- * 处理会话切换
- * @requirements 1.2 检索用户最近的对话历史
- */
-async function handleSessionChange(sessionId: string) {
   try {
-    currentSessionId.value = sessionId
-    
-    // 从后端获取会话详情
-    const response = await topicApi.getSessionDetail(sessionId)
-    if (response.code === 200 && response.data) {
-      // 将会话消息转换为聊天消息格式
-      const sessionMessages = response.data.messages.map(msg => ({
-        id: msg.id,
-        topicId: response.data.topicId || 'session-' + sessionId,
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-        timestamp: msg.timestamp,
-        streaming: false,
-        metadata: msg.metadata ?? undefined
-      }))
-      
-      // 更新消息列表
-      chatStore.messages.splice(0, chatStore.messages.length, ...sessionMessages)
-      
-      // 如果有关联的话题，设置当前话题
-      if (response.data.topicId) {
-        topicStore.setCurrentTopic(response.data.topicId)
-      }
+    // 获取已有会话列表
+    const sessions = await sessionApi.listSessions()
+
+    if (sessions.length > 0) {
+      // 连接最新的会话
+      const latest = sessions[0]
+      currentSessionId.value = latest.id
+      connect(latest.id)
+    } else {
+      // 创建新会话
+      const newSession = await sessionApi.createSession({
+        title: '健身对话',
+        kind: 'standalone',
+        sessionMode: 'chat',
+        sessionConfig: {
+          permissionMode: 'ask',
+        },
+      })
+      currentSessionId.value = newSession.id
+      connect(newSession.id)
     }
-    
-    showHistorySidebar.value = false
-    await nextTick()
-    scrollToBottom()
-  } catch (err) {
-    console.error('加载会话详情失败:', err)
+  } catch (err: any) {
+    initError.value = err?.message || '初始化会话失败'
+  } finally {
+    isInitializing.value = false
   }
 }
 
-/**
- * 处理删除会话
- */
-function handleDeleteSession(sessionId: string) {
-  // 如果删除的是当前会话，清空消息
-  if (sessionId === currentSessionId.value) {
-    currentSessionId.value = null
-    chatStore.clearMessages()
-  }
-}
-
-/**
- * 处理开始新对话
- */
 async function handleNewChat() {
+  disconnect()
   currentSessionId.value = null
-  topicStore.setCurrentTopic(null)
-  chatStore.clearMessages()
-  showHistorySidebar.value = false
-}
 
-/**
- * 处理新话题创建
- */
-async function handleNewTopic() {
-  const result = await topicStore.createNewTopic({
-    name: '新对话'
-  })
-  
-  if (result.success) {
-    showHistorySidebar.value = false
+  try {
+    const newSession = await sessionApi.createSession({
+      title: '健身对话',
+      kind: 'standalone',
+      sessionMode: 'chat',
+      sessionConfig: {
+        permissionMode: 'ask',
+      },
+    })
+    currentSessionId.value = newSession.id
+    connect(newSession.id)
+  } catch (err: any) {
+    initError.value = err?.message || '创建会话失败'
   }
 }
 
-/**
- * 处理训练计划导入
- */
-async function handleImportPlan(plan: TrainingPlan) {
-  await chatStore.importTrainingPlan(plan)
+function handleSend(content: string) {
+  sendMessage(content)
 }
 
-/**
- * 处理查看训练计划详情 — AI生成的计划无ID，先导入再跳转
- */
-async function handleViewPlanDetail(plan: TrainingPlan) {
-  await chatStore.importTrainingPlan(plan)
-  router.push('/training/plans')
+function handleAbort() {
+  abort()
 }
 
-/**
- * 处理评分提交
- */
-async function handleSubmitRating(rating: Rating) {
-  await chatStore.submitRating(rating)
+function handleApprovalApprove() {
+  if (!currentSessionId.value || !pendingApproval.value) return
+  sessionApi.confirmToolDecision(
+    currentSessionId.value,
+    pendingApproval.value.toolName,
+    'approve'
+  )
 }
 
-/**
- * 返回首页
- */
+function handleApprovalDeny() {
+  if (!currentSessionId.value || !pendingApproval.value) return
+  sessionApi.confirmToolDecision(
+    currentSessionId.value,
+    pendingApproval.value.toolName,
+    'reject'
+  )
+}
+
 function goHome() {
   router.push('/')
 }
 
-/**
- * 跳转到档案编辑页面
- */
-function goToProfileEdit() {
-  router.push('/user-profile/edit')
-}
-
-/**
- * 关闭档案提醒
- */
-function dismissProfileAlert() {
-  dismissedProfileAlert.value = true
-}
-
-/**
- * 删除话题
- */
-async function handleDeleteTopic(topicId: string) {
-  const result = await topicStore.removeTopic(topicId)
-  if (result.success) {
-    // 如果删除的是当前话题，清空消息
-    if (topicId === topicStore.currentTopicId) {
-      chatStore.clearMessages()
-    }
+function handleRetry() {
+  if (currentSessionId.value) {
+    connect(currentSessionId.value)
+  } else {
+    initSession()
   }
 }
 
-/**
- * 处理 HITL 审批通过
- */
-function handleApprovalApprove() {
-  // TODO: 发送审批通过事件到后端
-  streamingStore.dismissApproval()
-}
+// === 生命周期 ===
 
-/**
- * 处理 HITL 审批拒绝（使用保守方案）
- */
-function handleApprovalDeny() {
-  // TODO: 发送审批拒绝事件到后端
-  streamingStore.dismissApproval()
-}
-
-// Lifecycle
-
-/** 从后端获取工具列表并缓存到 localStorage */
-async function fetchToolList() {
-  try {
-    const response = await fetch('/api/ai/health')
-    if (!response.ok) return
-    const data = await response.json()
-    // PHP 代理会用 success() 包装，实际数据在 data.data 中
-    const healthData = data?.data || data
-    if (healthData?.tools) {
-      const toolMap: Record<string, { display_name: string; data_source: string }> = {}
-      for (const tool of healthData.tools) {
-        toolMap[tool.name] = {
-          display_name: tool.display_name,
-          data_source: tool.data_source || '',
-        }
-      }
-      cachedTools.value = toolMap
-      localStorage.setItem('ai_tool_list', JSON.stringify(toolMap))
-    }
-  } catch {
-    // 静默失败，使用硬编码 fallback
-  }
-}
-
-onMounted(async () => {
-  // 标记进入聊天页面
-  streamingStore.setOnChatPage(true)
-
-  // 从 localStorage 恢复工具列表缓存
-  try {
-    const cached = localStorage.getItem('ai_tool_list')
-    if (cached) {
-      cachedTools.value = JSON.parse(cached)
-    }
-  } catch { /* ignore */ }
-
-  // 后台刷新工具列表（不阻塞页面加载）
-  fetchToolList()
-
-  // 初始化用户档案（检查是否完整）
-  await userStore.init()
-  
-  // 初始化会员store
-  await membershipStore.init()
-  
-  // 初始化积分store
-  await creditStore.init()
-  
-  // 初始化话题store
-  topicStore.init()
-  
-  // 加载话题列表
-  await topicStore.fetchTopics()
-  
-  // 如果有当前话题，加载消息
-  if (topicStore.currentTopicId) {
-    await chatStore.loadMessages(topicStore.currentTopicId)
-    await nextTick()
-    scrollToBottom()
-  }
+onMounted(() => {
+  initSession()
 })
 
-onUnmounted(() => {
-  // 标记离开聊天页面
-  streamingStore.setOnChatPage(false)
+// 监听错误，自动清除
+watch(error, (val) => {
+  if (val) {
+    setTimeout(() => {
+      error.value = null
+    }, 5000)
+  }
 })
 </script>
 
@@ -491,253 +193,100 @@ onUnmounted(() => {
         <Button
           variant="ghost"
           size="icon"
-          @click="goHome"
           title="返回首页"
+          @click="goHome"
         >
           <Home class="h-5 w-5" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          @click="showHistorySidebar = true"
-        >
-          <Menu class="h-5 w-5" />
-        </Button>
-        <h1 class="text-lg font-semibold truncate max-w-[150px]">
-          {{ topicStore.currentTopic?.name || '智能健身顾问' }}
+        <h1 class="text-lg font-semibold truncate max-w-[180px]">
+          {{ session?.title || '智能健身顾问' }}
         </h1>
       </div>
+
       <div class="flex items-center gap-2">
-        <!-- 积分展示组件 -->
-        <CreditDisplay compact />
-        <!-- 工具调用历史按钮 -->
-        <Button
-          v-if="toolCallHistory.length > 0"
-          variant="ghost"
-          size="icon"
-          @click="showToolCallDialog = true"
-          title="查看工具调用"
+        <!-- 连接状态 -->
+        <Badge
+          :variant="isConnected ? 'default' : 'secondary'"
+          class="gap-1 text-xs"
         >
-          <Wrench class="h-5 w-5" />
-        </Button>
-        <!-- 新建话题按钮 -->
+          <Wifi v-if="isConnected" class="h-3 w-3" />
+          <WifiOff v-else class="h-3 w-3" />
+          {{ connectionLabel }}
+        </Badge>
+
+        <!-- 新建对话 -->
         <Button
           variant="ghost"
           size="icon"
-          @click="handleNewTopic"
-          title="新建话题"
+          title="新建对话"
+          @click="handleNewChat"
         >
           <Plus class="h-5 w-5" />
         </Button>
       </div>
     </div>
 
-    <!-- 用户档案不完整提醒 -->
-    <div v-if="showProfileAlert" class="px-4 pt-3">
-      <Alert class="bg-amber-50 border-amber-200">
-        <AlertCircle class="h-4 w-4 text-amber-600" />
-        <AlertDescription class="flex items-center justify-between">
-          <div class="text-amber-800">
-            <span class="font-medium">完善档案获得更精准建议：</span>
-            <span class="text-amber-600">缺少{{ missingFields.join('、') }}</span>
-          </div>
-          <div class="flex items-center gap-2 ml-2 shrink-0">
-            <Button 
-              size="sm" 
-              variant="outline"
-              class="h-7 text-xs border-amber-300 text-amber-700 hover:bg-amber-100"
-              @click="goToProfileEdit"
-            >
-              去完善
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              class="h-7 w-7 p-0 text-amber-600 hover:bg-amber-100"
-              @click="dismissProfileAlert"
-            >
-              <X class="h-4 w-4" />
-            </Button>
-          </div>
-        </AlertDescription>
-      </Alert>
-    </div>
-
-    <!-- 消息区域 -->
-    <div
-      ref="messagesContainer"
-      class="flex-1 overflow-y-auto px-4 py-6"
-    >
-      <!-- 空状态 -->
-      <div
-        v-if="currentMessages.length === 0"
-        class="flex h-full flex-col items-center justify-center gap-4 text-center"
-      >
-        <div class="text-4xl">💪</div>
-        <div class="space-y-2">
-          <h2 class="text-xl font-semibold">开始您的健身之旅</h2>
-          <p class="text-sm text-muted-foreground">
-            向智能健身顾问提问，获取专业的训练建议
-          </p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            @click="messageInput = '帮我制定一个增肌训练计划'"
-          >
-            制定训练计划
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            @click="messageInput = '推荐一些胸部训练动作'"
-          >
-            推荐训练动作
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            @click="messageInput = '如何提高卧推重量？'"
-          >
-            训练技巧
-          </Button>
-        </div>
-        <!-- 医疗免责提示 -->
-        <p class="mt-4 text-xs text-muted-foreground max-w-sm">
-          ⚠️ AI 建议仅供参考，不构成医疗建议。如有健康问题、慢性疾病或运动损伤史，请先咨询专业医生。
-        </p>
-      </div>
-
-      <!-- 消息列表 -->
-      <div v-else class="space-y-4">
-        <MessageItem
-          v-for="message in currentMessages"
-          :key="message.id"
-          :message="message"
-          @import-plan="handleImportPlan"
-          @view-plan-detail="handleViewPlanDetail"
-          @submit-rating="handleSubmitRating"
-        />
-      </div>
-    </div>
-
-    <!-- 输入区域 -->
-    <div class="border-t p-4">
-      <!-- Skill 执行进度 -->
-      <div v-if="isStreaming" class="mb-3">
-        <SkillProgress
-          :current-phase="streamingStore.skillPhase"
-          :skill-name="streamingStore.skillName"
-          :current-tool="streamingStore.currentTool"
-          :tools-completed="streamingStore.toolsCompleted"
-          :tools-total="streamingStore.toolsTotal"
-        />
-      </div>
-      
-      <!-- 附件预览区 -->
-      <div v-if="chatStore.pendingAttachments.length > 0" class="mb-2 flex gap-2 flex-wrap">
-        <div
-          v-for="att in chatStore.pendingAttachments"
-          :key="att.id"
-          class="relative group"
-        >
-          <img
-            :src="att.preview"
-            :alt="att.file.name"
-            class="h-14 w-14 rounded-lg object-cover border border-border"
-          />
-          <button
-            type="button"
-            class="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            @click="chatStore.removeAttachment(att.id)"
-          >
-            <X class="h-3 w-3" />
-          </button>
-        </div>
-      </div>
-
-      <form
-        class="flex gap-2"
-        @submit.prevent="sendMessage"
-      >
-        <!-- 📎 附件按钮 -->
-        <AttachmentButton
-          :attachments="chatStore.pendingAttachments"
-          @add-attachment="chatStore.addAttachment"
-          @remove-attachment="chatStore.removeAttachment"
-        />
-
-        <Input
-          v-model="messageInput"
-          placeholder="输入您的健身问题..."
-          class="flex-1"
-          :disabled="chatStore.loading"
-        />
-        <!-- 多态按钮：流式中显示停止，否则显示发送 -->
+    <!-- 错误提示 -->
+    <div v-if="error || initError" class="px-4 pt-3">
+      <div class="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+        <span class="flex-1">{{ error || initError }}</span>
         <Button
-          v-if="isStreaming"
-          type="button"
-          variant="destructive"
-          size="icon"
-          @click="chatStore.stopGeneration()"
-          title="停止生成"
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1"
+          @click="handleRetry"
         >
-          <Square class="h-4 w-4" />
+          <RefreshCw class="h-3.5 w-3.5" />
+          重试
         </Button>
-        <Button
-          v-else
-          type="submit"
-          :disabled="!canSend"
-        >
-          <Send class="h-4 w-4" />
-        </Button>
-      </form>
-
-      <!-- 字符计数（接近限制时显示） -->
-      <p
-        v-if="messageInput.length > 1800"
-        class="mt-1 text-xs text-right"
-        :class="messageInput.length > 2000 ? 'text-destructive' : 'text-muted-foreground'"
-      >
-        {{ messageInput.length }}/2000
-      </p>
-
-      <!-- 免责声明 -->
-      <p class="mt-2 text-xs text-muted-foreground text-center">
-        AI 建议仅供参考，不能替代专业医疗诊断。如有健康问题请咨询医生。
-      </p>
+      </div>
     </div>
 
-    <!-- 对话历史侧边栏 -->
-    <ChatHistorySidebar
-      v-model:visible="showHistorySidebar"
-      :topics="topicStore.sortedTopics"
-      :current-topic-id="topicStore.currentTopicId"
-      :current-session-id="currentSessionId"
-      @select-topic="handleTopicChange"
-      @select-session="handleSessionChange"
-      @create-topic="handleNewTopic"
-      @delete-topic="handleDeleteTopic"
-      @delete-session="handleDeleteSession"
-      @new-chat="handleNewChat"
+    <!-- 初始化加载 -->
+    <div v-if="isInitializing" class="flex-1 flex items-center justify-center">
+      <div class="flex flex-col items-center gap-3">
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p class="text-sm text-muted-foreground">正在连接...</p>
+      </div>
+    </div>
+
+    <!-- 消息流 -->
+    <MessageStream
+      v-else
+      :messages="messages"
+      :is-streaming="isStreaming"
+      :streaming-content="streamingContent"
     />
 
-    <!-- 工具调用历史弹窗 -->
-    <ToolCallDialog
-      v-model:open="showToolCallDialog"
-      :tool-calls="formattedToolCalls"
+    <!-- Skill 执行进度 -->
+    <div v-if="isWorking && !isInitializing" class="px-4 pb-2">
+      <SkillProgress
+        :current-phase="skillPhase"
+        :skill-name="session?.agentId || ''"
+        :current-tool="''"
+        :tools-completed="0"
+        :tools-total="0"
+      />
+    </div>
+
+    <!-- 输入框 -->
+    <ChatInput
+      v-if="!isInitializing"
+      :disabled="!isConnected"
+      :is-working="isWorking"
+      @send="handleSend"
+      @abort="handleAbort"
     />
 
     <!-- HITL 安全确认弹窗 -->
     <ApprovalDialog
-      :visible="streamingStore.approvalRequest.visible"
-      :reason="streamingStore.approvalRequest.reason"
-      :skill-name="streamingStore.approvalRequest.skillName"
-      :suggestion="streamingStore.approvalRequest.suggestion"
+      :visible="approvalVisible"
+      :reason="pendingApproval?.confirmation?.reason || ''"
+      :skill-name="pendingApproval?.toolName || ''"
+      :suggestion="pendingApproval?.confirmation?.suggestion"
       @approve="handleApprovalApprove"
       @deny="handleApprovalDeny"
-      @update:visible="(v) => { if (!v) streamingStore.dismissApproval() }"
+      @update:visible="() => {}"
     />
   </div>
 </template>
