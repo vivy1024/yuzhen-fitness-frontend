@@ -450,20 +450,22 @@ function disposeCharts(): void {
 
 // ============ 生命周期 ============
 
+// SEC-9: 使用命名函数引用，确保 onUnmounted 能正确移除
+const handleResize = () => {
+  volumeChart?.resize()
+  frequencyChart?.resize()
+  progressChart?.resize()
+}
+
 onMounted(() => {
   refreshStats()
-
-  // 监听窗口大小变化
-  window.addEventListener('resize', () => {
-    volumeChart?.resize()
-    frequencyChart?.resize()
-    progressChart?.resize()
-  })
+  window.addEventListener('resize', handleResize)
 })
 
-// 组件卸载时清理图表
+// 组件卸载时清理图表和事件监听
 import { onUnmounted } from 'vue'
 onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
   disposeCharts()
 })
 </script>

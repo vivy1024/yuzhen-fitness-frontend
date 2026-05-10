@@ -208,6 +208,9 @@ export const useChatStore = defineStore('chat', () => {
    * 发送消息（使用真实流式响应 + 持久化）
    */
   async function sendMessage(data: SendMessageData) {
+    // SEC-10: 防重复提交 — 正在流式响应或加载中时直接返回
+    if (streaming.value || loading.value) return
+
     try {
       loading.value = true
       streaming.value = true

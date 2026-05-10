@@ -5,6 +5,13 @@
 
 ---
 
+## #58 (fix) 安全加固 — 内存泄漏 + 防重复提交 — 2026-05-10
+
+- **SEC-9**: `views/training/stats.vue` resize 监听器改为命名函数引用，onUnmounted 正确移除
+- **SEC-10**: `stores/chat.ts` sendMessage 添加 `if (streaming.value || loading.value) return` 防重复提交
+
+---
+
 ## #57 (feat) Agent v2 前端适配 — Skills 进度 + HITL 弹窗 + 旧组件清理 — 2026-05-09
 
 **删除**:
