@@ -12,7 +12,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('@/views/home.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/ai/chat',
@@ -127,25 +126,21 @@ const router = createRouter({
       path: '/exercise',
       name: 'exercise-library',
       component: () => import('@/views/exercise/library.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/exercise/:id',
       name: 'exercise-detail',
       component: () => import('@/views/exercise/detail.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/food',
       name: 'food-library',
       component: () => import('@/views/food/library.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/food/:id',
       name: 'food-detail',
       component: () => import('@/views/food/detail.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/progress',
@@ -156,13 +151,11 @@ const router = createRouter({
       path: '/tools/calculators',
       name: 'calculators',
       component: () => import('@/views/tools/CalculatorsPage.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/tools/calculators/:id',
       name: 'calculator-detail',
       component: () => import('@/views/tools/CalculatorDetail.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/ai-advisor',
@@ -191,7 +184,6 @@ const router = createRouter({
       path: '/settings/about',
       name: 'settings-about',
       component: () => import('@/views/settings/about.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/notifications',
@@ -203,37 +195,34 @@ const router = createRouter({
       path: '/help',
       name: 'help-center',
       component: () => import('@/views/help/index.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/help/:id',
       name: 'help-detail',
       component: () => import('@/views/help/detail.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/feedback',
       name: 'feedback',
       component: () => import('@/views/feedback/index.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/knowledge',
       name: 'Knowledge',
       component: () => import('@/views/knowledge/index.vue'),
-      meta: { requiresAuth: true, title: '知识库' }
+      meta: { title: '知识库' }
     },
     {
       path: '/knowledge/cards',
       name: 'KnowledgeCards',
       component: () => import('@/views/knowledge/cards.vue'),
-      meta: { requiresAuth: true, title: '知识卡片' }
+      meta: { title: '知识卡片' }
     },
     {
       path: '/knowledge/:id',
       name: 'KnowledgeDetail',
       component: () => import('@/views/knowledge/detail.vue'),
-      meta: { requiresAuth: true, title: '知识详情' }
+      meta: { title: '知识详情' }
     },
     // 管理员路由
     {
