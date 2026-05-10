@@ -8,6 +8,7 @@
  */
 import { ref, computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
+import ToolResultRenderer from './tool-renderers/ToolResultRenderer.vue'
 import {
   CheckCircle2,
   XCircle,
@@ -250,16 +251,23 @@ const formattedParams = computed(() => {
       <component :is="expanded ? ChevronDown : ChevronRight" class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
     </button>
     
-    <!-- 展开态：参数 + 结果 -->
+    <!-- 展开态：专用渲染器 或 参数+结果 JSON -->
     <div v-if="expanded" class="border-t border-border/40 px-3 py-2 space-y-2">
-      <!-- 参数 -->
+      <!-- 专用渲染器（TDEE/动作/容量等） -->
+      <ToolResultRenderer
+        v-if="toolCall.result && toolCall.status === 'success'"
+        :tool-name="toolCall.name"
+        :result="toolCall.result"
+      />
+
+      <!-- 参数（专用渲染器不显示时才展示 JSON） -->
       <div v-if="formattedParams">
         <div class="text-[10px] font-medium text-muted-foreground mb-1">输入参数</div>
         <pre class="text-[11px] bg-muted/50 rounded p-2 overflow-x-auto max-h-32 text-foreground/80">{{ formattedParams }}</pre>
       </div>
       
-      <!-- 结果 -->
-      <div v-if="formattedResult">
+      <!-- 原始结果 JSON（无专用渲染器时显示） -->
+      <div v-if="formattedResult && toolCall.status !== 'success'">
         <div class="text-[10px] font-medium text-muted-foreground mb-1">
           {{ toolCall.status === 'error' ? '错误信息' : '执行结果' }}
         </div>

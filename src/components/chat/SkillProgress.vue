@@ -27,12 +27,12 @@ const props = withDefaults(defineProps<Props>(), {
   toolsTotal: 0,
 })
 
-// 阶段定义
+// 阶段定义（适配 YuzhenFork 3 步管线：Coach分析 → Safety检查 → Coach编排/生成）
 const phases = [
-  { key: 'thinking', label: '分析目标', icon: Brain, emoji: '🧠' },
-  { key: 'checking', label: '安全检查', icon: ShieldCheck, emoji: '🛡️' },
-  { key: 'executing', label: '执行工具', icon: Cog, emoji: '⚙️' },
-  { key: 'generating', label: '生成方案', icon: PenTool, emoji: '✍️' },
+  { key: 'thinking', label: '需求分析', icon: Brain, emoji: '🧠' },
+  { key: 'checking', label: '安全评估', icon: ShieldCheck, emoji: '🛡️' },
+  { key: 'executing', label: '搜索动作', icon: Cog, emoji: '⚙️' },
+  { key: 'generating', label: '编排方案', icon: PenTool, emoji: '✍️' },
 ] as const
 
 // 当前阶段索引
