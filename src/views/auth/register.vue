@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, Dumbbell, CheckCircle2, XCircle } from 'lucide-vue-next'
 import { recordConsent } from '@/api/consent'
+import CaptchaDialog from '@/components/auth/CaptchaDialog.vue'
 
 const CONSENT_VERSION = '2026-03-01'
 
@@ -51,6 +52,9 @@ const phoneForm = ref({
   password_confirmation: '',
   agree: false
 })
+
+// 图形验证码弹窗
+const captchaVisible = ref(false)
 
 // REQ-H3: 定时器引用，用于组件卸载时清理
 const emailTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
@@ -146,15 +150,18 @@ async function sendEmailCode() {
   debouncedSendEmailCode()
 }
 
-// 发送手机验证码
-async function sendPhoneCode() {
+// 发送手机验证码 - 先弹图形验证码
+function sendPhoneCode() {
   if (!isPhoneValid.value) {
     showError('请输入正确的手机号')
     return
   }
-
   if (sendingPhoneCode.value || phoneCountdown.value > 0) return
+  captchaVisible.value = true
+}
 
+// 图形验证码通过后，真正发送短信
+async function onCaptchaSuccess(_captchaToken: string) {
   sendingPhoneCode.value = true
   try {
     const response = await sendSmsCodeApi(phoneForm.value.phone)
@@ -600,4 +607,11 @@ async function handlePhoneRegister() {
       </Card>
     </div>
   </div>
+
+  <!-- 图形验证码弹窗 -->
+  <CaptchaDialog
+    :visible="captchaVisible"
+    :on-success="onCaptchaSuccess"
+    @update:visible="captchaVisible = $event"
+  />
 </template>

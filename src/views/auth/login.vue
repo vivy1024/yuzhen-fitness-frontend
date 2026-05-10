@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { showError, showSuccess } from '@/components/ui/toast'
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2, Dumbbell } from 'lucide-vue-next'
+import CaptchaDialog from '@/components/auth/CaptchaDialog.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -20,6 +21,12 @@ const showPassword = ref(false)
 const loading = ref(false)
 const smsCountdown = ref(0)
 const smsTimerRef = ref<ReturnType<typeof setInterval> | null>(null)
+
+// 手机号登录模式切换：验证码 / 密码
+const phoneLoginMode = ref<'code' | 'password'>('code')
+
+// 图形验证码弹窗
+const captchaVisible = ref(false)
 
 // REQ-H3: 组件卸载时清理定时器
 onBeforeUnmount(() => {
@@ -36,7 +43,8 @@ const emailForm = ref({
 // 手机号登录表单
 const phoneForm = ref({
   phone: '',
-  code: ''
+  code: '',
+  password: ''
 })
 
 // 验证
@@ -77,18 +85,34 @@ async function handleEmailLogin() {
   }
 }
 
-// 手机号登录（REQ-C2: 统一走 authStore）
+// 手机号验证码登录（REQ-C2: 统一走 authStore）
 async function handlePhoneLogin() {
-  if (!phoneForm.value.phone || !phoneForm.value.code) {
-    showError('请填写手机号和验证码')
-    return
+  if (phoneLoginMode.value === 'code') {
+    if (!phoneForm.value.phone || !phoneForm.value.code) {
+      showError('请填写手机号和验证码')
+      return
+    }
+  } else {
+    if (!phoneForm.value.phone || !phoneForm.value.password) {
+      showError('请填写手机号和密码')
+      return
+    }
   }
 
   if (loading.value) return
 
   loading.value = true
   try {
-    const result = await authStore.loginByPhone(phoneForm.value.phone, phoneForm.value.code)
+    let result
+    if (phoneLoginMode.value === 'code') {
+      result = await authStore.loginByPhone(phoneForm.value.phone, phoneForm.value.code)
+    } else {
+      // 密码登录：和邮箱登录一样的接口，identifier 传手机号
+      result = await authStore.login({
+        email: phoneForm.value.phone, // identifier 字段
+        password: phoneForm.value.password,
+      })
+    }
 
     if (result.success) {
       setTimeout(() => {
@@ -100,13 +124,18 @@ async function handlePhoneLogin() {
   }
 }
 
-// 发送短信验证码
-async function sendSmsCode() {
+// 发送短信验证码 - 先弹图形验证码
+function sendSmsCode() {
   if (!isPhoneValid.value) {
     showError('请输入正确的手机号')
     return
   }
+  // 弹出图形验证码
+  captchaVisible.value = true
+}
 
+// 图形验证码通过后，真正发送短信
+async function onCaptchaSuccess(_captchaToken: string) {
   try {
     const response = await sendSmsCodeApi(phoneForm.value.phone)
     
@@ -235,28 +264,76 @@ async function sendSmsCode() {
                   </div>
                 </div>
 
-                <div class="space-y-2">
-                  <Label for="code">验证码</Label>
-                  <div class="flex gap-2">
-                    <Input
-                      id="code"
-                      v-model="phoneForm.code"
-                      type="text"
-                      placeholder="请输入验证码"
-                      maxlength="6"
-                      class="flex-1"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      @click="sendSmsCode"
-                      :disabled="smsCountdown > 0 || !isPhoneValid"
-                      class="shrink-0"
-                    >
-                      {{ smsCountdown > 0 ? `${smsCountdown}秒` : '获取验证码' }}
-                    </Button>
+                <!-- 验证码登录模式 -->
+                <template v-if="phoneLoginMode === 'code'">
+                  <div class="space-y-2">
+                    <Label for="code">验证码</Label>
+                    <div class="flex gap-2">
+                      <Input
+                        id="code"
+                        v-model="phoneForm.code"
+                        type="text"
+                        placeholder="请输入验证码"
+                        maxlength="6"
+                        class="flex-1"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        @click="sendSmsCode"
+                        :disabled="smsCountdown > 0 || !isPhoneValid"
+                        class="shrink-0"
+                      >
+                        {{ smsCountdown > 0 ? `${smsCountdown}秒` : '获取验证码' }}
+                      </Button>
+                    </div>
                   </div>
+                </template>
+
+                <!-- 密码登录模式 -->
+                <template v-else>
+                  <div class="space-y-2">
+                    <Label for="phone-password">密码</Label>
+                    <div class="relative">
+                      <Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone-password"
+                        v-model="phoneForm.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        placeholder="请输入密码"
+                        class="pl-10 pr-10"
+                        autocomplete="current-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <EyeOff v-if="showPassword" class="h-4 w-4" />
+                        <Eye v-else class="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- 模式切换 + 忘记密码 -->
+                <div class="flex items-center justify-between">
+                  <button
+                    type="button"
+                    class="text-sm text-primary hover:underline"
+                    @click="phoneLoginMode = phoneLoginMode === 'code' ? 'password' : 'code'"
+                  >
+                    {{ phoneLoginMode === 'code' ? '使用密码登录' : '使用验证码登录' }}
+                  </button>
+                  <router-link
+                    v-if="phoneLoginMode === 'password'"
+                    to="/auth/forgot-password-phone"
+                    class="text-sm text-primary hover:underline"
+                  >
+                    忘记密码？
+                  </router-link>
                 </div>
 
                 <Button type="submit" class="w-full" :disabled="loading">
@@ -278,4 +355,11 @@ async function sendSmsCode() {
       </Card>
     </div>
   </div>
+
+  <!-- 图形验证码弹窗 -->
+  <CaptchaDialog
+    :visible="captchaVisible"
+    :on-success="onCaptchaSuccess"
+    @update:visible="captchaVisible = $event"
+  />
 </template>
