@@ -294,6 +294,18 @@ const router = createRouter({
           name: 'admin-metrics',
           component: () => import('@/views/admin/metrics.vue'),
           meta: { requiresAuth: true, requiresAdmin: true }
+        },
+        {
+          path: 'model-pool',
+          name: 'admin-model-pool',
+          component: () => import('@/views/admin/model-pool.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true }
+        },
+        {
+          path: 'chat-monitor',
+          name: 'admin-chat-monitor',
+          component: () => import('@/views/admin/chat-monitor.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true }
         }
       ]
     },

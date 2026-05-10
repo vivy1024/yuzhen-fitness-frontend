@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import {
   ArrowLeft, ClipboardList, Users,
-  Brain, Shield, Star, MessageSquare
+  Brain, Shield, Star, MessageSquare, Cpu
 } from 'lucide-vue-next'
 import api from '@/api/auth'
 
@@ -108,6 +108,22 @@ const adminModules = [
     description: '用户列表、会员状态、权限管理',
     icon: Users,
     route: '/admin/users',
+    badge: () => null
+  },
+  {
+    id: 'model-pool',
+    title: '模型池管理',
+    description: 'yuzhenfork 模型池状态、权重配置、启停控制',
+    icon: Cpu,
+    route: '/admin/model-pool',
+    badge: () => null
+  },
+  {
+    id: 'chat-monitor',
+    title: '对话监控',
+    description: '查看 yuzhenfork 会话列表与消息历史',
+    icon: MessageSquare,
+    route: '/admin/chat-monitor',
     badge: () => null
   }
 ]
