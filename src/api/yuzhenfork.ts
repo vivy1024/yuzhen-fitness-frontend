@@ -4,7 +4,7 @@
  */
 import axios from 'axios'
 
-const YUZHENFORK_BASE = import.meta.env.VITE_YUZHENFORK_URL || 'http://localhost:4567'
+const YUZHENFORK_BASE = import.meta.env.VITE_YUZHENFORK_URL || 'http://localhost:4568'
 
 const api = axios.create({
   baseURL: YUZHENFORK_BASE,
