@@ -9,24 +9,42 @@
     <Toaster position="top-center" :duration="3000" :toastOptions="{ style: { pointerEvents: 'auto', marginTop: 'env(safe-area-inset-top, 0px)' } }" richColors />
     <InstallPrompt />
     <PWAUpdatePrompt />
+    <!-- 全局底部导航栏 -->
+    <BottomNav v-if="showBottomNav" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { RouterView } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 import { Toaster } from 'vue-sonner'
 import { useTheme } from '@/composables/useTheme'
 import { useNetworkStatus } from '@/composables/useNetworkStatus'
 import SkipNav from '@/components/accessibility/SkipNav.vue'
 import InstallPrompt from '@/components/pwa/InstallPrompt.vue'
 import PWAUpdatePrompt from '@/components/pwa/PWAUpdatePrompt.vue'
+import BottomNav from '@/components/layout/BottomNav.vue'
 
 // 初始化主题
 const { initTheme } = useTheme()
 
 // 初始化网络状态检测
 useNetworkStatus()
+
+const route = useRoute()
+
+// 不显示底部导航的页面
+const hideNavRoutes = ['login', 'register', 'forgot-password', 'forgot-password-phone', 'legal-terms', 'legal-privacy', 'training-session', 'training-summary']
+
+const showBottomNav = computed(() => {
+  const name = route.name as string
+  if (!name) return false
+  // 隐藏：登录/注册/法律/训练中
+  if (hideNavRoutes.includes(name)) return false
+  // 隐藏：admin 页面
+  if (name.startsWith('admin')) return false
+  return true
+})
 
 onMounted(() => {
   initTheme()

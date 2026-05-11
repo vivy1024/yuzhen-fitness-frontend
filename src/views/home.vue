@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import BottomNav from '@/components/layout/BottomNav.vue'
 import Footer from '@/components/layout/Footer.vue'
 import {
   MessageSquare,
@@ -127,96 +126,96 @@ onMounted(() => {
       <div class="grid grid-cols-3 gap-3">
         <!-- 智能健身顾问 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="goToAiChat"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <MessageSquare class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <MessageSquare class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">智能顾问</h3>
-              <p class="text-xs text-white/80">专业指导</p>
+              <p class="text-xs text-muted-foreground">专业指导</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- 动作库 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-teal-500 to-cyan-600 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="goToExercise"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <Dumbbell class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <Dumbbell class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">动作库</h3>
-              <p class="text-xs text-white/80">1790动作</p>
+              <p class="text-xs text-muted-foreground">1790动作</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- 食物库 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-amber-500 to-orange-500 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="goToFood"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <Apple class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <Apple class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">食物库</h3>
-              <p class="text-xs text-white/80">1851食物</p>
+              <p class="text-xs text-muted-foreground">1851食物</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- 训练计划 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-cyan-500 to-blue-500 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="goToTraining"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <Target class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <Target class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">训练计划</h3>
-              <p class="text-xs text-white/80">个性定制</p>
+              <p class="text-xs text-muted-foreground">个性定制</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- 个人档案 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-emerald-500 to-teal-500 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="goToProfile"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <User class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <User class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">个人档案</h3>
-              <p class="text-xs text-white/80">数据追踪</p>
+              <p class="text-xs text-muted-foreground">数据追踪</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- 训练统计 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-slate-500 to-gray-600 text-white"
+          class="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border border-border"
           @click="router.push('/training/stats')"
         >
           <CardContent class="p-4">
             <div class="flex flex-col h-full">
-              <div class="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                <TrendingUp class="h-5 w-5" />
+              <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                <TrendingUp class="h-5 w-5 text-primary" />
               </div>
               <h3 class="font-bold text-sm mb-0.5">训练统计</h3>
-              <p class="text-xs text-white/80">进度分析</p>
+              <p class="text-xs text-muted-foreground">进度分析</p>
             </div>
           </CardContent>
         </Card>
@@ -224,18 +223,18 @@ onMounted(() => {
 
       <!-- 会员横幅 -->
       <Card 
-        class="cursor-pointer transition-all hover:shadow-md border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50"
+        class="cursor-pointer transition-all hover:shadow-md border border-primary/20 bg-primary/5"
         @click="goToMembership"
       >
         <CardContent class="p-4 flex items-center gap-4">
-          <div class="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <Crown class="h-6 w-6 text-white" />
+          <div class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Crown class="h-6 w-6 text-primary" />
           </div>
           <div class="flex-1">
-            <h3 class="font-bold text-amber-900">升级会员</h3>
-            <p class="text-sm text-amber-700">解锁更多训练计划和专业指导</p>
+            <h3 class="font-bold text-foreground">积分中心</h3>
+            <p class="text-sm text-muted-foreground">解锁更多训练计划和专业指导</p>
           </div>
-          <ChevronRight class="h-5 w-5 text-amber-600" />
+          <ChevronRight class="h-5 w-5 text-muted-foreground" />
         </CardContent>
       </Card>
 
@@ -243,8 +242,5 @@ onMounted(() => {
 
     <!-- 页脚备案信息 -->
     <Footer />
-
-    <!-- 底部导航 -->
-    <BottomNav />
   </div>
 </template>

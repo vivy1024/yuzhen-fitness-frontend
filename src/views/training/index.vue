@@ -215,8 +215,5 @@ onMounted(async () => {
 
     <!-- 页脚备案信息 -->
     <Footer />
-
-    <!-- 底部导航 -->
-    <BottomNav />
   </div>
 </template>
