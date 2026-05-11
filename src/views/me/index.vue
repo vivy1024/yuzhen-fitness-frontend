@@ -25,7 +25,8 @@ import {
   FileText,
   Bell,
   Shield,
-  Star
+  Star,
+  Coins
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -60,6 +61,7 @@ const menuSections: Array<{ title: string; items: Array<{ icon: any; label: stri
   {
     title: '会员服务',
     items: [
+      { icon: Coins, label: '积分中心', path: '/credits', color: 'text-amber-500' },
       { icon: Crown, label: '会员中心', path: '/membership', color: 'text-amber-500', badge: isMember.value ? '' : '升级' },
     ]
   },

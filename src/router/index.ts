@@ -174,6 +174,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/credits',
+      name: 'credits',
+      component: () => import('@/views/credits/index.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/me',
       name: 'me',
       component: () => import('@/views/me/index.vue'),
