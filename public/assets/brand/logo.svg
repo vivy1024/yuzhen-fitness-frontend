@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40">
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 8 L18 24 L28 8"/>
+    <path d="M12 12 Q18 20 24 12" opacity="0.6"/>
+    <path d="M6 28 Q18 36 30 28" stroke-width="1.5"/>
+  </g>
+  <text x="42" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="url(#logo-gradient)">玉珍健身</text>
+</svg>

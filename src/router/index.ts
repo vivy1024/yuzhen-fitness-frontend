@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { hasToken } from '@/utils/token'
-import { verifyAdmin, isSensitiveRoute } from '@/api/admin/verify'
 import { getTokenManager } from '@/utils/token-manager'
 import { isTokenExpired, isTokenExpiringSoon } from '@/utils/auth'
 import logger from '@/utils/logger'
@@ -235,91 +234,7 @@ const router = createRouter({
       component: () => import('@/views/knowledge/detail.vue'),
       meta: { title: '知识详情' }
     },
-    // 管理员路由
-    {
-      path: '/admin',
-      children: [
-        {
-          path: '',
-          name: 'admin-home',
-          component: () => import('@/views/admin/index.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'orders',
-          name: 'admin-orders',
-          component: () => import('@/views/admin/orders.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'ai-monitor',
-          name: 'admin-ai-monitor',
-          component: () => import('@/views/admin/ai-monitor.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'expert-review',
-          name: 'admin-expert-review',
-          component: () => import('@/views/admin/expert-review.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'users',
-          name: 'admin-users',
-          component: () => import('@/views/admin/users.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'feedback',
-          name: 'admin-feedback',
-          component: () => import('@/views/admin/feedback.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        // 监控Dashboard路由（旧，已被 /admin/metrics 统一仪表盘替代）
-        {
-          path: 'dashboards/performance',
-          name: 'admin-dashboard-performance',
-          component: () => import('@/views/admin/dashboards/performance.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
-        },
-        {
-          path: 'dashboards/streaming',
-          name: 'admin-dashboard-streaming',
-          component: () => import('@/views/admin/dashboards/streaming.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
-        },
-        {
-          path: 'dashboards/workflow',
-          name: 'admin-dashboard-workflow',
-          component: () => import('@/views/admin/dashboards/workflow.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, deprecated: true }
-        },
-        {
-          path: 'dashboards/logs',
-          name: 'admin-dashboard-logs',
-          component: () => import('@/views/admin/dashboards/logs.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'metrics',
-          name: 'admin-metrics',
-          component: () => import('@/views/admin/metrics.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'model-pool',
-          name: 'admin-model-pool',
-          component: () => import('@/views/admin/model-pool.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        },
-        {
-          path: 'chat-monitor',
-          name: 'admin-chat-monitor',
-          component: () => import('@/views/admin/chat-monitor.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true }
-        }
-      ]
-    },
+    // 管理员功能已迁移到独立的 yuzhen-admin 项目（admin.yuzhen-fitness.cn）
     // 法律页面
     {
       path: '/legal/privacy',
@@ -386,24 +301,7 @@ router.beforeEach(async (to, _from, next) => {
     return
   }
   
-  // 管理员权限检查 - 调用后端API验证（带超时保护）
-  if (to.meta.requiresAdmin && isAuthenticated) {
-    try {
-      // 敏感路由强制刷新验证
-      const forceRefresh = isSensitiveRoute(to.name as string)
-      const verifyPromise = verifyAdmin(forceRefresh)
-      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000))
-      const isAdmin = await Promise.race([verifyPromise, timeoutPromise])
-      if (!isAdmin) {
-        next('/')  // 非管理员重定向到首页
-        return
-      }
-    } catch (e) {
-      logger.error('[Router] 管理员验证失败:', e)
-      next('/')
-      return
-    }
-  }
+  // 管理员功能已迁移到独立项目（admin.yuzhen-fitness.cn）
   
   // 首次使用检查（已登录用户访问需要认证的页面时）
   if (to.meta.requiresAuth && isAuthenticated && to.name !== 'legal-terms') {
