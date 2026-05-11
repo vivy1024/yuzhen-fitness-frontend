@@ -19,8 +19,6 @@ export interface MembershipConfig {
   unified_limits: {
     ai_queries_per_day: number
     max_training_plans: number
-    dag_templates: string[]
-    dag_template_count: number
     complexity_limits: {
       simple: number
       medium: number

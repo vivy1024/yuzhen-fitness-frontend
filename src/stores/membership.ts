@@ -230,8 +230,6 @@ export const useMembershipStore = defineStore('membership', () => {
         unified_limits: {
           ai_queries_per_day: 10,
           max_training_plans: 5,
-          dag_templates: [],
-          dag_template_count: 13,
           complexity_limits: { simple: 10, medium: 5, complex: 3 },
           unlock_all_exercises: true,
           ai_recommendation: true,
@@ -319,7 +317,6 @@ export const useMembershipStore = defineStore('membership', () => {
             limits: {
               daily_ai_queries: item.limits?.ai_queries_per_day ?? item.limits?.daily_ai_queries ?? 5,
               max_training_plans: item.limits?.training_plans ?? item.limits?.max_training_plans ?? 3,
-              dag_template_count: item.limits?.dag_template_count ?? 2,
               advanced_features: item.limits?.advanced_features ?? false
             },
             is_active: item.is_active ?? true,
