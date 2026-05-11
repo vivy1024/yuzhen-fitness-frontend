@@ -8,7 +8,6 @@ import { useCreditsStore } from '@/stores/credits'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import CreditBalanceCard from '@/components/credits/CreditBalanceCard.vue'
-import BottomNav from '@/components/layout/BottomNav.vue' // kept for compatibility
 import {
   Coins,
   TrendingDown,

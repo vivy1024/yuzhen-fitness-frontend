@@ -67,7 +67,9 @@ type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecti
 // === Composable ===
 
 export function useYuzhenChat(baseUrl?: string) {
-  const wsBaseUrl = baseUrl || 'ws://localhost:4568'
+  const defaultWsUrl = (import.meta.env.VITE_YUZHENFORK_URL || 'http://localhost:4568')
+    .replace(/^http/, 'ws')
+  const wsBaseUrl = baseUrl || defaultWsUrl
 
   // 状态
   const messages: Ref<ChatMessage[]> = ref([])

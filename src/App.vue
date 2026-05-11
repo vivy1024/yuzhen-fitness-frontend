@@ -41,8 +41,6 @@ const showBottomNav = computed(() => {
   if (!name) return false
   // 隐藏：登录/注册/法律/训练中
   if (hideNavRoutes.includes(name)) return false
-  // 隐藏：admin 页面
-  if (name.startsWith('admin')) return false
   return true
 })
 

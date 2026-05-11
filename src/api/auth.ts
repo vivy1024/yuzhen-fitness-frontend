@@ -90,6 +90,12 @@ api.interceptors.response.use(
       // 根据状态码统一处理
       switch (status) {
         case 401: {
+          // 非关键服务端点的401不触发登出（如DAML-RAG warmup服务端认证失败）
+          const isNonCriticalEndpoint = originalRequest?.url?.includes('/warmup')
+          if (isNonCriticalEndpoint) {
+            return Promise.reject(error)
+          }
+
           // 如果是刷新Token请求本身失败，或已重试过，直接登出
           const isAuthEndpoint = originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/login')
           if (isAuthEndpoint || originalRequest?._retry) {
@@ -99,7 +105,7 @@ api.interceptors.response.use(
             localStorage.removeItem('current_user_id')
             const currentPath = window.location.pathname
             if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-              setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+              setTimeout(() => { window.location.href = '/auth/login?expired=1' }, 1000)
             }
             return Promise.reject(new Error(message || '未授权，请先登录'))
           }
@@ -128,7 +134,7 @@ api.interceptors.response.use(
           localStorage.removeItem('current_user_id')
           const currentPath = window.location.pathname
           if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-            setTimeout(() => { window.location.href = '/login?expired=1' }, 1000)
+            setTimeout(() => { window.location.href = '/auth/login?expired=1' }, 1000)
           }
           return Promise.reject(new Error(message || '未授权，请先登录'))
         }

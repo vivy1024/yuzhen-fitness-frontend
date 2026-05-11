@@ -7,7 +7,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import BottomNav from '@/components/layout/BottomNav.vue'
 import Footer from '@/components/layout/Footer.vue'
 import { 
   Target, 

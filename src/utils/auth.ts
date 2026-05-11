@@ -36,7 +36,10 @@ export function parseJWTPayload(token: string | null): JWTPayload | null {
     const parts = token.split('.')
     if (parts.length !== 3) return null
     
+    // JWT 使用 base64url 编码，需要转换为标准 base64 才能用 atob 解码
     const payloadBase64 = parts[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
     const payloadJson = atob(payloadBase64)
     return JSON.parse(payloadJson) as JWTPayload
   } catch (error) {

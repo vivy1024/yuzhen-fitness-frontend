@@ -140,7 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
       // 跳转到登录页（如果不在登录页）
       const currentPath = window.location.pathname
       if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
-        window.location.href = '/login?expired=1'
+        window.location.href = '/auth/login?expired=1'
       }
     })
     

@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import BottomNav from '@/components/layout/BottomNav.vue'
 import Footer from '@/components/layout/Footer.vue'
 import { 
   User, 

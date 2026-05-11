@@ -103,7 +103,8 @@
               <span class="text-sm font-medium w-12 text-right">{{ food.protein || 0 }}g</span>
             </div>
           </div>
-          <div class="flex justify-between items-center py-2 border-b border-border</span>
+          <div class="flex justify-between items-center py-2 border-b border-border">
+            <span class="text-sm text-muted-foreground">脂肪</span>
             <div class="flex items-center gap-2">
               <Progress :model-value="getMacroPercent(food.fat || 0, 50)" class="w-20 h-2" />
               <span class="text-sm font-medium w-12 text-right">{{ food.fat || 0 }}g</span>
