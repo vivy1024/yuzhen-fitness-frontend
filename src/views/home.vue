@@ -71,7 +71,7 @@ onMounted(() => {
     <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div class="container flex h-14 items-center justify-between px-4">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg gradient-brand">
             <Dumbbell class="h-5 w-5 text-white" />
           </div>
           <span class="text-lg font-bold">玉珍健身</span>
@@ -92,7 +92,7 @@ onMounted(() => {
 
     <main class="container px-4 py-6 space-y-6">
       <!-- 欢迎区域 -->
-      <div class="rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 p-6 text-white">
+      <div class="rounded-2xl gradient-brand p-6 text-white">
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold mb-1">
@@ -127,7 +127,7 @@ onMounted(() => {
       <div class="grid grid-cols-3 gap-3">
         <!-- 智能健身顾问 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-pink-500 to-rose-500 text-white"
+          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
           @click="goToAiChat"
         >
           <CardContent class="p-4">
@@ -143,7 +143,7 @@ onMounted(() => {
 
         <!-- 动作库 -->
         <Card 
-          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-violet-500 to-purple-500 text-white"
+          class="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-0 bg-gradient-to-br from-teal-500 to-cyan-600 text-white"
           @click="goToExercise"
         >
           <CardContent class="p-4">

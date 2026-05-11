@@ -34,13 +34,13 @@
       <Button
         variant="ghost"
         size="icon"
-        class="absolute top-1 left-1 h-6 w-6 rounded-full bg-white/90 hover:bg-white shadow-sm z-10"
+        class="absolute top-1 left-1 h-6 w-6 rounded-full bg-background/90 hover:bg-background shadow-sm z-10"
         @click.stop="handleFavoriteClick"
       >
         <Star 
           :class="[
             'w-3 h-3 transition-colors',
-            isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'
+            isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
           ]"
         />
       </Button>
@@ -49,14 +49,14 @@
     <!-- 动作信息 -->
     <div class="card-content p-1.5">
       <!-- 动作名称 -->
-      <h3 class="font-medium text-[11px] text-gray-900 mb-0.5 line-clamp-1">
+      <h3 class="font-medium text-[11px] text-foreground mb-0.5 line-clamp-1">
         {{ exercise.name_zh }}
       </h3>
 
       <!-- 肌群标签 -->
       <div class="flex items-center gap-0.5">
-        <Flame class="w-2.5 h-2.5 text-red-500 flex-shrink-0" />
-        <span class="text-[10px] text-gray-600 line-clamp-1">
+        <Flame class="w-2.5 h-2.5 text-primary flex-shrink-0" />
+        <span class="text-[10px] text-muted-foreground line-clamp-1">
           {{ targetMuscles }}
         </span>
       </div>
@@ -86,58 +86,41 @@ const emit = defineEmits<{
   (e: 'favorite', id: number): void
 }>()
 
-// 获取图片URL（优先级：thumbnail > image_url > body_map）
+// 获取图片URL
 const imageUrl = computed(() => {
-  // 1. 优先使用缩略图
   if (props.exercise.thumbnail_urls?.primary) {
     return props.exercise.thumbnail_urls.primary
   }
-  
-  // 2. 使用主图片URL
   if (props.exercise.image_url) {
     return props.exercise.image_url
   }
-  
-  // 3. 使用image_urls中的图片
   if (props.exercise.image_urls?.male?.angle_1) {
     return props.exercise.image_urls.male.angle_1
   }
   if (props.exercise.image_urls?.female?.angle_1) {
     return props.exercise.image_urls.female.angle_1
   }
-  
   return ''
 })
 
-// 占位图（可以是一个低分辨率的模糊图或纯色）
-const placeholderImage = computed(() => {
-  // 可以返回一个data URI的模糊图或渐变色
-  return ''
-})
+const placeholderImage = computed(() => '')
 
-// 获取难度文本（优先使用difficulty_zh）
+// 获取难度文本
 const difficultyLabel = computed(() => {
-  // 优先使用后端返回的difficulty_zh
   if (props.exercise.difficulty_zh) {
     return props.exercise.difficulty_zh
   }
-  
   const d = props.exercise.difficulty
   if (!d) return '中级'
-  
-  // 处理对象格式: { name_zh: "中级", name: "Intermediate" }
   if (typeof d === 'object' && d !== null) {
     return (d as any).name_zh || (d as any).name || '中级'
   }
-  
-  // 英文转中文映射
   const difficultyMap: Record<string, string> = {
     'Beginner': '初学者',
     'Novice': '零基础',
     'Intermediate': '中级',
     'Advanced': '高级',
   }
-  
   return difficultyMap[String(d)] || String(d)
 })
 
@@ -159,13 +142,12 @@ const difficultyBadgeClass = computed(() => {
     case 'Advanced':
       return 'bg-red-500 hover:bg-red-500 text-white'
     default:
-      return 'bg-gray-500 hover:bg-gray-500 text-white'
+      return 'bg-muted text-muted-foreground'
   }
 })
 
-// 目标肌群（使用标准数组字段）
+// 目标肌群
 const targetMuscles = computed(() => {
-  // 使用标准数组字段 muscles_primary
   if (props.exercise.muscles_primary && props.exercise.muscles_primary.length > 0) {
     return props.exercise.muscles_primary.join('、')
   }
@@ -183,12 +165,12 @@ function handleFavoriteClick() {
 
 <style scoped>
 .exercise-card {
-  @apply bg-white rounded-lg overflow-hidden shadow-sm cursor-pointer transition-all duration-300;
-  @apply hover:shadow-md active:scale-[0.98];
+  @apply bg-card rounded-lg overflow-hidden border border-border cursor-pointer transition-all duration-200;
+  @apply hover:border-primary/30 hover:shadow-md active:scale-[0.98];
 }
 
 .card-image {
-  @apply relative w-full pb-[65%] bg-gray-100 overflow-hidden;
+  @apply relative w-full pb-[65%] bg-muted overflow-hidden;
 }
 
 .placeholder-wrapper {
@@ -196,7 +178,12 @@ function handleFavoriteClick() {
 }
 
 .placeholder-gradient {
-  @apply absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-80;
+  @apply absolute inset-0 opacity-90;
+  background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 67% 52%) 100%);
+}
+
+.dark .placeholder-gradient {
+  background: linear-gradient(135deg, hsl(160 84% 67% / 0.8) 0%, hsl(160 72% 56% / 0.6) 100%);
 }
 
 .placeholder-icon {
@@ -205,6 +192,6 @@ function handleFavoriteClick() {
 
 .placeholder-text {
   @apply relative z-10 text-white text-[10px] font-medium text-center px-1 line-clamp-2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 </style>

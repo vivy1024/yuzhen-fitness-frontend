@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-background pb-20">
     <!-- 头部 -->
-    <header class="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b">
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="router.back()">
           <ArrowLeft class="w-5 h-5" />
@@ -226,7 +226,7 @@
               <div
                 v-for="record in progressStore.recentRecords.slice(0, 5)"
                 :key="record.id"
-                class="flex items-center justify-between py-2 border-b last:border-0"
+                class="flex items-center justify-between py-2 border-b border-border last:border-0"
               >
                 <div>
                   <p class="text-sm font-medium">{{ record.date }}</p>

@@ -1,7 +1,7 @@
 <template>
-  <div class="exercise-detail min-h-screen bg-gray-50">
+  <div class="exercise-detail min-h-screen bg-background">
     <!-- 导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b">
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="router.back()">
           <ArrowLeft class="w-5 h-5" />
@@ -10,7 +10,7 @@
           {{ exercise?.name_zh || '动作详情' }}
         </h1>
         <Button variant="ghost" size="icon" @click="handleToggleFavorite">
-          <Star :class="['w-5 h-5', isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400']" />
+          <Star :class="['w-5 h-5', isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground']" />
         </Button>
       </div>
     </header>
@@ -25,15 +25,15 @@
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="flex flex-col items-center justify-center py-16 px-4">
-      <AlertCircle class="w-16 h-16 text-red-400 mb-4" />
-      <p class="text-gray-500 mb-4">{{ error }}</p>
+      <AlertCircle class="w-16 h-16 text-destructive mb-4" />
+      <p class="text-muted-foreground mb-4">{{ error }}</p>
       <Button @click="loadDetail">重试</Button>
     </div>
 
     <!-- 详情内容 -->
     <main v-else-if="exercise" class="pb-24">
       <!-- 性别切换 -->
-      <div class="p-4 bg-white border-b">
+      <div class="p-4 bg-card border-b border-border">
         <GenderSwitch v-model="currentGender" variant="chip" />
       </div>
 
@@ -50,13 +50,13 @@
         </Alert>
       </div>
 
-      <!-- ========== 核心双栏布局：媒体+步骤 | 人体图+信息 ========== -->
+      <!-- ========== 核心双栏布局 ========== -->
       <div class="mx-4 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- 左栏：动作媒体 + 正确步骤 -->
         <div class="space-y-4">
           <!-- 动作媒体展示 -->
           <Card>
-            <div class="relative w-full pb-[75%] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-t-lg overflow-hidden">
+            <div class="relative w-full pb-[75%] rounded-t-lg overflow-hidden gradient-brand">
               <div class="absolute inset-0 flex flex-col items-center justify-center">
                 <Flame class="w-16 h-16 text-white mb-3" />
                 <h2 class="text-white text-lg font-bold text-center px-4">{{ exercise.name_zh }}</h2>
@@ -79,13 +79,13 @@
             <CardContent>
               <ol v-if="correctSteps.length" class="space-y-2">
                 <li v-for="(step, index) in correctSteps" :key="index" class="flex gap-2">
-                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
                     {{ index + 1 }}
                   </span>
-                  <span class="text-sm text-gray-700">{{ step }}</span>
+                  <span class="text-sm text-foreground/80">{{ step }}</span>
                 </li>
               </ol>
-              <p v-else class="text-sm text-gray-500">暂无动作要领</p>
+              <p v-else class="text-sm text-muted-foreground">暂无动作要领</p>
             </CardContent>
           </Card>
         </div>
@@ -101,23 +101,22 @@
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <!-- 人体图：正面+背面并排 -->
               <div class="flex justify-center gap-2">
                 <div v-if="currentBodyMapFront" class="flex-1 max-w-[140px]">
-                  <p class="text-xs text-gray-500 text-center mb-1">正面</p>
+                  <p class="text-xs text-muted-foreground text-center mb-1">正面</p>
                   <LazyImage 
                     :src="currentBodyMapFront" 
                     alt="正面肌肉图" 
-                    class="w-full h-auto rounded border"
+                    class="w-full h-auto rounded border border-border"
                     :show-loading="true"
                   />
                 </div>
                 <div v-if="currentBodyMapBack" class="flex-1 max-w-[140px]">
-                  <p class="text-xs text-gray-500 text-center mb-1">背面</p>
+                  <p class="text-xs text-muted-foreground text-center mb-1">背面</p>
                   <LazyImage 
                     :src="currentBodyMapBack" 
                     alt="背面肌肉图" 
-                    class="w-full h-auto rounded border"
+                    class="w-full h-auto rounded border border-border"
                     :show-loading="true"
                   />
                 </div>
@@ -125,12 +124,12 @@
               <!-- 肌肉图例 -->
               <div class="mt-3 flex flex-wrap justify-center gap-3 text-xs">
                 <div class="flex items-center gap-1">
-                  <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                  <span class="text-gray-600">主要肌群</span>
+                  <span class="w-3 h-3 rounded-full bg-primary"></span>
+                  <span class="text-muted-foreground">主要肌群</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <span class="w-3 h-3 rounded-full bg-orange-400"></span>
-                  <span class="text-gray-600">次要肌群</span>
+                  <span class="w-3 h-3 rounded-full bg-accent"></span>
+                  <span class="text-muted-foreground">次要肌群</span>
                 </div>
               </div>
             </CardContent>
@@ -145,56 +144,56 @@
               </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2">
-              <div v-if="musclesPrimary.length" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">主要肌肉</span>
+              <div v-if="musclesPrimary.length" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">主要肌肉</span>
                 <span class="font-medium text-right max-w-[60%]">{{ musclesPrimary.join('、') }}</span>
               </div>
-              <div v-if="musclesSecondary.length" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">次要肌肉</span>
+              <div v-if="musclesSecondary.length" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">次要肌肉</span>
                 <span class="font-medium text-right max-w-[60%]">{{ musclesSecondary.join('、') }}</span>
               </div>
-              <div v-if="allMuscles.length > 1" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">涉及肌群</span>
+              <div v-if="allMuscles.length > 1" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">涉及肌群</span>
                 <span class="font-medium text-right max-w-[60%]">{{ allMuscles.join('、') }}</span>
               </div>
-              <div class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">器械</span>
+              <div class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">器械</span>
                 <span class="font-medium">{{ equipmentText }}</span>
               </div>
-              <div class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">难度</span>
+              <div class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">难度</span>
                 <span class="font-medium">{{ getDifficultyText }}</span>
               </div>
-              <div v-if="mechanicText" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">运动机制</span>
+              <div v-if="mechanicText" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">运动机制</span>
                 <span class="font-medium">{{ mechanicText }}</span>
               </div>
-              <div v-if="forceText" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">力量类型</span>
+              <div v-if="forceText" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">力量类型</span>
                 <span class="font-medium">{{ forceText }}</span>
               </div>
-              <div v-if="gripsText" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">握法</span>
+              <div v-if="gripsText" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">握法</span>
                 <span class="font-medium">{{ gripsText }}</span>
               </div>
-              <div v-if="kineticChainText" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">运动链</span>
+              <div v-if="kineticChainText" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">运动链</span>
                 <span class="font-medium">{{ kineticChainText }}</span>
               </div>
-              <div v-if="exercise.joints?.length" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">涉及关节</span>
+              <div v-if="exercise.joints?.length" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">涉及关节</span>
                 <span class="font-medium text-right max-w-[60%]">{{ exercise.joints.join('、') }}</span>
               </div>
-              <div v-if="exercise.categories?.length" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">分类</span>
+              <div v-if="exercise.categories?.length" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">分类</span>
                 <span class="font-medium text-right max-w-[60%]">{{ exercise.categories.join('、') }}</span>
               </div>
-              <div v-if="exercise.variation_of" class="flex justify-between py-1.5 border-b text-sm">
-                <span class="text-gray-500">变体来源</span>
+              <div v-if="exercise.variation_of" class="flex justify-between py-1.5 border-b border-border text-sm">
+                <span class="text-muted-foreground">变体来源</span>
                 <span class="font-medium">动作 #{{ exercise.variation_of }}</span>
               </div>
               <div v-if="exercise.variations?.length" class="flex justify-between py-1.5 text-sm">
-                <span class="text-gray-500">变体数量</span>
+                <span class="text-muted-foreground">变体数量</span>
                 <span class="font-medium">{{ exercise.variations.length }} 个</span>
               </div>
             </CardContent>
@@ -213,20 +212,20 @@
           </CardTitle>
         </CardHeader>
         <CardContent class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="text-center p-2.5 bg-gray-50 rounded-lg">
-            <p class="text-xs text-gray-500 mb-0.5">组数</p>
+          <div class="text-center p-2.5 bg-muted rounded-lg">
+            <p class="text-xs text-muted-foreground mb-0.5">组数</p>
             <p class="text-base font-semibold">{{ exercise.set_range || '3-4' }}组</p>
           </div>
-          <div class="text-center p-2.5 bg-gray-50 rounded-lg">
-            <p class="text-xs text-gray-500 mb-0.5">次数</p>
+          <div class="text-center p-2.5 bg-muted rounded-lg">
+            <p class="text-xs text-muted-foreground mb-0.5">次数</p>
             <p class="text-base font-semibold">{{ exercise.rep_range || '8-12' }}次</p>
           </div>
-          <div class="text-center p-2.5 bg-gray-50 rounded-lg">
-            <p class="text-xs text-gray-500 mb-0.5">休息</p>
+          <div class="text-center p-2.5 bg-muted rounded-lg">
+            <p class="text-xs text-muted-foreground mb-0.5">休息</p>
             <p class="text-base font-semibold">{{ exercise.rest_period || '60-90秒' }}</p>
           </div>
-          <div class="text-center p-2.5 bg-gray-50 rounded-lg">
-            <p class="text-xs text-gray-500 mb-0.5">强度</p>
+          <div class="text-center p-2.5 bg-muted rounded-lg">
+            <p class="text-xs text-muted-foreground mb-0.5">强度</p>
             <p class="text-base font-semibold">{{ exercise.intensity_percentage || '70-80%' }}</p>
           </div>
         </CardContent>
@@ -242,8 +241,8 @@
         </CardHeader>
         <CardContent>
           <ul class="space-y-1.5">
-            <li v-for="(tip, index) in exercise.tips" :key="index" class="flex gap-2 text-sm text-gray-700">
-              <CheckCircle class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+            <li v-for="(tip, index) in exercise.tips" :key="index" class="flex gap-2 text-sm text-foreground/80">
+              <CheckCircle class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               {{ tip }}
             </li>
           </ul>
@@ -260,17 +259,17 @@
         </CardHeader>
         <CardContent class="space-y-3">
           <div v-if="exercise.progression_options?.length">
-            <h4 class="text-sm font-medium text-green-600 mb-1.5">进阶选项</h4>
+            <h4 class="text-sm font-medium text-primary mb-1.5">进阶选项</h4>
             <ul class="space-y-1">
-              <li v-for="(option, index) in exercise.progression_options" :key="index" class="text-sm text-gray-700">
+              <li v-for="(option, index) in exercise.progression_options" :key="index" class="text-sm text-foreground/80">
                 • {{ typeof option === 'string' ? option : option.name_zh || option.name }}
               </li>
             </ul>
           </div>
           <div v-if="exercise.regression_options?.length">
-            <h4 class="text-sm font-medium text-orange-600 mb-1.5">退阶选项</h4>
+            <h4 class="text-sm font-medium text-accent mb-1.5">退阶选项</h4>
             <ul class="space-y-1">
-              <li v-for="(option, index) in exercise.regression_options" :key="index" class="text-sm text-gray-700">
+              <li v-for="(option, index) in exercise.regression_options" :key="index" class="text-sm text-foreground/80">
                 • {{ typeof option === 'string' ? option : option.name_zh || option.name }}
               </li>
             </ul>
@@ -279,7 +278,7 @@
       </Card>
 
       <!-- 数据来源 -->
-      <div class="mx-4 mt-4 mb-4 text-center text-xs text-gray-500">
+      <div class="mx-4 mt-4 mb-4 text-center text-xs text-muted-foreground">
         <p v-if="exercise.data_source" class="mb-1">数据来源: {{ exercise.data_source }}</p>
         <p>
           动作数据参考：
@@ -334,7 +333,6 @@ const hasBodyMapImages = computed(() => {
   const local = exercise.value?.body_map_images_local
   const remote = exercise.value?.body_map_images
   if (!local && !remote) return false
-  // 检查是否有任何有效图片
   const checkImages = (imgs: any) => {
     if (!imgs) return false
     return (imgs.male?.front || imgs.male?.back || imgs.female?.front || imgs.female?.back)
@@ -345,7 +343,6 @@ const hasBodyMapImages = computed(() => {
 const currentBodyMapFront = computed(() => {
   const local = exercise.value?.body_map_images_local
   const remote = exercise.value?.body_map_images
-  // 优先本地，其次远程
   if (currentGender.value === 'male') {
     return local?.male?.front || remote?.male?.front || null
   }
@@ -379,7 +376,7 @@ const difficultyBadgeClass = computed(() => {
     case 'Advanced':
       return 'bg-red-500 hover:bg-red-500 text-white'
     default:
-      return 'bg-gray-500 hover:bg-gray-500 text-white'
+      return 'bg-muted text-muted-foreground'
   }
 })
 

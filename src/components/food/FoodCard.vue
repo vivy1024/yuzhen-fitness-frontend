@@ -35,13 +35,13 @@
       <Button
         variant="ghost"
         size="icon"
-        class="absolute top-1 left-1 h-6 w-6 rounded-full bg-white/90 hover:bg-white shadow-sm z-10"
+        class="absolute top-1 left-1 h-6 w-6 rounded-full bg-background/90 hover:bg-background shadow-sm z-10"
         @click.stop="handleFavoriteClick"
       >
         <Star 
           :class="[
             'w-3 h-3 transition-colors',
-            isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'
+            isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
           ]"
         />
       </Button>
@@ -50,14 +50,14 @@
     <!-- 食物信息 -->
     <div class="card-content p-1.5">
       <!-- 食物名称 -->
-      <h3 class="font-medium text-[11px] text-gray-900 mb-0.5 line-clamp-1">
+      <h3 class="font-medium text-[11px] text-foreground mb-0.5 line-clamp-1">
         {{ food.name }}
       </h3>
 
       <!-- 热量和蛋白质 -->
       <div class="flex items-center gap-0.5">
-        <Flame class="w-2.5 h-2.5 text-red-500 flex-shrink-0" />
-        <span class="text-[10px] text-gray-600">
+        <Flame class="w-2.5 h-2.5 text-primary flex-shrink-0" />
+        <span class="text-[10px] text-muted-foreground">
           {{ food.energy_kcal || 0 }}kcal · {{ food.protein || 0 }}g蛋白
         </span>
       </div>
@@ -90,18 +90,12 @@ const emit = defineEmits<{
   (e: 'favorite', id: number): void
 }>()
 
-// 获取图片URL
 const imageUrl = computed(() => {
-  // 食物库目前可能没有图片，预留字段
   return (props.food as any).image_url || (props.food as any).thumbnail_url || ''
 })
 
-// 占位图
-const placeholderImage = computed(() => {
-  return ''
-})
+const placeholderImage = computed(() => '')
 
-// 分类图标映射
 const categoryIcon = computed(() => {
   const category = props.food.category || ''
   if (category.includes('谷') || category.includes('薯')) return Wheat
@@ -116,10 +110,9 @@ const categoryIcon = computed(() => {
   return UtensilsCrossed
 })
 
-// GI值标签样式
 const giBadgeClass = computed(() => {
   const gi = props.food.gi_value
-  if (!gi) return 'bg-gray-500 hover:bg-gray-500 text-white'
+  if (!gi) return 'bg-muted text-muted-foreground'
   if (gi <= 55) return 'bg-green-500 hover:bg-green-500 text-white'
   if (gi <= 70) return 'bg-yellow-500 hover:bg-yellow-500 text-white'
   return 'bg-red-500 hover:bg-red-500 text-white'
@@ -136,12 +129,12 @@ function handleFavoriteClick() {
 
 <style scoped>
 .food-card {
-  @apply bg-white rounded-lg overflow-hidden shadow-sm cursor-pointer transition-all duration-300;
-  @apply hover:shadow-md active:scale-[0.98];
+  @apply bg-card rounded-lg overflow-hidden border border-border cursor-pointer transition-all duration-200;
+  @apply hover:border-primary/30 hover:shadow-md active:scale-[0.98];
 }
 
 .card-image {
-  @apply relative w-full pb-[65%] bg-gray-100 overflow-hidden;
+  @apply relative w-full pb-[65%] bg-muted overflow-hidden;
 }
 
 .placeholder-wrapper {
@@ -149,7 +142,12 @@ function handleFavoriteClick() {
 }
 
 .placeholder-gradient {
-  @apply absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-80;
+  @apply absolute inset-0 opacity-90;
+  background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 67% 52%) 100%);
+}
+
+.dark .placeholder-gradient {
+  background: linear-gradient(135deg, hsl(160 84% 67% / 0.8) 0%, hsl(160 72% 56% / 0.6) 100%);
 }
 
 .placeholder-icon {
@@ -158,6 +156,6 @@ function handleFavoriteClick() {
 
 .placeholder-text {
   @apply relative z-10 text-white text-[10px] font-medium text-center px-1 line-clamp-2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 </style>

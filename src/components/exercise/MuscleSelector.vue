@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between px-4 pb-2">
       <div class="flex items-center gap-2">
         <Heart class="w-4 h-4 text-primary" />
-        <span class="text-sm font-medium text-gray-900">目标肌群</span>
+        <span class="text-sm font-medium text-foreground">目标肌群</span>
       </div>
       <Button
         v-if="modelValue"
@@ -22,7 +22,7 @@
     <div class="px-4 overflow-x-auto">
       <div v-if="loading" class="flex items-center justify-center py-4">
         <Loader2 class="w-5 h-5 animate-spin text-primary" />
-        <span class="ml-2 text-sm text-gray-500">加载中...</span>
+        <span class="ml-2 text-sm text-muted-foreground">加载中...</span>
       </div>
 
       <div v-else-if="muscleGroups.length > 0" class="flex flex-wrap gap-2 pb-2">
@@ -39,7 +39,7 @@
         </Button>
       </div>
 
-      <div v-else class="py-4 text-center text-sm text-gray-500">
+      <div v-else class="py-4 text-center text-sm text-muted-foreground">
         暂无肌群数据
       </div>
     </div>

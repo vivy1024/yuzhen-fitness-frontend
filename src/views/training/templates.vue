@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-background pb-20">
     <!-- 顶部导航 -->
-    <div class="sticky top-0 z-10 bg-background/95 backdrop-blur border-b px-4 py-3">
+    <div class="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="icon" class="h-8 w-8" @click="router.back()">
           <ArrowLeft class="w-4 h-4" />

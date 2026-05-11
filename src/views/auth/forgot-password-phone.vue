@@ -133,8 +133,8 @@ function resendCode() {
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 mb-4 shadow-lg">
           <Dumbbell class="h-8 w-8 text-white" />
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">重置密码</h1>
-        <p class="text-gray-500 mt-1">通过手机号找回密码</p>
+        <h1 class="text-2xl font-bold text-foreground">重置密码</h1>
+        <p class="text-muted-foreground mt-1">通过手机号找回密码</p>
       </div>
 
       <Card class="border-0 shadow-xl">

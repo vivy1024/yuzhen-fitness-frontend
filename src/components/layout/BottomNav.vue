@@ -31,13 +31,13 @@ function navigate(path: string) {
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-background border-t safe-area-bottom">
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border safe-area-bottom">
     <div class="grid grid-cols-6 h-16">
       <button
         v-for="item in navItems"
         :key="item.path"
-        class="flex flex-col items-center justify-center gap-1 transition-colors"
-        :class="isActive(item.path) ? 'text-primary' : 'text-muted-foreground'"
+        class="flex flex-col items-center justify-center gap-1 transition-all duration-200"
+        :class="isActive(item.path) ? 'text-primary scale-105' : 'text-muted-foreground hover:text-foreground'"
         @click="navigate(item.path)"
       >
         <component :is="item.icon" class="h-5 w-5" />

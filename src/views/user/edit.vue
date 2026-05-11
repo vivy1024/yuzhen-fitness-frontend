@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
+  <div class="min-h-screen bg-background pb-32">
     <!-- 顶部导航栏 -->
-    <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <header class="sticky top-0 z-50 bg-card border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="handleBack">
           <ArrowLeft class="h-5 w-5" />
@@ -9,19 +9,19 @@
         <h1 class="text-lg font-semibold">编辑健身档案</h1>
         <Badge variant="outline">{{ completionRate }}%</Badge>
       </div>
-      <p class="px-4 pb-3 text-xs text-gray-500 text-center">
+      <p class="px-4 pb-3 text-xs text-muted-foreground text-center">
         更新您的个人信息，让智能健身顾问为您制定更精准的训练计划
       </p>
     </header>
 
     <!-- 步骤指示器 -->
-    <div class="px-4 py-3 bg-white dark:bg-gray-800 border-b">
+    <div class="px-4 py-3 bg-card border-b border-border">
       <div class="flex justify-between items-center">
         <div v-for="(step, index) in steps" :key="index" 
              class="flex-1 flex flex-col items-center"
              :class="{ 'opacity-50': index > currentStep }">
           <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-               :class="index <= currentStep ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'">
+               :class="index <= currentStep ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'">>
             {{ index + 1 }}
           </div>
           <span class="text-xs mt-1 text-center">{{ step }}</span>
@@ -338,7 +338,7 @@
               <div class="space-y-2">
                 <div v-for="option in REST_PATTERN_OPTIONS" :key="option.value"
                      class="p-3 rounded-lg border cursor-pointer transition-colors"
-                     :class="formData.rest_pattern === option.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'"
+                     :class="formData.rest_pattern === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30'"
                      @click="formData.rest_pattern = option.value">
                   <div class="flex items-center justify-between">
                     <span class="font-medium">{{ option.label }}</span>
@@ -360,7 +360,7 @@
     </div>
 
     <!-- 底部操作按钮 -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t space-y-2">
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border space-y-2">
       <div class="flex gap-2">
         <Button v-if="currentStep > 0" variant="outline" class="flex-1" @click="handlePrevStep">
           上一步

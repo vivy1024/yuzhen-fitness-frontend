@@ -1,26 +1,26 @@
 <template>
-  <div class="food-library min-h-screen bg-gray-50">
+  <div class="food-library min-h-screen bg-background">
     <!-- 导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b">
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="router.back()">
           <ArrowLeft class="w-5 h-5" />
         </Button>
         <h1 class="text-lg font-semibold">食物库</h1>
-        <span class="text-sm text-gray-500">{{ foodStore.totalCount }} 食物</span>
+        <span class="text-sm text-muted-foreground">{{ foodStore.totalCount }} 食物</span>
       </div>
     </header>
 
     <!-- 主内容区 -->
     <main class="pb-24">
       <!-- 搜索框 -->
-      <div class="p-4 bg-white border-b">
+      <div class="p-4 bg-card border-b border-border">
         <div class="relative">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             v-model="searchKeyword"
             placeholder="搜索食物名称..."
-            class="pl-10 h-10 rounded-full bg-gray-100 border-0"
+            class="pl-10 h-10 rounded-full bg-muted border-0"
             @keyup.enter="handleSearch"
           />
           <Button
@@ -36,7 +36,7 @@
       </div>
 
       <!-- 分类选择器 -->
-      <div class="px-4 py-3 bg-white border-b overflow-x-auto">
+      <div class="px-4 py-3 bg-card border-b border-border overflow-x-auto">
         <div class="flex gap-2 min-w-max">
           <Button
             :variant="!selectedCategory ? 'default' : 'outline'"
@@ -73,7 +73,7 @@
             <ChevronDown :class="['w-4 h-4 transition-transform', filterOpen && 'rotate-180']" />
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent class="mt-3 space-y-4 bg-white rounded-lg p-4 shadow-sm">
+        <CollapsibleContent class="mt-3 space-y-4 bg-card rounded-lg p-4 shadow-sm border border-border">
           <!-- GI值筛选 -->
           <div>
             <h4 class="text-sm font-medium mb-2 flex items-center gap-2">
@@ -144,7 +144,7 @@
 
       <!-- 骨架屏加载 -->
       <div v-if="isInitialLoading" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 px-3">
-        <div v-for="i in 12" :key="i" class="bg-white rounded-lg overflow-hidden">
+        <div v-for="i in 12" :key="i" class="bg-card rounded-lg overflow-hidden border border-border">
           <Skeleton class="w-full pb-[65%]" />
           <div class="p-1.5 space-y-1">
             <Skeleton class="h-3 w-3/4" />
@@ -167,8 +167,8 @@
 
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-16 px-4">
-        <Search class="w-16 h-16 text-gray-300 mb-4" />
-        <p class="text-gray-500 mb-4">{{ getEmptyDescription() }}</p>
+        <Search class="w-16 h-16 text-muted-foreground/30 mb-4" />
+        <p class="text-muted-foreground mb-4">{{ getEmptyDescription() }}</p>
         <Button @click="handleResetAll">重置筛选</Button>
       </div>
 
@@ -216,7 +216,7 @@
 
         <!-- 页面跳转 -->
         <div class="flex items-center justify-center gap-2">
-          <span class="text-sm text-gray-500">跳转到</span>
+          <span class="text-sm text-muted-foreground">跳转到</span>
           <Input
             v-model.number="jumpPageInput"
             type="number"
@@ -226,13 +226,13 @@
           <Button size="sm" @click="handlePageJump">GO</Button>
         </div>
 
-        <div class="text-center text-sm text-gray-500">
+        <div class="text-center text-sm text-muted-foreground">
           共 {{ foodStore.pagination.total }} 种食物
         </div>
       </div>
 
       <!-- 数据来源说明 -->
-      <div class="mx-4 mb-4 text-center text-xs text-gray-400">
+      <div class="mx-4 mb-4 text-center text-xs text-muted-foreground/60">
         数据来源：《中国食物成分表》
       </div>
     </main>

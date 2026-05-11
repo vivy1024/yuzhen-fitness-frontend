@@ -1,7 +1,7 @@
 <template>
-  <div class="exercise-library min-h-screen bg-gray-50">
+  <div class="exercise-library min-h-screen bg-background">
     <!-- 导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b" role="banner">
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border" role="banner">
       <div class="flex items-center justify-between px-4 h-14">
         <Button 
           variant="ghost" 
@@ -12,20 +12,20 @@
           <ArrowLeft class="w-5 h-5" aria-hidden="true" />
         </Button>
         <h1 class="text-lg font-semibold">动作库</h1>
-        <span class="text-sm text-gray-500" aria-live="polite">{{ exerciseStore.totalCount }} 动作</span>
+        <span class="text-sm text-muted-foreground" aria-live="polite">{{ exerciseStore.totalCount }} 动作</span>
       </div>
     </header>
 
     <!-- 主内容区 -->
     <main id="main-content" class="pb-24" role="main" tabindex="-1">
       <!-- 搜索框 -->
-      <div class="p-4 bg-white border-b" role="search">
+      <div class="p-4 bg-card border-b border-border" role="search">
         <div class="relative">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
           <Input
             v-model="searchKeyword"
             placeholder="搜索动作名称、肌群、器械..."
-            class="pl-10 h-10 rounded-full bg-gray-100 border-0"
+            class="pl-10 h-10 rounded-full bg-muted border-0"
             :aria-label="ariaLabels.navigation.search"
             @keyup.enter="handleSearch"
           />
@@ -69,7 +69,7 @@
             <ChevronDown :class="['w-4 h-4 transition-transform', filterOpen && 'rotate-180']" aria-hidden="true" />
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent class="mt-3 space-y-4 bg-white rounded-lg p-4 shadow-sm">
+        <CollapsibleContent class="mt-3 space-y-4 bg-card rounded-lg p-4 shadow-sm border border-border">
           <!-- 器械类型 -->
           <div>
             <h4 class="text-sm font-medium mb-2 flex items-center gap-2">
@@ -196,8 +196,8 @@
 
       <!-- 骨架屏加载 -->
       <div v-if="isInitialLoading" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 px-3">
-        <div v-for="i in 12" :key="i" class="bg-white rounded-lg overflow-hidden">
-          <Skeleton class="w-full pb-[60%]" />
+        <div v-for="i in 12" :key="i" class="bg-card rounded-lg overflow-hidden border border-border">
+          <Skeleton class="w-full pb-[65%]" />
           <div class="p-1.5 space-y-1">
             <Skeleton class="h-3 w-3/4" />
             <Skeleton class="h-2 w-1/2" />
@@ -225,8 +225,8 @@
 
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-16 px-4">
-        <Search class="w-16 h-16 text-gray-300 mb-4" />
-        <p class="text-gray-500 mb-4">{{ getEmptyDescription() }}</p>
+        <Search class="w-16 h-16 text-muted-foreground/30 mb-4" />
+        <p class="text-muted-foreground mb-4">{{ getEmptyDescription() }}</p>
         <Button @click="handleResetAll">重置筛选</Button>
       </div>
 
@@ -257,7 +257,7 @@
             <ChevronLeft class="w-4 h-4" aria-hidden="true" />
           </Button>
           
-          <span class="px-4 text-sm" aria-current="page">
+          <span class="px-4 text-sm text-muted-foreground" aria-current="page">
             {{ exerciseStore.pagination.current }} / {{ exerciseStore.pagination.totalPages }}
           </span>
           
@@ -283,7 +283,7 @@
 
         <!-- 页面跳转 -->
         <div class="flex items-center justify-center gap-2">
-          <span class="text-sm text-gray-500">跳转到</span>
+          <span class="text-sm text-muted-foreground">跳转到</span>
           <Input
             v-model.number="jumpPageInput"
             type="number"
@@ -293,7 +293,7 @@
           <Button size="sm" @click="handlePageJump">GO</Button>
         </div>
 
-        <div class="text-center text-sm text-gray-500">
+        <div class="text-center text-sm text-muted-foreground">
           共 {{ exerciseStore.pagination.total }} 个动作
         </div>
       </nav>
@@ -426,7 +426,6 @@ async function handleClearMuscle() {
 }
 
 function toggleFilter(type: keyof FilterConditions, value: string, checked: boolean | string) {
-  // shadcn-vue Checkbox 的 checked 可能是 boolean 或 'indeterminate'
   const isChecked = checked === true
   const arr = (currentFilters.value[type] as string[]) || []
   

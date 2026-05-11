@@ -1,7 +1,7 @@
 <template>
-  <div class="food-detail min-h-screen bg-gray-50">
+  <div class="food-detail min-h-screen bg-background">
     <!-- 导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b">
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="router.back()">
           <ArrowLeft class="w-5 h-5" />
@@ -14,7 +14,7 @@
           size="icon"
           @click="handleToggleFavorite"
         >
-          <Star :class="['w-5 h-5', isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400']" />
+          <Star :class="['w-5 h-5', isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground']" />
         </Button>
       </div>
     </header>
@@ -29,15 +29,15 @@
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="flex flex-col items-center justify-center py-16 px-4">
-      <AlertCircle class="w-16 h-16 text-red-400 mb-4" />
-      <p class="text-gray-500 mb-4">{{ error }}</p>
+      <AlertCircle class="w-16 h-16 text-destructive mb-4" />
+      <p class="text-muted-foreground mb-4">{{ error }}</p>
       <Button @click="loadDetail">重试</Button>
     </div>
 
     <!-- 详情内容 -->
     <main v-else-if="food" class="pb-24">
       <!-- 图片区域 -->
-      <div class="relative w-full h-[180px] sm:h-[200px] md:h-[240px] bg-gradient-to-br from-emerald-500 to-teal-600">
+      <div class="relative w-full h-[180px] sm:h-[200px] md:h-[240px] gradient-brand">
         <div class="absolute inset-0 flex flex-col items-center justify-center">
           <component :is="categoryIcon" class="w-10 h-10 text-white mb-1" />
           <h2 class="text-white text-base font-bold text-center px-4 line-clamp-2">{{ food.name }}</h2>
@@ -63,25 +63,25 @@
                 <Flame class="w-5 h-5 text-red-500" />
                 <span class="text-2xl font-bold text-red-500">{{ food.energy_kcal || 0 }}</span>
               </div>
-              <p class="text-xs text-gray-500">千卡/100g</p>
+              <p class="text-xs text-muted-foreground">千卡/100g</p>
             </div>
-            <div class="w-px h-10 bg-gray-200"></div>
+            <div class="w-px h-10 bg-border"></div>
             <div class="text-center">
               <span class="text-2xl font-bold text-blue-500">{{ food.protein || 0 }}</span>
-              <span class="text-sm text-gray-500">g</span>
-              <p class="text-xs text-gray-500">蛋白质</p>
+              <span class="text-sm text-muted-foreground">g</span>
+              <p class="text-xs text-muted-foreground">蛋白质</p>
             </div>
-            <div class="w-px h-10 bg-gray-200"></div>
+            <div class="w-px h-10 bg-border"></div>
             <div class="text-center">
               <span class="text-2xl font-bold text-orange-500">{{ food.fat || 0 }}</span>
-              <span class="text-sm text-gray-500">g</span>
-              <p class="text-xs text-gray-500">脂肪</p>
+              <span class="text-sm text-muted-foreground">g</span>
+              <p class="text-xs text-muted-foreground">脂肪</p>
             </div>
-            <div class="w-px h-10 bg-gray-200"></div>
+            <div class="w-px h-10 bg-border"></div>
             <div class="text-center">
-              <span class="text-2xl font-bold text-green-500">{{ food.carbohydrate || 0 }}</span>
-              <span class="text-sm text-gray-500">g</span>
-              <p class="text-xs text-gray-500">碳水</p>
+              <span class="text-2xl font-bold text-primary">{{ food.carbohydrate || 0 }}</span>
+              <span class="text-sm text-muted-foreground">g</span>
+              <p class="text-xs text-muted-foreground">碳水</p>
             </div>
           </div>
         </CardContent>
@@ -96,36 +96,34 @@
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-3">
-          <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-sm text-gray-500">蛋白质</span>
+          <div class="flex justify-between items-center py-2 border-b border-border">
+            <span class="text-sm text-muted-foreground">蛋白质</span>
             <div class="flex items-center gap-2">
               <Progress :model-value="getMacroPercent(food.protein || 0, 50)" class="w-20 h-2" />
               <span class="text-sm font-medium w-12 text-right">{{ food.protein || 0 }}g</span>
             </div>
           </div>
-          <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-sm text-gray-500">脂肪</span>
+          <div class="flex justify-between items-center py-2 border-b border-border</span>
             <div class="flex items-center gap-2">
               <Progress :model-value="getMacroPercent(food.fat || 0, 50)" class="w-20 h-2" />
               <span class="text-sm font-medium w-12 text-right">{{ food.fat || 0 }}g</span>
             </div>
           </div>
-          <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-sm text-gray-500">碳水化合物</span>
+          <div class="flex justify-between items-center py-2 border-b border-border">
             <div class="flex items-center gap-2">
               <Progress :model-value="getMacroPercent(food.carbohydrate || 0, 100)" class="w-20 h-2" />
               <span class="text-sm font-medium w-12 text-right">{{ food.carbohydrate || 0 }}g</span>
             </div>
           </div>
-          <div v-if="food.dietary_fiber" class="flex justify-between items-center py-2 border-b">
-            <span class="text-sm text-gray-500">膳食纤维</span>
+          <div v-if="food.dietary_fiber" class="flex justify-between items-center py-2 border-b border-border">
+            <span class="text-sm text-muted-foreground">膳食纤维</span>
             <div class="flex items-center gap-2">
               <Progress :model-value="getMacroPercent(food.dietary_fiber, 30)" class="w-20 h-2" />
               <span class="text-sm font-medium w-12 text-right">{{ food.dietary_fiber }}g</span>
             </div>
           </div>
           <div v-if="food.cholesterol !== null && food.cholesterol !== undefined" class="flex justify-between items-center py-2">
-            <span class="text-sm text-gray-500">胆固醇</span>
+            <span class="text-sm text-muted-foreground">胆固醇</span>
             <span class="text-sm font-medium">{{ food.cholesterol }}mg</span>
           </div>
         </CardContent>
@@ -141,44 +139,44 @@
         </CardHeader>
         <CardContent>
           <div class="grid grid-cols-2 gap-3">
-            <div v-if="food.calcium" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">钙</span>
+            <div v-if="food.calcium" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">钙</span>
               <span class="text-sm font-medium">{{ food.calcium }}mg</span>
             </div>
-            <div v-if="food.iron" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">铁</span>
+            <div v-if="food.iron" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">铁</span>
               <span class="text-sm font-medium">{{ food.iron }}mg</span>
             </div>
-            <div v-if="food.zinc" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">锌</span>
+            <div v-if="food.zinc" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">锌</span>
               <span class="text-sm font-medium">{{ food.zinc }}mg</span>
             </div>
-            <div v-if="food.selenium" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">硒</span>
+            <div v-if="food.selenium" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">硒</span>
               <span class="text-sm font-medium">{{ food.selenium }}μg</span>
             </div>
-            <div v-if="food.potassium" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">钾</span>
+            <div v-if="food.potassium" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">钾</span>
               <span class="text-sm font-medium">{{ food.potassium }}mg</span>
             </div>
-            <div v-if="food.phosphorus" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">磷</span>
+            <div v-if="food.phosphorus" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">磷</span>
               <span class="text-sm font-medium">{{ food.phosphorus }}mg</span>
             </div>
-            <div v-if="food.sodium" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">钠</span>
+            <div v-if="food.sodium" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">钠</span>
               <span class="text-sm font-medium">{{ food.sodium }}mg</span>
             </div>
-            <div v-if="food.magnesium" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">镁</span>
+            <div v-if="food.magnesium" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">镁</span>
               <span class="text-sm font-medium">{{ food.magnesium }}mg</span>
             </div>
-            <div v-if="food.copper" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">铜</span>
+            <div v-if="food.copper" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">铜</span>
               <span class="text-sm font-medium">{{ food.copper }}mg</span>
             </div>
-            <div v-if="food.manganese" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">锰</span>
+            <div v-if="food.manganese" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">锰</span>
               <span class="text-sm font-medium">{{ food.manganese }}mg</span>
             </div>
           </div>
@@ -195,36 +193,36 @@
         </CardHeader>
         <CardContent>
           <div class="grid grid-cols-2 gap-3">
-            <div v-if="food.vitamin_a" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">维生素A</span>
+            <div v-if="food.vitamin_a" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">维生素A</span>
               <span class="text-sm font-medium">{{ food.vitamin_a }}μg</span>
             </div>
-            <div v-if="food.vitamin_c" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">维生素C</span>
+            <div v-if="food.vitamin_c" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">维生素C</span>
               <span class="text-sm font-medium">{{ food.vitamin_c }}mg</span>
             </div>
-            <div v-if="food.vitamin_e_total" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">维生素E</span>
+            <div v-if="food.vitamin_e_total" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">维生素E</span>
               <span class="text-sm font-medium">{{ food.vitamin_e_total }}mg</span>
             </div>
-            <div v-if="food.thiamin" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">维生素B1</span>
+            <div v-if="food.thiamin" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">维生素B1</span>
               <span class="text-sm font-medium">{{ food.thiamin }}mg</span>
             </div>
-            <div v-if="food.riboflavin" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">维生素B2</span>
+            <div v-if="food.riboflavin" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">维生素B2</span>
               <span class="text-sm font-medium">{{ food.riboflavin }}mg</span>
             </div>
-            <div v-if="food.niacin" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">烟酸</span>
+            <div v-if="food.niacin" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">烟酸</span>
               <span class="text-sm font-medium">{{ food.niacin }}mg</span>
             </div>
-            <div v-if="food.carotene" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">胡萝卜素</span>
+            <div v-if="food.carotene" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">胡萝卜素</span>
               <span class="text-sm font-medium">{{ food.carotene }}μg</span>
             </div>
-            <div v-if="food.retinol" class="flex justify-between items-center p-2 bg-gray-50 rounded">
-              <span class="text-sm text-gray-600">视黄醇</span>
+            <div v-if="food.retinol" class="flex justify-between items-center p-2 bg-muted rounded">
+              <span class="text-sm text-muted-foreground">视黄醇</span>
               <span class="text-sm font-medium">{{ food.retinol }}μg</span>
             </div>
           </div>
@@ -240,28 +238,28 @@
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-3">
-          <div v-if="food.edible" class="flex justify-between py-2 border-b">
-            <span class="text-sm text-gray-500">可食部</span>
+          <div v-if="food.edible" class="flex justify-between py-2 border-b border-border">
+            <span class="text-sm text-muted-foreground">可食部</span>
             <span class="text-sm font-medium">{{ food.edible }}%</span>
           </div>
-          <div v-if="food.water" class="flex justify-between py-2 border-b">
-            <span class="text-sm text-gray-500">水分</span>
+          <div v-if="food.water" class="flex justify-between py-2 border-b border-border">
+            <span class="text-sm text-muted-foreground">水分</span>
             <span class="text-sm font-medium">{{ food.water }}g</span>
           </div>
           <div v-if="food.ash" class="flex justify-between py-2">
-            <span class="text-sm text-gray-500">灰分</span>
+            <span class="text-sm text-muted-foreground">灰分</span>
             <span class="text-sm font-medium">{{ food.ash }}g</span>
           </div>
         </CardContent>
       </Card>
 
       <!-- 数据来源 -->
-      <div class="mx-4 mt-4 mb-4 text-center text-xs text-gray-400">
+      <div class="mx-4 mt-4 mb-4 text-center text-xs text-muted-foreground/60">
         数据来源：《中国食物成分表》
       </div>
 
       <!-- 添加到饮食记录按钮 -->
-      <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+      <div class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
         <Button class="w-full" size="lg" @click="showAddIntakeDialog = true">
           <Plus class="w-5 h-5 mr-2" />
           添加到饮食记录
@@ -297,7 +295,7 @@
               </SelectContent>
             </Select>
           </div>
-          <div v-if="intakeAmount && food" class="p-3 bg-gray-50 rounded-lg">
+          <div v-if="intakeAmount && food" class="p-3 bg-muted rounded-lg">
             <p class="text-sm font-medium mb-2">营养摄入预览</p>
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div>热量: <span class="font-medium text-red-500">{{ calculateNutrition('calories') }}kcal</span></div>
@@ -373,7 +371,7 @@ const categoryIcon = computed(() => {
 
 const giBadgeClass = computed(() => {
   const gi = food.value?.gi_value
-  if (!gi) return 'bg-gray-500 hover:bg-gray-500 text-white'
+  if (!gi) return 'bg-muted0 hover:bg-muted0 text-white'
   if (gi <= 55) return 'bg-green-500 hover:bg-green-500 text-white'
   if (gi <= 70) return 'bg-yellow-500 hover:bg-yellow-500 text-white'
   return 'bg-red-500 hover:bg-red-500 text-white'

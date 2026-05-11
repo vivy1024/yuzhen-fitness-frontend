@@ -114,7 +114,7 @@
           </div>
 
           <!-- 动作列表 -->
-          <div class="mt-3 pt-3 border-t">
+          <div class="mt-3 pt-3 border-t border-border">
             <div class="flex items-center justify-between mb-1">
               <div class="text-xs text-muted-foreground">训练动作</div>
               <Button

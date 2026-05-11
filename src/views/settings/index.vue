@@ -856,7 +856,7 @@ async function handleChangePhone() {
                   v-for="i in 3"
                   :key="i"
                   class="h-1 flex-1 rounded-full transition-colors"
-                  :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'"
+                  :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-muted'"
                 />
               </div>
               <p class="text-xs" :class="{

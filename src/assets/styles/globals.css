@@ -4,94 +4,81 @@
 
 @layer base {
   :root {
-    /* 背景色 */
+    /* 浅色模式 — 纯白底 + 绿色（方案⑥） */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 215 28% 17%;
 
-    /* 卡片 */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card: 140 40% 98%;
+    --card-foreground: 215 28% 17%;
 
-    /* 弹出层 */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 215 28% 17%;
 
-    /* 主色调 - 紫色渐变 */
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    /* 次要色 */
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 140 40% 96%;
+    --secondary-foreground: 215 28% 17%;
 
-    /* 静音色 */
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    /* 强调色 */
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 160 67% 52%;
+    --accent-foreground: 0 0% 100%;
 
-    /* 错误/危险色 */
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    /* 边框 */
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --border: 160 20% 90%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 39%;
 
-    /* 圆角 */
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --radius: 0.75rem;
+
+    /* 图表色 */
+    --chart-1: 160 84% 39%;
+    --chart-2: 160 67% 52%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 258 90% 66%;
+    --chart-5: 30 80% 55%;
   }
 
   .dark {
-    /* 深色模式背景 */
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    /* 深色模式 — 深黑底 + 薄荷绿（方案①） */
+    --background: 210 23% 7%;
+    --foreground: 214 32% 91%;
 
-    /* 深色模式卡片 */
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 213 18% 11%;
+    --card-foreground: 214 32% 91%;
 
-    /* 深色模式弹出层 */
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 213 18% 11%;
+    --popover-foreground: 214 32% 91%;
 
-    /* 深色模式主色调 */
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 160 84% 67%;
+    --primary-foreground: 210 23% 7%;
 
-    /* 深色模式次要色 */
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 213 18% 16%;
+    --secondary-foreground: 214 32% 91%;
 
-    /* 深色模式静音色 */
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 213 14% 16%;
+    --muted-foreground: 215 16% 47%;
 
-    /* 深色模式强调色 */
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 160 72% 56%;
+    --accent-foreground: 210 23% 7%;
 
-    /* 深色模式错误色 */
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    /* 深色模式边框 */
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --border: 213 14% 18%;
+    --input: 213 14% 18%;
+    --ring: 160 84% 67%;
+
+    /* 图表色 */
+    --chart-1: 160 84% 67%;
+    --chart-2: 160 72% 56%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 258 90% 66%;
+    --chart-5: 30 80% 55%;
   }
 }
 
@@ -102,9 +89,27 @@
   body {
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
     font-weight: 600;
+  }
+}
+
+/* 品牌工具类 */
+@layer utilities {
+  .gradient-brand {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%);
+  }
+  .gradient-brand-text {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.25), 0 0 40px rgba(16, 185, 129, 0.1);
   }
 }

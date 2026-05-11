@@ -339,7 +339,7 @@ function groupExercisesByDay(exercises: any[]): any[][] {
       </div>
 
       <!-- 操作按钮 -->
-      <div class="flex items-center gap-2 p-4 bg-background border-b overflow-x-auto">
+      <div class="flex items-center gap-2 p-4 bg-background border-b border-border overflow-x-auto">
         <Button v-if="!plan.isActive" variant="outline" size="sm" @click="handleActivate">
           <Star class="h-4 w-4 mr-1" />
           设为当前
@@ -360,7 +360,7 @@ function groupExercisesByDay(exercises: any[]): any[][] {
 
       <!-- 标签页内容 -->
       <Tabs v-model="activeTab" class="w-full">
-        <TabsList class="w-full justify-start px-4 bg-background border-b rounded-none h-auto py-0">
+        <TabsList class="w-full justify-start px-4 bg-background border-b border-border rounded-none h-auto py-0">
           <TabsTrigger value="overview" class="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">
             概览
           </TabsTrigger>
@@ -448,7 +448,7 @@ function groupExercisesByDay(exercises: any[]): any[][] {
                 />
               </button>
               
-              <div v-if="isDayExpanded(dayIndex)" class="border-t divide-y">
+              <div v-if="isDayExpanded(dayIndex)" class="border-t border-border divide-y">
                 <button
                   v-for="(exercise, idx) in dayExercises"
                   :key="idx"

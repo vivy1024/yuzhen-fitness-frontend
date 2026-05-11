@@ -227,7 +227,7 @@ function goBack() {
     </div>
 
     <!-- 筛选栏 -->
-    <div class="sticky top-0 z-10 bg-background border-b px-4 py-3">
+    <div class="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
       <div class="flex items-center gap-3">
         <Filter class="h-4 w-4 text-muted-foreground" />
         

@@ -187,7 +187,7 @@ onMounted(() => {
       <template v-for="section in menuSections" :key="section.title">
         <Card>
           <CardContent class="p-0">
-            <div class="px-4 py-3 border-b">
+            <div class="px-4 py-3 border-b border-border">
               <h3 class="text-sm font-medium text-muted-foreground">{{ section.title }}</h3>
             </div>
             <div class="divide-y">

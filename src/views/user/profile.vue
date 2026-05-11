@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+  <div class="min-h-screen bg-background pb-20">
     <!-- 顶部导航栏 -->
-    <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <header class="sticky top-0 z-50 bg-card border-b border-border">
       <div class="flex items-center justify-between px-4 h-14">
         <Button variant="ghost" size="icon" @click="$router.back()">
           <ArrowLeft class="h-5 w-5" />
@@ -23,7 +23,7 @@
         <CardContent>
           <div class="space-y-2">
             <Progress :model-value="userStore.completionRate" class="h-2" />
-            <p class="text-sm text-gray-500 text-center">
+            <p class="text-sm text-muted-foreground text-center">
               {{ userStore.completionRate < 100 ? '完善档案可获得更精准的训练计划' : '档案已完善，可以开始训练了！' }}
             </p>
           </div>
@@ -42,15 +42,15 @@
           <div class="grid grid-cols-3 gap-4 mb-4">
             <div class="text-center">
               <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ userStore.userProfile.streak_days || 0 }}</div>
-              <div class="text-xs text-gray-500">连续天数</div>
+              <div class="text-xs text-muted-foreground">连续天数</div>
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ userStore.userProfile.total_training_days || 0 }}</div>
-              <div class="text-xs text-gray-500">累计天数</div>
+              <div class="text-xs text-muted-foreground">累计天数</div>
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ unlockedCount }}</div>
-              <div class="text-xs text-gray-500">已解锁徽章</div>
+              <div class="text-xs text-muted-foreground">已解锁徽章</div>
             </div>
           </div>
           <!-- 成就徽章 -->
@@ -62,7 +62,7 @@
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all',
                 badge.unlocked
                   ? 'bg-amber-100 dark:bg-amber-800/40 text-amber-800 dark:text-amber-200'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 opacity-60'
+                  : 'bg-muted dark:bg-gray-800 text-muted-foreground dark:text-gray-600 opacity-60'
               ]"
               :title="badge.description"
             >
@@ -102,7 +102,7 @@
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">BMI指数</span>
+            <span class="text-sm text-muted-foreground">BMI指数</span>
             <Badge :variant="getBMIVariant(userStore.ffmiData.bmi)">
               {{ userStore.ffmiData.bmi }}
             </Badge>
@@ -110,7 +110,7 @@
           <InfoRow label="瘦体重" :value="userStore.ffmiData.lean_body_mass + 'kg'" />
           <InfoRow label="FFMI指数" :value="String(userStore.ffmiData.normalized_ffmi)" />
           <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">肌肉水平</span>
+            <span class="text-sm text-muted-foreground">肌肉水平</span>
             <Badge variant="default" class="bg-green-500">
               {{ userStore.ffmiData.assessment }}
             </Badge>
@@ -128,7 +128,7 @@
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">主要目标</span>
+            <span class="text-sm text-muted-foreground">主要目标</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-if="userStore.userProfile.fitness_goals.primary_goal" variant="default">
                 {{ userStore.userProfile.fitness_goals.primary_goal }}
@@ -137,7 +137,7 @@
             </div>
           </div>
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">次要目标</span>
+            <span class="text-sm text-muted-foreground">次要目标</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-for="(goal, index) in userStore.userProfile.fitness_goals.secondary_goals" :key="index" variant="outline">
                 {{ goal }}
@@ -161,13 +161,13 @@
         <CardContent class="space-y-3">
           <InfoRow label="训练场地" :value="userStore.userProfile.training_preferences.training_location || '-'" />
           <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">训练强度</span>
+            <span class="text-sm text-muted-foreground">训练强度</span>
             <Badge :variant="getIntensityVariant(userStore.userProfile.training_preferences.training_intensity)">
               {{ translateIntensity(userStore.userProfile.training_preferences.training_intensity) }}
             </Badge>
           </div>
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">可用器械</span>
+            <span class="text-sm text-muted-foreground">可用器械</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-for="(equipment, index) in userStore.userProfile.training_preferences.available_equipment" :key="index" variant="outline">
                 {{ equipment }}
@@ -188,7 +188,7 @@
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">慢性疾病</span>
+            <span class="text-sm text-muted-foreground">慢性疾病</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-if="userStore.userProfile.health_status.chronic_diseases?.length" 
                      v-for="(disease, index) in userStore.userProfile.health_status.chronic_diseases" 
@@ -200,7 +200,7 @@
             </div>
           </div>
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">受伤历史</span>
+            <span class="text-sm text-muted-foreground">受伤历史</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-if="userStore.userProfile.health_status.injury_history?.length" 
                      v-for="(injury, index) in userStore.userProfile.health_status.injury_history" 
@@ -213,7 +213,7 @@
             </div>
           </div>
           <div class="flex justify-between items-start">
-            <span class="text-sm text-gray-600 dark:text-gray-400">用药情况</span>
+            <span class="text-sm text-muted-foreground">用药情况</span>
             <div class="flex flex-wrap gap-1 justify-end max-w-[60%]">
               <Badge v-if="userStore.userProfile.health_status.medications?.length" 
                      v-for="(med, index) in userStore.userProfile.health_status.medications" 
@@ -242,8 +242,8 @@
 
     <!-- 空状态 -->
     <div v-else class="flex flex-col items-center justify-center min-h-[60vh] p-8">
-      <User class="h-16 w-16 text-gray-300 mb-4" />
-      <p class="text-gray-500 mb-4">暂无档案数据</p>
+      <User class="h-16 w-16 text-muted-foreground/30 mb-4" />
+      <p class="text-muted-foreground mb-4">暂无档案数据</p>
       <Button @click="handleEdit">创建档案</Button>
     </div>
   </div>

@@ -165,8 +165,8 @@ function goToLogin() {
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 mb-4 shadow-lg">
           <Dumbbell class="h-8 w-8 text-white" />
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">玉珍健身</h1>
-        <p class="text-gray-500 mt-1">找回您的密码</p>
+        <h1 class="text-2xl font-bold text-foreground">玉珍健身</h1>
+        <p class="text-muted-foreground mt-1">找回您的密码</p>
       </div>
 
       <Card class="border-0 shadow-xl">
@@ -264,7 +264,7 @@ function goToLogin() {
               </div>
               <!-- 密码强度指示器 -->
               <div v-if="form.password" class="flex items-center gap-2">
-                <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <div 
                     class="h-full transition-all duration-300"
                     :class="passwordStrength.color"
@@ -318,7 +318,7 @@ function goToLogin() {
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
               <CheckCircle class="h-8 w-8 text-green-600" />
             </div>
-            <p class="text-gray-600 mb-6">您的密码已成功重置，请使用新密码登录</p>
+            <p class="text-muted-foreground mb-6">您的密码已成功重置，请使用新密码登录</p>
             <Button class="w-full" @click="goToLogin">
               返回登录
             </Button>

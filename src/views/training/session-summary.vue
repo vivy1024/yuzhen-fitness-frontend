@@ -79,7 +79,7 @@
             v-for="(exercise, index) in exercises"
             :key="index"
             class="flex items-center justify-between py-2"
-            :class="{ 'border-t': index > 0 }"
+            :class="{ 'border-t border-border': index > 0 }"
           >
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
