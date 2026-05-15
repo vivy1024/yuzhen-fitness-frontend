@@ -20,6 +20,7 @@ import {
   FileText,
 } from 'lucide-vue-next'
 import type { ToolCallInfo } from '@/composables/useYuzhenChat'
+import ToolResultRenderer from './tool-renderers/ToolResultRenderer.vue'
 
 interface Props {
   toolCall: ToolCallInfo
@@ -36,25 +37,57 @@ function toggle() {
   expanded.value = !expanded.value
 }
 
+// 从 MCP 工具名中提取实际工具名
+function extractToolName(fullName: string): string {
+  if (fullName.startsWith('mcp__')) {
+    const lastSep = fullName.lastIndexOf('__')
+    if (lastSep > 4) return fullName.slice(lastSep + 2)
+  }
+  return fullName
+}
+
+const actualToolName = computed(() => extractToolName(props.toolCall.toolName))
+
 // 工具分类图标映射
 const TOOL_ICONS: Record<string, typeof Search> = {
   // 搜索类
+  search_exercises: Search,
+  find_alternatives: Search,
+  search_knowledge: Search,
+  search_foods: Search,
+  get_exercise_detail: Search,
+  get_muscle_exercise_map: Search,
   intelligent_exercise_selector: Search,
   exercise_alternative_finder: Search,
   find_similar_training_cases: Search,
   // 安全类
+  check_exercise_safety: Shield,
+  get_contraindications: Shield,
+  get_rehabilitation_protocol: Shield,
   contraindications_checker: Shield,
   injury_risk_assessor: Shield,
   safe_exercise_modifier: Shield,
   // 计算类
+  calculate_tdee: Calculator,
+  calculate_training_volume: Calculator,
+  calculate_1rm: Calculator,
+  assess_strength_level: Calculator,
+  calculate_progressive_overload: Calculator,
   tdee_calculator: Calculator,
   muscle_group_volume_calculator: Calculator,
   intelligent_weight_calculator: Calculator,
   // 训练类
+  design_training_split: Dumbbell,
+  generate_training_cycle: Dumbbell,
+  analyze_training_balance: Dumbbell,
+  get_posture_corrections: Dumbbell,
   professional_program_designer: Dumbbell,
   training_split_designer: Dumbbell,
-  periodized_program_designer: Dumbbell,
-  movement_pattern_balancer: Dumbbell,
+  // 用户数据类
+  get_user_profile: FileText,
+  get_training_history: FileText,
+  get_progress_data: FileText,
+  save_training_plan: FileText,
 }
 
 const TOOL_ICON_COLORS: Record<string, string> = {
@@ -66,7 +99,7 @@ const TOOL_ICON_COLORS: Record<string, string> = {
 }
 
 const icon = computed(() => {
-  return TOOL_ICONS[props.toolCall.toolName] || FileText
+  return TOOL_ICONS[actualToolName.value] || FileText
 })
 
 const iconColor = computed(() => {
@@ -81,28 +114,41 @@ const iconColor = computed(() => {
 
 // 工具显示名称
 const TOOL_DISPLAY_NAMES: Record<string, string> = {
+  search_exercises: '搜索动作',
+  get_exercise_detail: '动作详情',
+  find_alternatives: '替代动作',
+  search_knowledge: '知识检索',
+  search_foods: '食物搜索',
+  get_food_detail: '食物详情',
+  get_muscle_exercise_map: '肌群动作映射',
+  get_strength_standards: '力量标准',
+  check_exercise_safety: '安全检查',
+  get_contraindications: '禁忌症查询',
+  get_posture_corrections: '体态矫正',
+  get_rehabilitation_protocol: '康复方案',
+  calculate_tdee: 'TDEE 计算',
+  calculate_training_volume: '训练容量',
+  calculate_1rm: '1RM 估算',
+  assess_strength_level: '力量评估',
+  design_training_split: '训练分化设计',
+  generate_training_cycle: '训练周期生成',
+  analyze_training_balance: '训练平衡分析',
+  calculate_progressive_overload: '渐进超负荷',
+  get_user_profile: '用户档案',
+  get_training_history: '训练记录',
+  get_progress_data: '进度数据',
+  save_training_plan: '保存计划',
+  // 旧工具名兼容
   intelligent_exercise_selector: '智能动作选择',
   exercise_alternative_finder: '替代动作查找',
   contraindications_checker: '禁忌症检查',
-  injury_risk_assessor: '损伤风险评估',
-  safe_exercise_modifier: '安全动作调整',
   tdee_calculator: 'TDEE 计算',
   muscle_group_volume_calculator: '肌群容量计算',
-  intelligent_weight_calculator: '智能重量计算',
   professional_program_designer: '专业方案设计',
-  training_split_designer: '训练分化设计',
-  periodized_program_designer: '周期化方案',
-  movement_pattern_balancer: '动作模式平衡',
-  nutrition_intake_analyzer: '营养摄入分析',
-  meal_plan_designer: '饮食计划设计',
-  exercise_nutrition_optimization: '运动营养优化',
-  find_similar_training_cases: '相似案例查找',
-  get_user_profile: '获取用户档案',
-  record_training_feedback: '记录训练反馈',
 }
 
 const displayName = computed(() => {
-  return TOOL_DISPLAY_NAMES[props.toolCall.toolName] || props.toolCall.toolName
+  return TOOL_DISPLAY_NAMES[actualToolName.value] || actualToolName.value
 })
 
 // 状态图标
@@ -186,14 +232,21 @@ const detailContent = computed(() => {
 
     <!-- 展开态：详情 -->
     <div v-if="expanded" class="border-t border-border/40 px-3 py-2 space-y-2">
+      <!-- 结构化结果渲染（动作卡片/TDEE/容量等） -->
+      <ToolResultRenderer
+        v-if="toolCall.result"
+        :tool-name="toolCall.toolName"
+        :result="typeof toolCall.result === 'string' ? JSON.parse(toolCall.result) : toolCall.result"
+      />
+
       <!-- 输入参数 -->
       <div v-if="toolCall.input">
         <div class="text-[10px] font-medium text-muted-foreground mb-1">输入参数</div>
         <pre class="text-[11px] bg-muted/50 rounded p-2 overflow-x-auto max-h-32 text-foreground/80">{{ typeof toolCall.input === 'string' ? toolCall.input : JSON.stringify(toolCall.input, null, 2) }}</pre>
       </div>
 
-      <!-- 结果/错误 -->
-      <div v-if="detailContent">
+      <!-- 结果/错误（fallback 到 JSON） -->
+      <div v-if="detailContent && !toolCall.result">
         <div class="text-[10px] font-medium text-muted-foreground mb-1">
           {{ toolCall.status === 'error' ? '错误信息' : '执行结果' }}
         </div>

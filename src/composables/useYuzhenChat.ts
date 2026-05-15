@@ -153,15 +153,9 @@ export function useYuzhenChat(baseUrl?: string) {
       return
     }
 
-    // 添加用户消息到本地
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content,
-      timestamp: Date.now(),
-    }
-    messages.value = [...messages.value, userMsg]
+    // 不在本地添加 user message — 等服务端 session:message 回传（避免重复）
     streamingContent.value = ''
+    isWorking.value = true
 
     // 发送到服务端
     ws.send(JSON.stringify({
