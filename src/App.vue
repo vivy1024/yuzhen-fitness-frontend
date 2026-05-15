@@ -34,7 +34,7 @@ useNetworkStatus()
 const route = useRoute()
 
 // 不显示底部导航的页面
-const hideNavRoutes = ['login', 'register', 'forgot-password', 'forgot-password-phone', 'legal-terms', 'legal-privacy', 'training-session', 'training-summary']
+const hideNavRoutes = ['login', 'register', 'forgot-password', 'forgot-password-phone', 'legal-terms', 'legal-privacy', 'training-session', 'training-summary', 'ai-chat']
 
 const showBottomNav = computed(() => {
   const name = route.name as string
