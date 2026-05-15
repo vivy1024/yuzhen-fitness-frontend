@@ -8,6 +8,7 @@ import { computed } from 'vue'
 import TDEEResultCard from './TDEEResultCard.vue'
 import ExerciseResultCard from './ExerciseResultCard.vue'
 import VolumeResultCard from './VolumeResultCard.vue'
+import TrainingPlanCard from '@/components/training/TrainingPlanCard.vue'
 
 interface Props {
   toolName: string
@@ -41,6 +42,10 @@ const RENDERER_MAP: Record<string, string> = {
   calculate_training_volume: 'volume',
   muscle_group_volume_calculator: 'volume',
   get_training_volume: 'volume',
+  // 训练计划类
+  generate_training_cycle: 'plan',
+  design_training_split: 'plan',
+  professional_program_designer: 'plan',
 }
 
 const rendererType = computed(() => {
@@ -58,5 +63,6 @@ const hasSpecialRenderer = computed(() => {
     <TDEEResultCard v-if="rendererType === 'tdee'" :result="result" />
     <ExerciseResultCard v-if="rendererType === 'exercise'" :result="result" />
     <VolumeResultCard v-if="rendererType === 'volume'" :result="result" />
+    <TrainingPlanCard v-if="rendererType === 'plan'" :plan="result" :show-import-button="true" />
   </div>
 </template>
