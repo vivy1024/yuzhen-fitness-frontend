@@ -132,6 +132,8 @@ export function useYuzhenChat(baseUrl?: string) {
     currentSessionId = null
     connectionState.value = 'disconnected'
     streamingContent.value = ''
+    isWorking.value = false
+    pendingToolCalls = [] // 清空累积的工具调用
   }
 
   function scheduleReconnect() {
@@ -283,6 +285,12 @@ export function useYuzhenChat(baseUrl?: string) {
     if (msg.role === 'assistant' && streamingContent.value) {
       msg.content = msg.content || streamingContent.value
       streamingContent.value = ''
+      isWorking.value = false // 收到最终消息，重置工作状态
+    }
+
+    // user 消息到达也说明服务端已确认
+    if (msg.role === 'user') {
+      isWorking.value = true // 用户消息确认后，等待 AI 回复
     }
 
     // 替换或追加消息
@@ -346,6 +354,11 @@ export function useYuzhenChat(baseUrl?: string) {
         modelId: raw.runtime.modelId,
         usage: raw.runtime.usage,
       }
+    }
+
+    // 思考/推理块
+    if (raw.reasoning_content || raw.thinking) {
+      msg.thinking = raw.thinking || [{ content: raw.reasoning_content, summary: '' }]
     }
 
     return msg

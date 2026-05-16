@@ -264,7 +264,7 @@ watch(error, (val) => {
           <div
             v-for="s in sessionList"
             :key="s.id"
-            class="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+            class="group flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
             :class="{ 'bg-muted': s.id === currentSessionId }"
             @click="switchSession(s.id)"
           >
