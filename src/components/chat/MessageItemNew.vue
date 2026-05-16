@@ -10,10 +10,11 @@
  * - 元数据：模型/token 用量
  * - 动作链接：点击跳转详情页
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { User, Bot } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { User, Bot, Copy, Check } from 'lucide-vue-next'
 import ToolCallCardNew from './ToolCallCardNew.vue'
 import TrainingPlanCard from '@/components/training/TrainingPlanCard.vue'
 import { marked } from 'marked'
@@ -113,6 +114,27 @@ function handleImportPlan() {
   console.log('[MessageItemNew] Import plan:', trainingPlan.value)
 }
 
+// 复制消息内容
+const copied = ref(false)
+async function handleCopy() {
+  if (!props.message.content) return
+  try {
+    await navigator.clipboard.writeText(props.message.content)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback
+    const textarea = document.createElement('textarea')
+    textarea.value = props.message.content
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
+}
+
 // 动作链接点击
 function handleContentClick(event: MouseEvent) {
   const target = event.target as HTMLElement
@@ -143,7 +165,7 @@ function handleContentClick(event: MouseEvent) {
     </div>
 
     <!-- AI 消息 -->
-    <div v-else-if="message.role === 'assistant'" class="flex items-start gap-3">
+    <div v-else-if="message.role === 'assistant'" class="group flex items-start gap-3">
       <Avatar class="h-8 w-8 shrink-0">
         <AvatarFallback class="bg-blue-500/10">
           <Bot class="h-4 w-4 text-blue-600" />
@@ -152,12 +174,23 @@ function handleContentClick(event: MouseEvent) {
 
       <div class="flex flex-col gap-2 max-w-[85%]">
         <!-- Markdown 消息内容 -->
-        <div v-if="message.content" class="rounded-2xl bg-muted px-4 py-2.5">
+        <div v-if="message.content" class="relative rounded-2xl bg-muted px-4 py-2.5">
           <div
             class="text-sm prose prose-sm max-w-none dark:prose-invert"
             @click="handleContentClick"
             v-html="renderedContent"
           />
+          <!-- 复制按钮（hover 时显示） -->
+          <Button
+            variant="ghost"
+            size="icon"
+            class="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="复制"
+            @click="handleCopy"
+          >
+            <Check v-if="copied" class="h-3 w-3 text-green-500" />
+            <Copy v-else class="h-3 w-3 text-muted-foreground" />
+          </Button>
         </div>
 
         <!-- 训练计划卡片（从工具结果中提取） -->
