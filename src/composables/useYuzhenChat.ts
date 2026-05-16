@@ -241,8 +241,44 @@ export function useYuzhenChat(baseUrl?: string) {
     }
   }
 
+  // 累积工具调用（tool_use/tool_result 消息先到，最终 assistant 消息后到）
+  let pendingToolCalls: ToolCallInfo[] = []
+
   function handleMessage(envelope: any) {
     const msg = mapServerMessage(envelope.message)
+
+    // 如果是工具调用消息（content 是占位文本），累积 toolCalls 不渲染
+    if (msg.toolCalls && msg.toolCalls.length > 0 && msg.content.startsWith('请求调用工具')) {
+      // 累积 tool_use
+      for (const tc of msg.toolCalls) {
+        const existing = pendingToolCalls.find(p => p.id === tc.id)
+        if (existing) {
+          Object.assign(existing, tc) // 更新状态（running → success）
+        } else {
+          pendingToolCalls.push(tc)
+        }
+      }
+      return // 不渲染这条消息
+    }
+
+    // 如果是 tool_result 消息（更新工具状态），累积不渲染
+    if (msg.toolCalls && msg.toolCalls.length > 0 && msg.id.includes('-tool-result-')) {
+      for (const tc of msg.toolCalls) {
+        const existing = pendingToolCalls.find(p => p.id === tc.id)
+        if (existing) {
+          Object.assign(existing, tc)
+        } else {
+          pendingToolCalls.push(tc)
+        }
+      }
+      return
+    }
+
+    // 最终 assistant 消息 — 附加累积的 toolCalls
+    if (msg.role === 'assistant' && pendingToolCalls.length > 0) {
+      msg.toolCalls = [...pendingToolCalls, ...(msg.toolCalls || [])]
+      pendingToolCalls = []
+    }
 
     // 如果有流式内容，合并到最终消息
     if (msg.role === 'assistant' && streamingContent.value) {
