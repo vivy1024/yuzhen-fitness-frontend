@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * MessageStream — 消息流容器
- * 自动滚动到底部 + 流式内容显示
+ * 自动滚动到底部 + 流式内容显示 + 快捷建议
  */
 import { ref, watch, nextTick, onMounted } from 'vue'
 import MessageItemNew from './MessageItemNew.vue'
@@ -14,6 +14,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{ quickSend: [content: string] }>()
 
 const containerRef = ref<HTMLElement | null>(null)
 const isAutoScroll = ref(true)
@@ -68,7 +69,7 @@ defineExpose({ scrollToBottom })
     <!-- 空状态 -->
     <div
       v-if="messages.length === 0 && !isStreaming"
-      class="flex h-full flex-col items-center justify-center gap-4 text-center"
+      class="flex h-full flex-col items-center justify-center gap-4 text-center px-4"
     >
       <div class="text-4xl">💪</div>
       <div class="space-y-2">
@@ -77,7 +78,40 @@ defineExpose({ scrollToBottom })
           向智能健身顾问提问，获取专业的训练建议
         </p>
       </div>
-      <p class="mt-4 text-xs text-muted-foreground max-w-sm">
+
+      <!-- 快捷建议按钮 -->
+      <div class="grid grid-cols-2 gap-2 mt-4 w-full max-w-sm">
+        <button
+          class="rounded-lg border border-border px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+          @click="emit('quickSend', '帮我制定一个训练计划')"
+        >
+          <div class="text-sm font-medium">制定训练计划</div>
+          <div class="text-xs text-muted-foreground">根据你的目标定制</div>
+        </button>
+        <button
+          class="rounded-lg border border-border px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+          @click="emit('quickSend', '推荐练胸的动作')"
+        >
+          <div class="text-sm font-medium">推荐训练动作</div>
+          <div class="text-xs text-muted-foreground">按肌群搜索</div>
+        </button>
+        <button
+          class="rounded-lg border border-border px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+          @click="emit('quickSend', '帮我计算TDEE')"
+        >
+          <div class="text-sm font-medium">计算 TDEE</div>
+          <div class="text-xs text-muted-foreground">每日热量消耗</div>
+        </button>
+        <button
+          class="rounded-lg border border-border px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+          @click="emit('quickSend', '今天练完肩膀很酸，怎么恢复？')"
+        >
+          <div class="text-sm font-medium">训练恢复</div>
+          <div class="text-xs text-muted-foreground">拉伸和恢复建议</div>
+        </button>
+      </div>
+
+      <p class="mt-2 text-xs text-muted-foreground max-w-sm">
         AI 建议仅供参考，不构成医疗建议。如有健康问题请先咨询专业医生。
       </p>
     </div>

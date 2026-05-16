@@ -359,6 +359,7 @@ watch(error, (val) => {
       :messages="messages"
       :is-streaming="isStreaming"
       :streaming-content="streamingContent"
+      @quick-send="handleSend"
     />
 
     <!-- Skill 执行进度 -->
