@@ -70,6 +70,32 @@ const skillPhase = computed(() => {
   return 'thinking'
 })
 
+// 最后一条消息的状态（用于显示继续/重试按钮）
+const lastMessage = computed(() => {
+  if (messages.value.length === 0) return null
+  return messages.value[messages.value.length - 1]
+})
+
+// 是否显示重试按钮（最后一条是错误或中断）
+const showRetryButton = computed(() => {
+  if (isWorking.value) return false
+  if (!lastMessage.value) return false
+  // 如果有错误
+  if (error.value) return true
+  // 如果最后一条是用户消息（AI 没回复就断了）
+  if (lastMessage.value.role === 'user') return true
+  return false
+})
+
+// 是否显示继续按钮（AI 回复被中断）
+const showContinueButton = computed(() => {
+  if (isWorking.value) return false
+  if (!lastMessage.value) return false
+  // 如果最后一条 AI 消息内容很短（可能被中断）
+  if (lastMessage.value.role === 'assistant' && lastMessage.value.content.length < 20) return true
+  return false
+})
+
 // 连接状态文本
 const connectionLabel = computed(() => {
   switch (connectionState.value) {
@@ -196,6 +222,20 @@ function handleRetry() {
   }
 }
 
+// 重试最后一条消息
+function handleRetryLastMessage() {
+  error.value = null
+  if (lastMessage.value?.role === 'user') {
+    // 重新发送最后一条用户消息
+    sendMessage(lastMessage.value.content)
+  }
+}
+
+// 继续生成（发送空消息让 AI 继续）
+function handleContinue() {
+  sendMessage('继续')
+}
+
 function formatSessionTime(dateStr: string): string {
   const date = new Date(dateStr)
   const now = new Date()
@@ -212,7 +252,8 @@ onMounted(() => {
 })
 
 watch(error, (val) => {
-  if (val) {
+  // 连接相关错误不自动消失（需要用户手动重试）
+  if (val && !val.includes('连接') && !val.includes('未连接') && !val.includes('断开')) {
     setTimeout(() => { error.value = null }, 5000)
   }
 })
@@ -329,6 +370,29 @@ watch(error, (val) => {
         :tools-completed="0"
         :tools-total="0"
       />
+    </div>
+
+    <!-- 继续/重试按钮 -->
+    <div v-if="showRetryButton || showContinueButton" class="px-4 pb-2 flex gap-2">
+      <Button
+        v-if="showRetryButton"
+        variant="outline"
+        size="sm"
+        class="gap-1.5"
+        @click="handleRetryLastMessage"
+      >
+        <RefreshCw class="h-3.5 w-3.5" />
+        重试
+      </Button>
+      <Button
+        v-if="showContinueButton"
+        variant="outline"
+        size="sm"
+        class="gap-1.5"
+        @click="handleContinue"
+      >
+        继续生成
+      </Button>
     </div>
 
     <!-- 输入框 -->

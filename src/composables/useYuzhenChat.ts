@@ -293,14 +293,14 @@ export function useYuzhenChat(baseUrl?: string) {
       isWorking.value = true // 用户消息确认后，等待 AI 回复
     }
 
-    // 替换或追加消息
+    // 替换或追加消息（按 seq 排序）
     const existingIdx = messages.value.findIndex(m => m.id === msg.id)
     if (existingIdx >= 0) {
       const updated = [...messages.value]
       updated[existingIdx] = msg
       messages.value = updated
     } else {
-      messages.value = [...messages.value, msg]
+      messages.value = [...messages.value, msg].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))
     }
 
     if (envelope.cursor) {
