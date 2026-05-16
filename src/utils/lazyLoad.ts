@@ -151,11 +151,11 @@ export const LazyComponents = {
     { delay: 100 }
   ),
   
-  // 聊天相关
-  ToolCallDialog: lazyLoad(
-    () => import('@/components/chat/ToolCallDialog.vue'),
-    { delay: 100 }
-  ),
+  // 聊天相关（ToolCallDialog 已废弃，改用 ToolCallCardNew 内联展示）
+  // ToolCallDialog: lazyLoad(
+  //   () => import('@/components/chat/ToolCallDialog.vue'),
+  //   { delay: 100 }
+  // ),
   RatingDialog: lazyLoad(
     () => import('@/components/chat/RatingDialog.vue'),
     { delay: 100 }

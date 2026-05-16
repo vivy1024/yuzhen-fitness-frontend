@@ -8,7 +8,7 @@ import { ref, computed } from 'vue'
 import type { UserProfile, FFMIAssessment, BMIStatus, BasicInfo, FitnessGoals, TrainingPreferences, StrengthData, HealthStatus, NutritionProfile } from '@/types/user-profile'
 import { userProfileApi, type FFMIHistory } from '@/api/user'
 import { calculateFFMI as calculateFFMIApi } from '@/api/calculators'
-import { warmupUser } from '@/api/warmup'
+// import { warmupUser } from '@/api/warmup' // 已废弃：YuzhenFork MCP 自动连接
 import { encryptData, decryptData, isCryptoAvailable } from '@/utils/crypto'
 
 const STORAGE_KEYS = {
@@ -559,25 +559,11 @@ export const useUserStore = defineStore('user', () => {
   /**
    * 触发DAML-RAG预热
    * 在用户档案更新后调用，刷新AI服务缓存中的用户档案
-   * @param forceRefresh 是否强制刷新缓存（默认true，因为档案已更新）
+   * @param _forceRefresh 已废弃参数
    */
-  function triggerWarmup(forceRefresh: boolean = true): void {
-    const userIdFromStorage = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID)
-    if (!userIdFromStorage) return
-    
-    // 异步预热，不阻塞主流程
-    warmupUser(userIdFromStorage, forceRefresh)
-      .then(result => {
-        if (result.success) {
-          console.log('[UserStore] DAML-RAG预热成功:', result.preload_status)
-        } else {
-          console.warn('[UserStore] DAML-RAG预热部分失败:', result.message)
-        }
-      })
-      .catch(err => {
-        // 预热失败不影响主流程
-        console.warn('[UserStore] DAML-RAG预热失败（不影响保存）:', err)
-      })
+  function triggerWarmup(_forceRefresh: boolean = true): void {
+    // 预热已废弃（YuzhenFork MCP 自动连接）
+    // 保留函数签名避免调用方报错
   }
 
   async function loadFFMIHistory(_limit = 10): Promise<FFMIHistory[]> {

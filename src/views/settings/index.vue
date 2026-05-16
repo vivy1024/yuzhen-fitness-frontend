@@ -11,7 +11,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import type { AcceptableValue } from 'reka-ui'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
+// import { useChatStore } from '@/stores/chat' // 已废弃：迁移到 YuzhenFork session
 import { useTheme, type ThemeMode } from '@/composables/useTheme'
 import { validatePasswordStrength } from '@/utils/auth'
 import { Button } from '@/components/ui/button'
@@ -75,7 +75,8 @@ import { sendSmsCode } from '@/api/sms'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const chatStore = useChatStore()
+// const chatStore = useChatStore() // 已废弃
+const chatStore = { currentPersonaId: 'default', setPersonaId: (_id: string) => {} } // stub
 const { mode, setTheme } = useTheme()
 const { isSupported: pushSupported, isSubscribed: pushEnabled, permission: pushPermission, reminderTime, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe, setReminderTime } = usePushNotification()
 const pushLoading = ref(false)

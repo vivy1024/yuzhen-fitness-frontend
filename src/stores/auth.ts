@@ -12,7 +12,7 @@ import { parseJWTPayload } from '@/utils/auth'
 import { useUserStore } from '@/stores/user'
 import { useMembershipStore } from '@/stores/membership'
 import { useTopicStore } from '@/stores/topic'
-import { warmupUser } from '@/api/warmup'
+// import { warmupUser } from '@/api/warmup' // 已废弃：YuzhenFork MCP 自动连接
 import { smsLogin as smsLoginApi } from '@/api/sms'
 import { showSuccess, showError } from '@/components/ui/toast'
 
@@ -166,24 +166,7 @@ export const useAuthStore = defineStore('auth', () => {
     ])
   }
 
-  /**
-   * 预热DAML-RAG用户数据
-   * 在登录/注册成功后调用，预热用户档案和会员数据到AI服务缓存
-   */
-  async function warmupDamlRag(userId: number) {
-    try {
-      console.log('[Auth] 开始预热DAML-RAG用户数据:', userId)
-      const result = await warmupUser(userId)
-      if (result.success) {
-        console.log('[Auth] DAML-RAG预热成功:', result.preload_status)
-      } else {
-        console.warn('[Auth] DAML-RAG预热部分失败:', result.message, result.preload_status)
-      }
-    } catch (error) {
-      // 预热失败不影响登录流程，只记录警告
-      console.warn('[Auth] DAML-RAG预热失败（不影响登录）:', error)
-    }
-  }
+  // warmupDamlRag 已废弃（YuzhenFork MCP 自动连接）
 
   /**
    * 认证成功后的统一处理流程
@@ -222,10 +205,10 @@ export const useAuthStore = defineStore('auth', () => {
       console.warn('[Auth] 解析JWT权限Claims失败:', parseError)
     }
 
-    // 异步预热DAML-RAG（不阻塞流程）
-    if (!options?.skipWarmup && data.user.id) {
-      warmupDamlRag(data.user.id)
-    }
+    // 预热已废弃（YuzhenFork MCP 自动连接）
+    // if (!options?.skipWarmup && data.user.id) {
+    //   warmupDamlRag(data.user.id)
+    // }
   }
 
   /**
