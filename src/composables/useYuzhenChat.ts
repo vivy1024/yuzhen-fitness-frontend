@@ -247,21 +247,20 @@ export function useYuzhenChat(baseUrl?: string) {
   function handleMessage(envelope: any) {
     const msg = mapServerMessage(envelope.message)
 
-    // 如果是工具调用消息（content 是占位文本），累积 toolCalls 不渲染
-    if (msg.toolCalls && msg.toolCalls.length > 0 && msg.content.startsWith('请求调用工具')) {
-      // 累积 tool_use
+    // 过滤 tool_use 消息（"请求调用工具..."占位文本）— 累积 toolCalls 不渲染
+    if (msg.toolCalls && msg.toolCalls.length > 0 && msg.id.includes('-tool-use-')) {
       for (const tc of msg.toolCalls) {
         const existing = pendingToolCalls.find(p => p.id === tc.id)
         if (existing) {
-          Object.assign(existing, tc) // 更新状态（running → success）
+          Object.assign(existing, tc)
         } else {
           pendingToolCalls.push(tc)
         }
       }
-      return // 不渲染这条消息
+      return
     }
 
-    // 如果是 tool_result 消息（更新工具状态），累积不渲染
+    // 过滤 tool_result 消息（工具结果 JSON）— 累积 toolCalls 不渲染
     if (msg.toolCalls && msg.toolCalls.length > 0 && msg.id.includes('-tool-result-')) {
       for (const tc of msg.toolCalls) {
         const existing = pendingToolCalls.find(p => p.id === tc.id)
