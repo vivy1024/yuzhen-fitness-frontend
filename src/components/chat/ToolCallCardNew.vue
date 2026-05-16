@@ -178,11 +178,69 @@ const duration = computed(() => {
     : `${(props.toolCall.duration / 1000).toFixed(1)}s`
 })
 
-// 摘要文本
+// 摘要文本 — 友好显示而非原始 JSON
 const summaryText = computed(() => {
-  if (props.toolCall.summary) return props.toolCall.summary
   if (props.toolCall.error) return props.toolCall.error
-  if (props.toolCall.output) return props.toolCall.output.slice(0, 80)
+
+  // 从 result 中提取友好摘要
+  const result = props.toolCall.result
+  if (result && typeof result === 'object') {
+    const r = result as Record<string, any>
+    // 动作搜索结果
+    if (r.exercises && Array.isArray(r.exercises)) {
+      return `找到 ${r.exercises.length} 个动作`
+    }
+    // 食物搜索结果
+    if (r.foods && Array.isArray(r.foods)) {
+      return `找到 ${r.foods.length} 个食物`
+    }
+    // 训练计划
+    if (r.program_overview || r.sessions) {
+      const days = r.program_overview?.training_days_per_week || r.sessions?.length || '?'
+      return `生成 ${days} 天训练计划`
+    }
+    // TDEE 计算
+    if (r.tdee || r.TDEE) {
+      return `TDEE: ${r.tdee || r.TDEE} kcal`
+    }
+    // 用户档案
+    if (r.user || r.profile) {
+      return '已获取用户档案'
+    }
+    // 通用 success
+    if (r.success === true && r.content) {
+      // 尝试解析 content 中的数据
+      try {
+        const content = typeof r.content === 'string' ? JSON.parse(r.content) : r.content
+        if (Array.isArray(content)) {
+          // content 是数组（如 MCP text content blocks）
+          const textBlock = content.find((b: any) => b.type === 'text')
+          if (textBlock?.text) {
+            const parsed = JSON.parse(textBlock.text)
+            if (parsed.exercises) return `找到 ${parsed.exercises.length} 个动作`
+            if (parsed.foods) return `找到 ${parsed.foods.length} 个食物`
+          }
+        }
+      } catch { /* ignore */ }
+      return '执行成功'
+    }
+  }
+
+  // fallback
+  if (props.toolCall.summary) {
+    const s = props.toolCall.summary
+    // 如果摘要是 JSON 字符串，尝试提取友好信息
+    if (s.startsWith('{') || s.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(s)
+        if (parsed.exercises) return `找到 ${parsed.exercises.length} 个动作`
+        if (parsed.success) return '执行成功'
+      } catch { /* ignore */ }
+      return '执行成功'
+    }
+    return s.slice(0, 60)
+  }
+
   return null
 })
 
@@ -197,6 +255,33 @@ const detailContent = computed(() => {
       return String(props.toolCall.result)
     }
   }
+  return null
+})
+
+// 解析 MCP 工具结果为结构化数据（供 ToolResultRenderer 使用）
+const parsedResult = computed(() => {
+  if (!props.toolCall.result) return null
+
+  let result = props.toolCall.result
+  if (typeof result === 'string') {
+    try { result = JSON.parse(result) } catch { return null }
+  }
+
+  const r = result as Record<string, any>
+
+  // MCP 格式：{success: true, content: [{type: "text", text: "{...}"}]}
+  if (r.success && r.content && Array.isArray(r.content)) {
+    const textBlock = r.content.find((b: any) => b.type === 'text')
+    if (textBlock?.text) {
+      try { return JSON.parse(textBlock.text) } catch { return null }
+    }
+  }
+
+  // 直接是结构化数据
+  if (r.exercises || r.foods || r.program_overview || r.tdee) {
+    return r
+  }
+
   return null
 })
 </script>
@@ -234,9 +319,9 @@ const detailContent = computed(() => {
     <div v-if="expanded" class="border-t border-border/40 px-3 py-2 space-y-2">
       <!-- 结构化结果渲染（动作卡片/TDEE/容量等） -->
       <ToolResultRenderer
-        v-if="toolCall.result"
+        v-if="parsedResult"
         :tool-name="toolCall.toolName"
-        :result="typeof toolCall.result === 'string' ? JSON.parse(toolCall.result) : toolCall.result"
+        :result="parsedResult"
       />
 
       <!-- 输入参数 -->

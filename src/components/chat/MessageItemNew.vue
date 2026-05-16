@@ -96,17 +96,14 @@ const trainingPlan = computed(() => {
   return extractTrainingPlanFromToolCalls(props.message.toolCalls)
 })
 
-// 元数据
+// 元数据（积分消耗，替代 tokens 显示）
 const metaText = computed(() => {
   if (!props.message.runtime) return null
   const parts: string[] = []
   if (props.message.runtime.modelId) {
     parts.push(props.message.runtime.modelId)
   }
-  if (props.message.runtime.usage) {
-    const { input_tokens, output_tokens } = props.message.runtime.usage
-    parts.push(`${input_tokens + output_tokens} tokens`)
-  }
+  // TODO: 替换为积分消耗（Phase 5）
   return parts.length > 0 ? parts.join(' · ') : null
 })
 
